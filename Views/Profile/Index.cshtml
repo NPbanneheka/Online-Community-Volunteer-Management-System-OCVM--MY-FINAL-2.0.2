@@ -1,0 +1,89 @@
+@model UserProfile?
+
+@{
+    ViewData["Title"] = "My Profile";
+}
+
+@if (Model == null)
+{
+    <div class="card card-modern p-4">
+        <h3 class="fw-bold">Profile not found</h3>
+        <a asp-action="Edit" class="btn btn-gradient rounded-pill mt-3">Create Profile</a>
+    </div>
+}
+else
+{
+    <div class="row g-4">
+        <div class="col-lg-4">
+            <div class="card card-modern p-4 text-center h-100">
+
+                @if (!string.IsNullOrEmpty(Model.ProfileImageUrl))
+                {
+                    <img src="@Model.ProfileImageUrl"
+                         alt="Profile Photo"
+                         class="rounded-circle shadow mx-auto mb-3"
+                         style="width: 150px; height: 150px; object-fit: cover;" />
+                }
+                else
+                {
+                    <div class="profile-avatar mx-auto mb-3">
+                        @(string.IsNullOrEmpty(Model.FullName) ? "U" : Model.FullName.Substring(0, 1).ToUpper())
+                    </div>
+                }
+
+                <h3 class="fw-bold mb-1">@Model.FullName</h3>
+                <div class="text-muted mb-2">@Model.RoleName</div>
+
+                @if (Model.IsVerified)
+                {
+                    <span class="badge bg-success-subtle text-success rounded-pill">Verified User</span>
+                }
+
+                <a asp-action="Edit" class="btn btn-gradient rounded-pill mt-4">Edit Profile</a>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="card card-modern p-4">
+                <h5 class="fw-bold mb-3">Profile Details</h5>
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="detail-box">
+                            <label>Email</label>
+                            <div>@Model.PublicEmail</div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="detail-box">
+                            <label>Contact</label>
+                            <div>@Model.ContactNumber</div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="detail-box">
+                            <label>Skills</label>
+                            <div>@Model.Skills</div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="detail-box">
+                            <label>Availability</label>
+                            <div>@Model.Availability</div>
+                        </div>
+                    </div>
+
+                    <div class="col-12">
+                        <div class="detail-box">
+                            <label>Bio</label>
+                            <div>@Model.Bio</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}

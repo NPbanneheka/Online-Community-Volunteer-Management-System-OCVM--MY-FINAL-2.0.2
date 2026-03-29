@@ -1,22 +1,102 @@
 @model ProfileEditViewModel
-@{ ViewData["Title"] = "Edit Profile"; }
+
+@{
+    ViewData["Title"] = "Edit Profile";
+}
+
 <div class="row justify-content-center">
     <div class="col-lg-8">
         <div class="card card-modern p-4 p-lg-5">
             <h2 class="fw-bold mb-4">Edit Profile</h2>
-            <form method="post">
+
+            <form method="post" enctype="multipart/form-data">
+                @Html.AntiForgeryToken()
+
+                <input type="hidden" asp-for="ProfileImageUrl" />
+
                 <div class="row g-3">
-                    <div class="col-md-6"><label asp-for="FullName" class="form-label"></label><input asp-for="FullName" class="form-control form-control-modern" /></div>
-                    <div class="col-md-6"><label asp-for="PublicEmail" class="form-label"></label><input asp-for="PublicEmail" class="form-control form-control-modern" /></div>
-                    <div class="col-md-6"><label asp-for="ContactNumber" class="form-label"></label><input asp-for="ContactNumber" class="form-control form-control-modern" /></div>
-                    <div class="col-md-6"><label asp-for="Availability" class="form-label"></label><input asp-for="Availability" class="form-control form-control-modern" /></div>
-                    <div class="col-md-6"><label asp-for="Skills" class="form-label"></label><input asp-for="Skills" class="form-control form-control-modern" /></div>
-                    <div class="col-md-6"><label asp-for="OrganizationName" class="form-label"></label><input asp-for="OrganizationName" class="form-control form-control-modern" /></div>
-                    <div class="col-12"><label asp-for="ProfileImageUrl" class="form-label"></label><input asp-for="ProfileImageUrl" class="form-control form-control-modern" /></div>
-                    <div class="col-12"><label asp-for="Bio" class="form-label"></label><textarea asp-for="Bio" rows="4" class="form-control form-control-modern"></textarea></div>
+
+                    <div class="col-md-6">
+                        <label asp-for="FullName" class="form-label"></label>
+                        <input asp-for="FullName" class="form-control form-control-modern" />
+                        <span asp-validation-for="FullName" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="PublicEmail" class="form-label"></label>
+                        <input asp-for="PublicEmail" class="form-control form-control-modern" />
+                        <span asp-validation-for="PublicEmail" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="ContactNumber" class="form-label"></label>
+                        <input asp-for="ContactNumber" class="form-control form-control-modern" />
+                        <span asp-validation-for="ContactNumber" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="Availability" class="form-label"></label>
+                        <input asp-for="Availability" class="form-control form-control-modern" />
+                        <span asp-validation-for="Availability" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="Skills" class="form-label"></label>
+                        <input asp-for="Skills" class="form-control form-control-modern" />
+                        <span asp-validation-for="Skills" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="OrganizationName" class="form-label"></label>
+                        <input asp-for="OrganizationName" class="form-control form-control-modern" />
+                        <span asp-validation-for="OrganizationName" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label">Current Profile Photo</label>
+                        <div class="mb-3">
+                            @if (!string.IsNullOrEmpty(Model.ProfileImageUrl))
+                            {
+                                <img src="@Model.ProfileImageUrl"
+                                     alt="Profile Photo"
+                                     class="rounded-circle shadow"
+                                     style="width: 120px; height: 120px; object-fit: cover;" />
+                            }
+                            else
+                            {
+                                <div class="profile-avatar d-inline-flex align-items-center justify-content-center rounded-circle shadow"
+                                     style="width: 120px; height: 120px; font-size: 40px;">
+                                    @(string.IsNullOrEmpty(Model.FullName) ? "U" : Model.FullName.Substring(0, 1).ToUpper())
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label">Upload New Profile Photo</label>
+                        <input type="file"
+                               name="ProfileImageFile"
+                               class="form-control form-control-modern"
+                               accept=".jpg,.jpeg,.png,.webp" />
+                        <small class="text-muted">Allowed: JPG, JPEG, PNG, WEBP</small>
+                    </div>
+
+                    <div class="col-12">
+                        <label asp-for="Bio" class="form-label"></label>
+                        <textarea asp-for="Bio" rows="4" class="form-control form-control-modern"></textarea>
+                        <span asp-validation-for="Bio" class="text-danger"></span>
+                    </div>
+
                 </div>
-                <button class="btn btn-gradient rounded-pill px-4 mt-4">Save Changes</button>
+
+                <button type="submit" class="btn btn-gradient rounded-pill px-4 mt-4">
+                    Save Changes
+                </button>
             </form>
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
