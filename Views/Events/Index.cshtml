@@ -1,0 +1,32 @@
+@model IEnumerable<VolunteerEvent>
+@{ ViewData["Title"] = "Events"; }
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+    <div>
+        <h1 class="fw-bold mb-1">Volunteer Events</h1>
+        <p class="text-muted mb-0">Discover and join impactful community events.</p>
+    </div>
+    @if (User.IsInRole("Organizer") || User.IsInRole("Admin"))
+    {
+        <a asp-action="Create" class="btn btn-gradient rounded-pill px-4">Create Event</a>
+    }
+</div>
+<div class="row g-4">
+@foreach (var item in Model)
+{
+    <div class="col-md-6 col-xl-4">
+        <div class="card card-modern h-100">
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="badge bg-primary-subtle text-primary">@item.Status</span>
+                    <small class="text-muted">@item.Capacity slots</small>
+                </div>
+                <h5 class="fw-bold">@item.Title</h5>
+                <p class="text-muted small">@item.Description</p>
+                <div class="small mb-1"><i class="bi bi-calendar-event me-2"></i>@item.EventDate.ToString("dd MMM yyyy")</div>
+                <div class="small"><i class="bi bi-geo-alt me-2"></i>@item.Location</div>
+            </div>
+            <div class="card-footer bg-transparent border-0 px-4 pb-4"><a asp-action="Details" asp-route-id="@item.Id" class="btn btn-outline-primary rounded-pill w-100">View Event</a></div>
+        </div>
+    </div>
+}
+</div>

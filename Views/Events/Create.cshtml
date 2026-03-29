@@ -1,0 +1,20 @@
+@model VolunteerEvent
+@{ ViewData["Title"] = "Create Event"; }
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card card-modern p-4 p-lg-5">
+            <h2 class="fw-bold mb-4">Create New Event</h2>
+            <form method="post">
+                <div class="row g-3">
+                    <div class="col-md-8"><label asp-for="Title" class="form-label"></label><input asp-for="Title" class="form-control form-control-modern" /></div>
+                    <div class="col-md-4"><label asp-for="Capacity" class="form-label"></label><input asp-for="Capacity" class="form-control form-control-modern" /></div>
+                    <div class="col-md-6"><label asp-for="EventDate" class="form-label"></label><input asp-for="EventDate" type="datetime-local" class="form-control form-control-modern" /></div>
+                    <div class="col-md-6"><label asp-for="Location" class="form-label"></label><input asp-for="Location" class="form-control form-control-modern" /></div>
+                    <div class="col-12"><label asp-for="ImageUrl" class="form-label"></label><input asp-for="ImageUrl" class="form-control form-control-modern" /></div>
+                    <div class="col-12"><label asp-for="Description" class="form-label"></label><textarea asp-for="Description" rows="5" class="form-control form-control-modern"></textarea></div>
+                </div>
+                <button class="btn btn-gradient rounded-pill px-4 mt-4">Publish Event</button>
+            </form>
+        </div>
+    </div>
+</div>

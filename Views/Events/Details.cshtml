@@ -1,0 +1,32 @@
+@model VolunteerEvent
+@{ ViewData["Title"] = "Event Details"; }
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="card card-modern p-5">
+            <span class="badge bg-primary-subtle text-primary mb-3">@Model.Status</span>
+            <h1 class="fw-bold mb-3">@Model.Title</h1>
+            <p class="lead text-muted">@Model.Description</p>
+            <div class="row g-3 mt-2">
+                <div class="col-md-4"><div class="detail-box"><label>Date</label><div>@Model.EventDate.ToString("dd MMM yyyy")</div></div></div>
+                <div class="col-md-4"><div class="detail-box"><label>Location</label><div>@Model.Location</div></div></div>
+                <div class="col-md-4"><div class="detail-box"><label>Capacity</label><div>@Model.Capacity</div></div></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card card-modern p-4 h-100">
+            <h5 class="fw-bold">Registration</h5>
+            <p class="text-muted">Already joined: @ViewBag.Registrations volunteers</p>
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                <form asp-action="Register" asp-route-id="@Model.Id" method="post">
+                    <button class="btn btn-gradient rounded-pill w-100">Register for Event</button>
+                </form>
+            }
+            else
+            {
+                <a asp-controller="Account" asp-action="Login" class="btn btn-gradient rounded-pill w-100">Login to Register</a>
+            }
+        </div>
+    </div>
+</div>

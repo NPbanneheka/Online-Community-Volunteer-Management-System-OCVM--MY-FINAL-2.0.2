@@ -1,0 +1,13 @@
+@model UserProfile
+@{ ViewData["Title"] = "Profile"; }
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card card-modern p-5 text-center">
+            <div class="profile-avatar mx-auto mb-3">@Model.FullName.Substring(0,1).ToUpper()</div>
+            <h2 class="fw-bold mb-1">@Model.FullName</h2>
+            <div class="text-muted mb-2">@Model.RoleName</div>
+            <div class="mb-3">Average Rating: <strong>@(((double)ViewBag.AverageRating).ToString("0.0"))</strong></div>
+            <p class="text-muted mb-0">@Model.Bio</p>
+        </div>
+    </div>
+</div>

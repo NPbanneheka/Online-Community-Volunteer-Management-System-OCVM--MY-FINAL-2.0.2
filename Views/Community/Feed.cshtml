@@ -1,0 +1,35 @@
+@model IEnumerable<CommunityPost>
+@{ ViewData["Title"] = "Community Feed"; }
+<div class="row g-4">
+    <div class="col-lg-4">
+        <div class="card card-modern p-4 sticky-card">
+            <h4 class="fw-bold mb-3">Create Post</h4>
+            <form asp-action="CreatePost" method="post">
+                <div class="mb-3"><input name="title" class="form-control form-control-modern" placeholder="Post title" /></div>
+                <div class="mb-3"><textarea name="content" rows="5" class="form-control form-control-modern" placeholder="Share an update with the community"></textarea></div>
+                <button class="btn btn-gradient rounded-pill w-100">Publish</button>
+            </form>
+        </div>
+    </div>
+    <div class="col-lg-8">
+        <h2 class="fw-bold mb-3">Community Feed</h2>
+        @foreach (var item in Model)
+        {
+            <div class="card card-modern p-4 mb-4">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div>
+                        <h5 class="fw-bold mb-1">@item.Title</h5>
+                        <small class="text-muted">Posted on @item.CreatedAt.ToLocalTime().ToString("dd MMM yyyy hh:mm tt")</small>
+                    </div>
+                    <span class="badge bg-light text-dark rounded-pill"><i class="bi bi-hand-thumbs-up me-1"></i>@item.LikeCount</span>
+                </div>
+                <p class="text-muted mb-3">@item.Content</p>
+                <form asp-action="AddComment" method="post" class="d-flex gap-2">
+                    <input type="hidden" name="postId" value="@item.Id" />
+                    <input name="content" class="form-control form-control-modern" placeholder="Write a comment" />
+                    <button class="btn btn-outline-primary rounded-pill">Comment</button>
+                </form>
+            </div>
+        }
+    </div>
+</div>

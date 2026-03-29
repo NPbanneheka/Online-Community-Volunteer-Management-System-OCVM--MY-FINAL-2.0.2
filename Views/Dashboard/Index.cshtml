@@ -1,0 +1,64 @@
+@model DashboardViewModel
+@{ ViewData["Title"] = "Dashboard"; var myProfile = ViewBag.MyProfile as UserProfile; var upcoming = ViewBag.UpcomingEvents as List<VolunteerEvent> ?? new(); var posts = ViewBag.RecentPosts as List<CommunityPost> ?? new(); }
+
+<div class="row g-4 mb-4">
+    <div class="col-lg-8">
+        <div class="card card-modern p-4 dashboard-banner">
+            <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+                <div>
+                    <h2 class="fw-bold mb-1">Hello @(myProfile?.FullName ?? User.Identity?.Name)</h2>
+                    <p class="text-muted mb-0">Welcome to your modern volunteer dashboard.</p>
+                </div>
+                <a class="btn btn-gradient rounded-pill px-4" asp-controller="Events" asp-action="Index">Explore Events</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card card-modern p-4 h-100">
+            <div class="d-flex align-items-center gap-3">
+                <div class="avatar-lg">@((myProfile?.FullName ?? "U").Substring(0,1).ToUpper())</div>
+                <div>
+                    <div class="fw-semibold">@(myProfile?.RoleName ?? "User")</div>
+                    <small class="text-muted">Verified: @(myProfile?.IsVerified == true ? "Yes" : "No")</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-3"><div class="card stat-card p-4"><div class="stat-number text-primary">@Model.TotalEvents</div><div class="text-muted">Total Events</div></div></div>
+    <div class="col-md-3"><div class="card stat-card p-4"><div class="stat-number text-success">@Model.MyRegistrations</div><div class="text-muted">My Registrations</div></div></div>
+    <div class="col-md-3"><div class="card stat-card p-4"><div class="stat-number text-info">@Model.CommunityPosts</div><div class="text-muted">Community Posts</div></div></div>
+    <div class="col-md-3"><div class="card stat-card p-4"><div class="stat-number text-warning">@Model.AverageRating.ToString("0.0")</div><div class="text-muted">Average Rating</div></div></div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="card card-modern p-4 h-100">
+            <h5 class="fw-bold mb-3">Upcoming Events</h5>
+            @foreach (var item in upcoming)
+            {
+                <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+                    <div>
+                        <div class="fw-semibold">@item.Title</div>
+                        <small class="text-muted">@item.EventDate.ToString("dd MMM yyyy") · @item.Location</small>
+                    </div>
+                    <a class="btn btn-sm btn-outline-primary rounded-pill" asp-controller="Events" asp-action="Details" asp-route-id="@item.Id">Open</a>
+                </div>
+            }
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card card-modern p-4 h-100">
+            <h5 class="fw-bold mb-3">Recent Community Posts</h5>
+            @foreach (var item in posts)
+            {
+                <div class="border-bottom py-2">
+                    <div class="fw-semibold">@item.Title</div>
+                    <small class="text-muted">@item.Content</small>
+                </div>
+            }
+        </div>
+    </div>
+</div>

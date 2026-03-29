@@ -1,0 +1,16 @@
+@model IEnumerable<VolunteerEvent>
+@{ ViewData["Title"] = "My Events"; }
+<div class="card card-modern p-4">
+    <h2 class="fw-bold mb-4">My Created Events</h2>
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <thead><tr><th>Title</th><th>Date</th><th>Location</th><th>Status</th></tr></thead>
+            <tbody>
+            @foreach (var item in Model)
+            {
+                <tr><td>@item.Title</td><td>@item.EventDate.ToString("dd MMM yyyy")</td><td>@item.Location</td><td>@item.Status</td></tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</div>
