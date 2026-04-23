@@ -4189,19 +4189,19 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\SAJI\\.nuget\\packages\\": {}
+    "C:\\Users\\SAJITH PRIYASHAN\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\SAJI\\Documents\\GitHub\\Online-Community-Volunteer-Management-System-OCVM--MY-FINAL-2.0.2\\OCVMS.csproj",
+      "projectUniqueName": "C:\\Users\\SAJITH PRIYASHAN\\Documents\\GitHub\\Online-Community-Volunteer-Management-System-OCVM--MY-FINAL-2.0.2\\OCVMS.csproj",
       "projectName": "OCVMS",
-      "projectPath": "C:\\Users\\SAJI\\Documents\\GitHub\\Online-Community-Volunteer-Management-System-OCVM--MY-FINAL-2.0.2\\OCVMS.csproj",
-      "packagesPath": "C:\\Users\\SAJI\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\SAJI\\Documents\\GitHub\\Online-Community-Volunteer-Management-System-OCVM--MY-FINAL-2.0.2\\obj\\",
+      "projectPath": "C:\\Users\\SAJITH PRIYASHAN\\Documents\\GitHub\\Online-Community-Volunteer-Management-System-OCVM--MY-FINAL-2.0.2\\OCVMS.csproj",
+      "packagesPath": "C:\\Users\\SAJITH PRIYASHAN\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\SAJITH PRIYASHAN\\Documents\\GitHub\\Online-Community-Volunteer-Management-System-OCVM--MY-FINAL-2.0.2\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "C:\\Users\\SAJI\\AppData\\Roaming\\NuGet\\NuGet.Config"
+        "C:\\Users\\SAJITH PRIYASHAN\\AppData\\Roaming\\NuGet\\NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net8.0"
@@ -4264,7 +4264,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.419/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.420/PortableRuntimeIdentifierGraph.json"
       }
     }
   }

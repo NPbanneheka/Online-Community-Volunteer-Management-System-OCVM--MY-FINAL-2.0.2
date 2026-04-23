@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "A3WIwmNwg+o4Cqi10shPIzpjfBiPeEMVlw2Pn3w+Aec=",
+  "Hash": "F40aCaKCFuUlRmT3XWsHcmCOqtc39kPatMDw2WjSMzo=",
   "Source": "OCVMS",
   "BasePath": "_content/OCVMS",
   "Mode": "Default",
@@ -10,17 +10,17 @@
     {
       "Name": "OCVMS\\wwwroot",
       "Source": "OCVMS",
-      "ContentRoot": "C:\\Users\\SAJI\\Documents\\GitHub\\Online-Community-Volunteer-Management-System-OCVM--MY-FINAL-2.0.2\\wwwroot\\",
+      "ContentRoot": "C:\\Users\\SAJITH PRIYASHAN\\Documents\\GitHub\\Online-Community-Volunteer-Management-System-OCVM--MY-FINAL-2.0.2\\wwwroot\\",
       "BasePath": "_content/OCVMS",
       "Pattern": "**"
     }
   ],
   "Assets": [
     {
-      "Identity": "C:\\Users\\SAJI\\Documents\\GitHub\\Online-Community-Volunteer-Management-System-OCVM--MY-FINAL-2.0.2\\wwwroot\\css\\site.css",
+      "Identity": "C:\\Users\\SAJITH PRIYASHAN\\Documents\\GitHub\\Online-Community-Volunteer-Management-System-OCVM--MY-FINAL-2.0.2\\wwwroot\\css\\site.css",
       "SourceId": "OCVMS",
       "SourceType": "Discovered",
-      "ContentRoot": "C:\\Users\\SAJI\\Documents\\GitHub\\Online-Community-Volunteer-Management-System-OCVM--MY-FINAL-2.0.2\\wwwroot\\",
+      "ContentRoot": "C:\\Users\\SAJITH PRIYASHAN\\Documents\\GitHub\\Online-Community-Volunteer-Management-System-OCVM--MY-FINAL-2.0.2\\wwwroot\\",
       "BasePath": "_content/OCVMS",
       "RelativePath": "css/site.css",
       "AssetKind": "All",
@@ -36,10 +36,10 @@
       "OriginalItemSpec": "wwwroot\\css\\site.css"
     },
     {
-      "Identity": "C:\\Users\\SAJI\\Documents\\GitHub\\Online-Community-Volunteer-Management-System-OCVM--MY-FINAL-2.0.2\\wwwroot\\uploads\\profiles\\13f47d6e-00b0-4814-8e94-1d22f6a760f7.jpeg",
+      "Identity": "C:\\Users\\SAJITH PRIYASHAN\\Documents\\GitHub\\Online-Community-Volunteer-Management-System-OCVM--MY-FINAL-2.0.2\\wwwroot\\uploads\\profiles\\13f47d6e-00b0-4814-8e94-1d22f6a760f7.jpeg",
       "SourceId": "OCVMS",
       "SourceType": "Discovered",
-      "ContentRoot": "C:\\Users\\SAJI\\Documents\\GitHub\\Online-Community-Volunteer-Management-System-OCVM--MY-FINAL-2.0.2\\wwwroot\\",
+      "ContentRoot": "C:\\Users\\SAJITH PRIYASHAN\\Documents\\GitHub\\Online-Community-Volunteer-Management-System-OCVM--MY-FINAL-2.0.2\\wwwroot\\",
       "BasePath": "_content/OCVMS",
       "RelativePath": "uploads/profiles/13f47d6e-00b0-4814-8e94-1d22f6a760f7.jpeg",
       "AssetKind": "All",
@@ -55,10 +55,10 @@
       "OriginalItemSpec": "wwwroot\\uploads\\profiles\\13f47d6e-00b0-4814-8e94-1d22f6a760f7.jpeg"
     },
     {
-      "Identity": "C:\\Users\\SAJI\\Documents\\GitHub\\Online-Community-Volunteer-Management-System-OCVM--MY-FINAL-2.0.2\\wwwroot\\uploads\\profiles\\c53496c9-ef27-448b-bc29-3813679bd4cc.jpg",
+      "Identity": "C:\\Users\\SAJITH PRIYASHAN\\Documents\\GitHub\\Online-Community-Volunteer-Management-System-OCVM--MY-FINAL-2.0.2\\wwwroot\\uploads\\profiles\\c53496c9-ef27-448b-bc29-3813679bd4cc.jpg",
       "SourceId": "OCVMS",
       "SourceType": "Discovered",
-      "ContentRoot": "C:\\Users\\SAJI\\Documents\\GitHub\\Online-Community-Volunteer-Management-System-OCVM--MY-FINAL-2.0.2\\wwwroot\\",
+      "ContentRoot": "C:\\Users\\SAJITH PRIYASHAN\\Documents\\GitHub\\Online-Community-Volunteer-Management-System-OCVM--MY-FINAL-2.0.2\\wwwroot\\",
       "BasePath": "_content/OCVMS",
       "RelativePath": "uploads/profiles/c53496c9-ef27-448b-bc29-3813679bd4cc.jpg",
       "AssetKind": "All",
@@ -74,10 +74,10 @@
       "OriginalItemSpec": "wwwroot\\uploads\\profiles\\c53496c9-ef27-448b-bc29-3813679bd4cc.jpg"
     },
     {
-      "Identity": "C:\\Users\\SAJI\\Documents\\GitHub\\Online-Community-Volunteer-Management-System-OCVM--MY-FINAL-2.0.2\\wwwroot\\uploads\\profiles\\ccf62db8-ef27-4324-8c03-8c988de796bb.jpeg",
+      "Identity": "C:\\Users\\SAJITH PRIYASHAN\\Documents\\GitHub\\Online-Community-Volunteer-Management-System-OCVM--MY-FINAL-2.0.2\\wwwroot\\uploads\\profiles\\ccf62db8-ef27-4324-8c03-8c988de796bb.jpeg",
       "SourceId": "OCVMS",
       "SourceType": "Discovered",
-      "ContentRoot": "C:\\Users\\SAJI\\Documents\\GitHub\\Online-Community-Volunteer-Management-System-OCVM--MY-FINAL-2.0.2\\wwwroot\\",
+      "ContentRoot": "C:\\Users\\SAJITH PRIYASHAN\\Documents\\GitHub\\Online-Community-Volunteer-Management-System-OCVM--MY-FINAL-2.0.2\\wwwroot\\",
       "BasePath": "_content/OCVMS",
       "RelativePath": "uploads/profiles/ccf62db8-ef27-4324-8c03-8c988de796bb.jpeg",
       "AssetKind": "All",
