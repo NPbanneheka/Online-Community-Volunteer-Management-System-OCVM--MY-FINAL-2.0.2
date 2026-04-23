@@ -13,7 +13,11 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("OCVMS")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
+<<<<<<< Updated upstream
 [assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+1ee447da078a7a003a769a37c7a92d96d80b7d8f")]
+=======
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+14d34e5795bf3ec43c36cbba5df6390904afb07d")]
+>>>>>>> Stashed changes
 [assembly: System.Reflection.AssemblyProductAttribute("OCVMS")]
 [assembly: System.Reflection.AssemblyTitleAttribute("OCVMS")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
