@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using OCVMS.Data;
 
@@ -11,9 +12,11 @@ using OCVMS.Data;
 namespace OCVMS.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260424172848_InitialCreate")]
+    partial class InitialCreate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -230,18 +233,16 @@ namespace OCVMS.Migrations
 
                     b.Property<string>("Content")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("PostType")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("Title")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<int>("UserProfileId")
                         .HasColumnType("int");
@@ -269,14 +270,12 @@ namespace OCVMS.Migrations
 
                     b.Property<string>("UserId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("VolunteerEventId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("UserId");
 
                     b.HasIndex("VolunteerEventId");
 
@@ -360,7 +359,8 @@ namespace OCVMS.Migrations
 
                     b.Property<string>("Content")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -484,9 +484,6 @@ namespace OCVMS.Migrations
                     b.Property<DateTime>("EventDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<TimeSpan>("EventTime")
-                        .HasColumnType("time");
-
                     b.Property<string>("ImageUrl")
                         .HasColumnType("nvarchar(max)");
 
@@ -577,19 +574,11 @@ namespace OCVMS.Migrations
 
             modelBuilder.Entity("OCVMS.Models.EventRegistration", b =>
                 {
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("OCVMS.Models.VolunteerEvent", "VolunteerEvent")
                         .WithMany("Registrations")
                         .HasForeignKey("VolunteerEventId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("User");
 
                     b.Navigation("VolunteerEvent");
                 });
@@ -619,7 +608,7 @@ namespace OCVMS.Migrations
             modelBuilder.Entity("OCVMS.Models.PostComment", b =>
                 {
                     b.HasOne("OCVMS.Models.CommunityPost", "Post")
-                        .WithMany("PostComments")
+                        .WithMany("Comments")
                         .HasForeignKey("CommunityPostId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -648,7 +637,7 @@ namespace OCVMS.Migrations
 
             modelBuilder.Entity("OCVMS.Models.CommunityPost", b =>
                 {
-                    b.Navigation("PostComments");
+                    b.Navigation("Comments");
                 });
 
             modelBuilder.Entity("OCVMS.Models.UserProfile", b =>

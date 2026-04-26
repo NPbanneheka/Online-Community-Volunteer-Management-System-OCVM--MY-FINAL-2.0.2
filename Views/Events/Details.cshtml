@@ -1,32 +1,121 @@
-@model VolunteerEvent
-@{ ViewData["Title"] = "Event Details"; }
-<div class="row g-4">
-    <div class="col-lg-8">
-        <div class="card card-modern p-5">
-            <span class="badge bg-primary-subtle text-primary mb-3">@Model.Status</span>
-            <h1 class="fw-bold mb-3">@Model.Title</h1>
-            <p class="lead text-muted">@Model.Description</p>
-            <div class="row g-3 mt-2">
-                <div class="col-md-4"><div class="detail-box"><label>Date</label><div>@Model.EventDate.ToString("dd MMM yyyy")</div></div></div>
-                <div class="col-md-4"><div class="detail-box"><label>Location</label><div>@Model.Location</div></div></div>
-                <div class="col-md-4"><div class="detail-box"><label>Capacity</label><div>@Model.Capacity</div></div></div>
-            </div>
+@model OCVMS.Models.VolunteerEvent
+@{
+    ViewData["Title"] = "Event Details";
+    bool isRegistered = ViewBag.IsRegistered ?? false;
+    int registeredCount = ViewBag.RegisteredCount ?? 0;
+    int remainingSlots = ViewBag.RemainingSlots ?? 0;
+}
+
+<div class="container py-5">
+    <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+        <div class="bg-primary bg-opacity-10 p-5 text-center">
+            <i class="bi bi-calendar-star text-primary opacity-50" style="font-size: 5rem;"></i>
+            <h2 class="fw-bold text-dark mt-3">@Model.Title</h2>
         </div>
-    </div>
-    <div class="col-lg-4">
-        <div class="card card-modern p-4 h-100">
-            <h5 class="fw-bold">Registration</h5>
-            <p class="text-muted">Already joined: @ViewBag.Registrations volunteers</p>
-            @if (User.Identity?.IsAuthenticated == true)
-            {
-                <form asp-action="Register" asp-route-id="@Model.Id" method="post">
-                    <button class="btn btn-gradient rounded-pill w-100">Register for Event</button>
-                </form>
-            }
-            else
-            {
-                <a asp-controller="Account" asp-action="Login" class="btn btn-gradient rounded-pill w-100">Login to Register</a>
-            }
+        
+        <div class="card-body p-4 p-md-5">
+            <div class="row g-5">
+                <div class="col-lg-7">
+                    <h4 class="fw-bold border-bottom pb-2 mb-4">About the Event</h4>
+                    <p class="text-secondary" style="white-space: pre-line; line-height: 1.8;">@Model.Description</p>
+                </div>
+                
+                <div class="col-lg-5">
+                    <div class="bg-light p-4 rounded-4 shadow-sm">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h5 class="fw-bold mb-0">Event Info</h5>
+                            <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3 py-2">@Model.Status</span>
+                        </div>
+                        
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="bg-white p-2 rounded shadow-sm me-3"><i class="bi bi-calendar-event text-primary fs-5"></i></div>
+                            <div>
+                                <small class="text-muted d-block">Date</small>
+                                <span class="fw-bold text-dark">@Model.EventDate.ToString("MMMM dd, yyyy")</span>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="bg-white p-2 rounded shadow-sm me-3"><i class="bi bi-clock text-warning fs-5"></i></div>
+                            <div>
+                                <small class="text-muted d-block">Time</small>
+                                <span class="fw-bold text-dark">@Model.EventTime.ToString(@"hh\:mm")</span>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="bg-white p-2 rounded shadow-sm me-3"><i class="bi bi-geo-alt text-danger fs-5"></i></div>
+                            <div>
+                                <small class="text-muted d-block">Location</small>
+                                <span class="fw-bold text-dark">@Model.Location</span>
+                            </div>
+                        </div>
+
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="bg-white p-2 rounded shadow-sm me-3"><i class="bi bi-person-badge text-info fs-5"></i></div>
+                            <div>
+                                <small class="text-muted d-block">Organizer</small>
+                                <span class="fw-bold text-dark">@(Model.OrganizerProfile?.FullName ?? "Organizer")</span>
+                            </div>
+                        </div>
+
+                        <div class="d-flex align-items-center mb-4">
+                            <div class="bg-white p-2 rounded shadow-sm me-3"><i class="bi bi-people text-success fs-5"></i></div>
+                            <div>
+                                <small class="text-muted d-block">Capacity</small>
+                                <span class="fw-bold text-dark">@registeredCount / @Model.Capacity registered · @remainingSlots slots left</span>
+                            </div>
+                        </div>
+
+                        <hr class="my-4" />
+
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            if (isRegistered)
+                            {
+                                <div class="alert alert-success text-center fw-bold rounded-pill mb-0">
+                                    <i class="bi bi-check-circle-fill me-2"></i> You are Already Registered!
+                                </div>
+                            }
+                            else if (remainingSlots <= 0)
+                            {
+                                <div class="alert alert-warning text-center fw-bold rounded-pill mb-0">
+                                    <i class="bi bi-exclamation-triangle-fill me-2"></i> Event capacity is full.
+                                </div>
+                            }
+                            else
+                            {
+                                <form asp-controller="Events" asp-action="Register" method="post">
+                                    <input type="hidden" name="eventId" value="@Model.Id" />
+                                    <button type="submit" class="btn btn-success w-100 py-3 fw-bold shadow-sm" style="border-radius: 8px; background-color: #198754;">
+                                        Register for Event
+                                    </button>
+                                </form>
+                            }
+                        }
+                        else
+                        {
+                            <a asp-controller="Account" asp-action="Login" class="btn btn-outline-success w-100 py-3 fw-bold" style="border-radius: 8px;">
+                                Login to Register
+                            </a>
+                        }
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-5 pt-3 border-top d-flex gap-2 flex-wrap">
+                <a asp-action="Index" class="btn btn-light rounded-pill px-4 fw-bold text-secondary">
+                    <i class="bi bi-arrow-left me-2"></i> Back to Events List
+                </a>
+                @if (User.IsInRole("Admin") || User.IsInRole("Organizer"))
+                {
+                    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning rounded-pill px-4 fw-bold">Edit Event</a>
+                    <form asp-action="Delete" method="post" onsubmit="return confirm('Delete this event?');">
+                        <input type="hidden" name="id" value="@Model.Id" />
+                        <button type="submit" class="btn btn-outline-danger rounded-pill px-4 fw-bold">Delete Event</button>
+                    </form>
+                }
+            </div>
         </div>
     </div>
 </div>

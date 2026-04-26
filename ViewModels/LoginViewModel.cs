@@ -4,11 +4,14 @@ namespace OCVMS.ViewModels;
 
 public class LoginViewModel
 {
-    [Required, EmailAddress]
+    [Required(ErrorMessage = "ඊමේල් ලිපිනය ඇතුළත් කරන්න.")]
+    [EmailAddress(ErrorMessage = "වලංගු ඊමේල් ලිපිනයක් අවශ්‍යයි.")]
     public string Email { get; set; } = string.Empty;
 
-    [Required, DataType(DataType.Password)]
+    [Required(ErrorMessage = "මුරපදය ඇතුළත් කරන්න.")]
+    [DataType(DataType.Password)]
     public string Password { get; set; } = string.Empty;
 
+    [Display(Name = "මාව මතක තබා ගන්න (Remember Me)")]
     public bool RememberMe { get; set; }
 }

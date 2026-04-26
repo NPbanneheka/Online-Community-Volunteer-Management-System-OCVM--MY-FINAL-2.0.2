@@ -1,35 +1,143 @@
-@model IEnumerable<CommunityPost>
-@{ ViewData["Title"] = "Community Feed"; }
-<div class="row g-4">
-    <div class="col-lg-4">
-        <div class="card card-modern p-4 sticky-card">
-            <h4 class="fw-bold mb-3">Create Post</h4>
-            <form asp-action="CreatePost" method="post">
-                <div class="mb-3"><input name="title" class="form-control form-control-modern" placeholder="Post title" /></div>
-                <div class="mb-3"><textarea name="content" rows="5" class="form-control form-control-modern" placeholder="Share an update with the community"></textarea></div>
-                <button class="btn btn-gradient rounded-pill w-100">Publish</button>
-            </form>
-        </div>
-    </div>
-    <div class="col-lg-8">
-        <h2 class="fw-bold mb-3">Community Feed</h2>
-        @foreach (var item in Model)
-        {
-            <div class="card card-modern p-4 mb-4">
-                <div class="d-flex justify-content-between align-items-start mb-2">
-                    <div>
-                        <h5 class="fw-bold mb-1">@item.Title</h5>
-                        <small class="text-muted">Posted on @item.CreatedAt.ToLocalTime().ToString("dd MMM yyyy hh:mm tt")</small>
-                    </div>
-                    <span class="badge bg-light text-dark rounded-pill"><i class="bi bi-hand-thumbs-up me-1"></i>@item.LikeCount</span>
+@model IEnumerable<OCVMS.Models.CommunityPost>
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<IdentityUser> UserManager
+@{
+    ViewData["Title"] = "Community Hub";
+    var postCount = ViewBag.PostCount ?? 0;
+}
+<div class="container py-4">
+    @if (TempData["Message"] != null) { <div class="alert alert-success border-0 shadow-sm rounded-pill"><i class="bi bi-check-circle-fill me-2"></i>@TempData["Message"]</div> }
+    @if (TempData["Error"] != null) { <div class="alert alert-danger border-0 shadow-sm rounded-pill"><i class="bi bi-x-circle-fill me-2"></i>@TempData["Error"]</div> }
+
+    <div class="row g-4">
+        <div class="col-lg-3">
+            <div class="card border-0 shadow-sm rounded-4 text-center p-4">
+                <i class="bi bi-person-circle text-primary mb-3" style="font-size: 4rem;"></i>
+                <h5 class="fw-bold text-dark">@(User.Identity?.Name?.Split('@')[0])</h5>
+                <p class="text-muted small">Community Hub<br/>Connect with fellow volunteers.</p>
+                <hr/>
+                <div class="d-flex justify-content-between text-muted small fw-bold">
+                    <span><i class="bi bi-chat-left-text text-primary"></i> @postCount Posts</span>
+                    <span><i class="bi bi-heart text-danger"></i> Active</span>
                 </div>
-                <p class="text-muted mb-3">@item.Content</p>
-                <form asp-action="AddComment" method="post" class="d-flex gap-2">
-                    <input type="hidden" name="postId" value="@item.Id" />
-                    <input name="content" class="form-control form-control-modern" placeholder="Write a comment" />
-                    <button class="btn btn-outline-primary rounded-pill">Comment</button>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+                <form asp-action="CreatePost" method="post">
+                    <div class="d-flex gap-2 mb-3">
+                        <input type="radio" class="btn-check" name="postType" id="typeShare" value="Share" checked>
+                        <label class="btn btn-outline-primary rounded-pill px-4 fw-bold" for="typeShare">
+                            <i class="bi bi-pencil-square me-1"></i> Share Post
+                        </label>
+
+                        <input type="radio" class="btn-check" name="postType" id="typeHelp" value="Help">
+                        <label class="btn btn-outline-danger rounded-pill px-4 fw-bold" for="typeHelp">
+                            <i class="bi bi-life-preserver me-1"></i> Request Help
+                        </label>
+                    </div>
+
+                    <input type="text" name="title" class="form-control bg-light border-0 mb-3 rounded-3 py-2" placeholder="Post Title..." required />
+                    <textarea name="content" class="form-control bg-light border-0 mb-3 rounded-3" rows="3" placeholder="What's on your mind?" required></textarea>
+                    
+                    <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm">Post to Feed</button>
                 </form>
             </div>
-        }
+
+            @if (Model == null || !Model.Any())
+            {
+                <div class="text-center text-muted p-5 bg-white rounded-4 shadow-sm">
+                    <i class="bi bi-chat-dots opacity-25" style="font-size: 4rem;"></i>
+                    <h5 class="mt-3 fw-bold">No posts yet.</h5>
+                    <p class="mb-0">Be the first to start the conversation!</p>
+                </div>
+            }
+            else
+            {
+                foreach (var post in Model)
+                {
+                    <div class="card border-0 shadow-sm rounded-4 p-4 mb-3 transition-hover">
+                        <div class="d-flex justify-content-between mb-3">
+                            <div class="d-flex align-items-center">
+                                @if (!string.IsNullOrEmpty(post.User?.ProfileImageUrl))
+                                {
+                                    <img src="@post.User.ProfileImageUrl" class="rounded-circle me-3 shadow-sm" style="width: 45px; height: 45px; object-fit: cover; border: 2px solid #fff;" alt="Profile" />
+                                }
+                                else
+                                {
+                                    <div class="bg-light rounded-circle d-flex align-items-center justify-content-center me-3 shadow-sm" style="width: 45px; height: 45px; border: 2px solid #fff;">
+                                        <span class="fw-bold text-primary">@(post.User?.FullName?.Substring(0,1).ToUpper() ?? "V")</span>
+                                    </div>
+                                }
+                                
+                                <div>
+                                    <h6 class="mb-0 fw-bold text-dark">@(post.User?.FullName ?? "Volunteer")</h6>
+                                    <small class="text-muted">@post.CreatedAt.ToString("MMM dd, yyyy 'at' hh:mm tt")</small>
+                                </div>
+                            </div>
+                            
+                            @if (post.PostType == "Help")
+                            {
+                                <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill px-3 py-2 align-self-start fw-bold"><i class="bi bi-exclamation-circle me-1"></i> Help Needed</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3 py-2 align-self-start fw-bold"><i class="bi bi-info-circle me-1"></i> Update</span>
+                            }
+                        </div>
+                        <h5 class="fw-bold text-dark mb-2">@post.Title</h5>
+                        <p class="text-secondary mb-3" style="white-space: pre-line;">@post.Content</p>
+
+                        <hr class="text-muted opacity-25 mt-0 mb-3" />
+                        
+                        <form asp-action="AddComment" method="post" class="mb-3 d-flex gap-2">
+                            <input type="hidden" name="postId" value="@post.Id" />
+                            <input type="text" name="commentContent" class="form-control bg-light border-0 rounded-pill px-3" placeholder="Write a comment..." required />
+                            <button type="submit" class="btn btn-primary rounded-pill px-3"><i class="bi bi-send-fill"></i></button>
+                        </form>
+
+                        @if (post.PostComments != null && post.PostComments.Any())
+                        {
+                            <div class="bg-light p-3 rounded-4 mt-3">
+                                <h6 class="fw-bold mb-3 text-secondary small"><i class="bi bi-chat-dots me-1"></i> Comments (@post.PostComments.Count)</h6>
+                                @foreach (var comment in post.PostComments.OrderBy(c => c.CreatedAt))
+                                {
+                                    <div class="d-flex mb-2">
+                                        @if (!string.IsNullOrEmpty(comment.User?.ProfileImageUrl))
+                                        {
+                                            <img src="@comment.User.ProfileImageUrl" class="rounded-circle me-2 mt-1" style="width: 25px; height: 25px; object-fit: cover;" alt="Profile" />
+                                        }
+                                        else
+                                        {
+                                            <i class="bi bi-person-circle text-secondary fs-5 me-2 mt-1"></i>
+                                        }
+                                        <div class="bg-white p-2 px-3 rounded-4 shadow-sm w-100">
+                                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                                <span class="fw-bold small text-dark">@(comment.User?.FullName ?? "User")</span>
+                                                <span class="text-muted" style="font-size: 0.7rem;">@comment.CreatedAt.ToString("MMM dd, hh:mm tt")</span>
+                                            </div>
+                                            <p class="mb-0 small text-secondary">@comment.Content</p>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </div>
+                }
+            }
+        </div>
+
+        <div class="col-lg-3">
+            <div class="card border-0 shadow-sm rounded-4 p-4 text-white" style="background-color: #0d6efd;">
+                <h6 class="fw-bold"><i class="bi bi-lightbulb-fill text-warning me-2"></i> Quick Tip</h6>
+                <p class="small mb-0 opacity-75" style="line-height: 1.6;">Use "Request Help" if you need immediate assistance from the community for an event or situation.</p>
+            </div>
+        </div>
     </div>
 </div>
+
+<style>
+    .transition-hover { transition: transform 0.2s ease; }
+    .transition-hover:hover { transform: translateY(-3px); }
+</style>

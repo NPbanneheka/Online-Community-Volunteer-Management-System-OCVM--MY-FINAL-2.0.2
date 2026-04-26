@@ -1,4 +1,7 @@
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using OCVMS.Data;
+using OCVMS.Models;
 
 namespace OCVMS.Services;
 
@@ -8,6 +11,7 @@ public static class DbInitializer
     {
         var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
         var userManager = serviceProvider.GetRequiredService<UserManager<IdentityUser>>();
+        var context = serviceProvider.GetRequiredService<ApplicationDbContext>();
 
         string[] roles = ["Admin", "Organizer", "Volunteer"];
 
@@ -21,6 +25,7 @@ public static class DbInitializer
 
         var adminEmail = "admin@ocvms.local";
         var adminUser = await userManager.FindByEmailAsync(adminEmail);
+
         if (adminUser == null)
         {
             adminUser = new IdentityUser
@@ -31,10 +36,32 @@ public static class DbInitializer
             };
 
             var result = await userManager.CreateAsync(adminUser, "Admin123");
-            if (result.Succeeded)
+            if (!result.Succeeded)
             {
-                await userManager.AddToRoleAsync(adminUser, "Admin");
+                throw new InvalidOperationException("Default admin account could not be created: " +
+                    string.Join(", ", result.Errors.Select(e => e.Description)));
             }
+        }
+
+        if (!await userManager.IsInRoleAsync(adminUser, "Admin"))
+        {
+            await userManager.AddToRoleAsync(adminUser, "Admin");
+        }
+
+        var adminProfile = await context.UserProfiles.FirstOrDefaultAsync(x => x.UserId == adminUser.Id);
+        if (adminProfile == null)
+        {
+            context.UserProfiles.Add(new UserProfile
+            {
+                UserId = adminUser.Id,
+                FullName = "System Administrator",
+                RoleName = "Admin",
+                PublicEmail = adminEmail,
+                IsVerified = true,
+                Bio = "Default administrator account for OCVMS."
+            });
+
+            await context.SaveChangesAsync();
         }
     }
 }

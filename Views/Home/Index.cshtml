@@ -1,59 +1,89 @@
+@model IEnumerable<OCVMS.Models.VolunteerEvent>
 @{
-    ViewData["Title"] = "Home";
-    var featuredEvents = ViewBag.FeaturedEvents as List<VolunteerEvent> ?? new();
+    ViewData["Title"] = "Home Page";
 }
 
-<section class="hero-section rounded-4 p-5 mb-5">
-    <div class="row align-items-center g-4">
-        <div class="col-lg-7 text-white">
-            <span class="badge bg-light text-dark rounded-pill px-3 py-2 mb-3">Build community. Create impact.</span>
-            <h1 class="display-5 fw-bold mb-3">A modern volunteer platform with trust, profiles, ratings, and events.</h1>
-            <p class="lead opacity-75">Connect volunteers, organizers, and communities in one clean and attractive platform.</p>
-            <div class="d-flex gap-3 flex-wrap mt-4">
-                <a class="btn btn-light btn-lg rounded-pill px-4" asp-controller="Account" asp-action="Register">Join as Volunteer</a>
-                <a class="btn btn-outline-light btn-lg rounded-pill px-4" asp-controller="Events" asp-action="Index">Explore Events</a>
+<div class="container mt-5">
+    <div class="row align-items-center mb-5 hero-section text-white p-5 rounded-4 shadow" style="background: linear-gradient(135deg, #1e6091, #1a759f, #168aad);">
+        <div class="col-lg-7">
+            <span class="badge bg-light text-dark mb-3 px-3 py-2 rounded-pill">Build community. Create impact.</span>
+            <h1 class="display-4 fw-bold mb-3">A modern volunteer platform with trust, profiles, ratings, and events.</h1>
+            <p class="lead mb-4">Connect volunteers, organizers, and communities in one clean and attractive platform.</p>
+            
+            <div class="d-flex gap-3">
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    <a asp-controller="Dashboard" asp-action="Index" class="btn btn-light btn-lg px-4 rounded-pill fw-bold shadow-sm" style="color: #1a759f !important;">Go to Dashboard</a>
+                }
+                else
+                {
+                    <a asp-controller="Account" asp-action="Register" class="btn btn-light btn-lg px-4 rounded-pill fw-bold shadow-sm" style="color: #1a759f !important;">Join as Volunteer</a>
+                }
+                <a asp-controller="Events" asp-action="Index" class="btn btn-outline-light btn-lg px-4 rounded-pill fw-bold">Explore Events</a>
             </div>
         </div>
-        <div class="col-lg-5">
-            <div class="glass-card p-4 text-white">
-                <div class="row g-3 text-center">
-                    <div class="col-4"><div class="stat-number">@ViewBag.Stats.Users</div><small>Users</small></div>
-                    <div class="col-4"><div class="stat-number">@ViewBag.Stats.Events</div><small>Events</small></div>
-                    <div class="col-4"><div class="stat-number">@ViewBag.Stats.Registrations</div><small>Registrations</small></div>
+        <div class="col-lg-5 mt-4 mt-lg-0 text-center text-lg-end">
+             <div class="bg-white bg-opacity-10 p-4 rounded-4 backdrop-blur d-inline-block">
+                <div class="row g-3">
+                     <div class="col-4">
+                         <h2 class="fw-bold mb-0">@(ViewBag.UserCount ?? 0)</h2>
+                         <small class="text-white-50">Users</small>
+                     </div>
+                     <div class="col-4 border-start border-white-50">
+                         <h2 class="fw-bold mb-0">@(ViewBag.TotalEvents ?? Model.Count())</h2>
+                         <small class="text-white-50">Events</small>
+                     </div>
+                     <div class="col-4 border-start border-white-50">
+                         <h2 class="fw-bold mb-0">@(ViewBag.ActiveEvents ?? Model.Count())</h2>
+                         <small class="text-white-50">Active</small>
+                     </div>
                 </div>
-            </div>
+             </div>
         </div>
     </div>
-</section>
 
-<section class="mb-5">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2 class="section-title">Featured Events</h2>
-        <a asp-controller="Events" asp-action="Index" class="btn btn-outline-primary rounded-pill">See all</a>
+    <div class="d-flex justify-content-between align-items-end mb-4 mt-5">
+        <h2 class="fw-bold text-dark mb-0">Featured Events</h2>
+        <a asp-controller="Events" asp-action="Index" class="btn btn-outline-primary rounded-pill btn-sm px-3">See all</a>
     </div>
-    <div class="row g-4">
-        @foreach (var item in featuredEvents)
+    
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+        @if (!Model.Any())
         {
-            <div class="col-md-4">
-                <div class="card card-modern h-100">
-                    <div class="card-body p-4">
-                        <span class="badge bg-primary-subtle text-primary mb-2">@item.Status</span>
-                        <h5 class="fw-bold">@item.Title</h5>
-                        <p class="text-muted small mb-3">@item.Description</p>
-                        <div class="small mb-1"><i class="bi bi-calendar-event me-2"></i>@item.EventDate.ToString("dd MMM yyyy")</div>
-                        <div class="small"><i class="bi bi-geo-alt me-2"></i>@item.Location</div>
-                    </div>
-                    <div class="card-footer bg-transparent border-0 px-4 pb-4">
-                        <a class="btn btn-gradient w-100 rounded-pill" asp-controller="Events" asp-action="Details" asp-route-id="@item.Id">View Details</a>
-                    </div>
+            <div class="col-12">
+                <div class="card h-100 border-0 shadow-sm rounded-4 text-center p-5">
+                     <i class="bi bi-calendar2-x text-muted" style="font-size: 3rem; opacity: 0.5;"></i>
+                     <h5 class="text-muted mt-3">No upcoming events yet.</h5>
                 </div>
             </div>
         }
+        else
+        {
+            @foreach (var item in Model)
+            {
+                <div class="col">
+                    <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden transition-hover">
+                        <div class="bg-primary bg-opacity-10 d-flex align-items-center justify-content-center" style="height: 150px;">
+                            <i class="bi bi-calendar-event text-primary opacity-50" style="font-size: 3rem;"></i>
+                        </div>
+                        <div class="card-body p-4">
+                            <h5 class="fw-bold text-dark">@item.Title</h5>
+                            <p class="text-muted small mb-2">
+                                <i class="bi bi-geo-alt-fill text-danger"></i> @item.Location<br/>
+                                <i class="bi bi-calendar3 text-primary"></i> @item.EventDate.ToString("MMM dd, yyyy")
+                            </p>
+                            <p class="card-text text-secondary text-truncate">@item.Description</p>
+                            <a asp-controller="Events" asp-action="Details" asp-route-id="@item.Id" class="btn btn-primary w-100 rounded-pill mt-2">Details</a>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
     </div>
-</section>
+</div>
 
-<section class="row g-4">
-    <div class="col-md-4"><div class="card card-modern p-4 h-100"><h5>Profiles & Ratings</h5><p class="text-muted mb-0">Users create profiles, build trust, and grow reputation after real events.</p></div></div>
-    <div class="col-md-4"><div class="card card-modern p-4 h-100"><h5>Community Feed</h5><p class="text-muted mb-0">Share updates, event announcements, and community engagement posts.</p></div></div>
-    <div class="col-md-4"><div class="card card-modern p-4 h-100"><h5>Role-based Control</h5><p class="text-muted mb-0">Admins, organizers, and volunteers each get a focused experience.</p></div></div>
-</section>
+<style>
+    .backdrop-blur { backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+    .transition-hover { transition: transform 0.3s ease; }
+    .transition-hover:hover { transform: translateY(-5px); }
+</style>

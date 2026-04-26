@@ -1,32 +1,98 @@
-@model IEnumerable<VolunteerEvent>
-@{ ViewData["Title"] = "Events"; }
-<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
-    <div>
-        <h1 class="fw-bold mb-1">Volunteer Events</h1>
-        <p class="text-muted mb-0">Discover and join impactful community events.</p>
-    </div>
-    @if (User.IsInRole("Organizer") || User.IsInRole("Admin"))
-    {
-        <a asp-action="Create" class="btn btn-gradient rounded-pill px-4">Create Event</a>
-    }
-</div>
-<div class="row g-4">
-@foreach (var item in Model)
-{
-    <div class="col-md-6 col-xl-4">
-        <div class="card card-modern h-100">
-            <div class="card-body p-4">
-                <div class="d-flex justify-content-between mb-2">
-                    <span class="badge bg-primary-subtle text-primary">@item.Status</span>
-                    <small class="text-muted">@item.Capacity slots</small>
-                </div>
-                <h5 class="fw-bold">@item.Title</h5>
-                <p class="text-muted small">@item.Description</p>
-                <div class="small mb-1"><i class="bi bi-calendar-event me-2"></i>@item.EventDate.ToString("dd MMM yyyy")</div>
-                <div class="small"><i class="bi bi-geo-alt me-2"></i>@item.Location</div>
-            </div>
-            <div class="card-footer bg-transparent border-0 px-4 pb-4"><a asp-action="Details" asp-route-id="@item.Id" class="btn btn-outline-primary rounded-pill w-100">View Event</a></div>
-        </div>
-    </div>
+@model IEnumerable<OCVMS.Models.VolunteerEvent>
+@{
+    ViewData["Title"] = "Volunteer Events";
+    var registeredEventIds = ViewBag.UserRegisteredEvents as List<int> ?? new List<int>();
 }
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="fw-bold">Volunteer Events</h1>
+        @if (User.IsInRole("Admin") || User.IsInRole("Organizer"))
+        {
+            <a asp-action="Create" class="btn btn-primary rounded-pill px-4 fw-bold">
+                <i class="bi bi-plus-lg me-1"></i> Create New Event
+            </a>
+        }
+    </div>
+
+    <form asp-action="Index" method="get" class="mb-5">
+        <div class="input-group shadow-sm rounded-pill overflow-hidden">
+            <input type="text" name="searchTerm" class="form-control border-0 px-4" placeholder="Search events by title, location, or description..." value="@ViewBag.SearchTerm">
+            <button class="btn btn-dark px-4" type="submit">Search</button>
+            <a asp-action="Index" class="btn btn-outline-secondary px-4">Clear</a>
+        </div>
+    </form>
+
+    @if (Model == null || !Model.Any())
+    {
+        <div class="alert alert-light text-center rounded-4 p-5 shadow-sm border-0">
+            <i class="bi bi-calendar-x text-muted" style="font-size: 4rem; opacity: 0.5;"></i>
+            <h4 class="mt-3 text-muted fw-bold">No events found.</h4>
+            <p class="text-secondary">Check back later or try a different search term.</p>
+        </div>
+    }
+    else
+    {
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+            @foreach (var item in Model)
+            {
+                <div class="col">
+                    <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden">
+                        <div class="bg-primary bg-opacity-10 d-flex align-items-center justify-content-center" style="height: 160px;">
+                            <i class="bi bi-calendar-event text-primary opacity-25" style="font-size: 4rem;"></i>
+                        </div>
+                        <div class="card-body p-4">
+                            <h5 class="fw-bold text-dark mb-1">@item.Title</h5>
+                            <p class="text-muted small mb-3">
+                                <i class="bi bi-geo-alt-fill text-danger"></i> @item.Location<br/>
+                                <i class="bi bi-calendar3 text-primary"></i> @item.EventDate.ToString("MMM dd, yyyy")<br/>
+                                <i class="bi bi-clock text-warning"></i> @item.EventTime.ToString(@"hh\:mm")
+                            </p>
+
+                            <div class="mb-3 small text-muted">
+                                <i class="bi bi-people text-success"></i> @(item.Registrations?.Count ?? 0) / @item.Capacity registered
+                            </div>
+
+                            <div class="mt-auto">
+                                @if (User.IsInRole("Admin") || User.IsInRole("Organizer"))
+                                {
+                                    <div class="d-flex gap-2 mb-2">
+                                        <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-warning btn-sm rounded-pill w-50 fw-bold">Edit</a>
+                                        <form asp-action="Delete" method="post" class="w-50" onsubmit="return confirm('Delete this event?');">
+                                            <input type="hidden" name="id" value="@item.Id" />
+                                            <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill w-100 fw-bold">Delete</button>
+                                        </form>
+                                    </div>
+                                }
+                                @if (User.Identity?.IsAuthenticated == true)
+                                {
+                                    if (registeredEventIds.Contains(item.Id))
+                                    {
+                                        <div class="btn btn-success w-100 rounded-pill fw-bold disabled mb-2">
+                                            <i class="bi bi-check-circle-fill me-2"></i> Already Registered
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <form asp-controller="Events" asp-action="Register" method="post" class="mb-2">
+                                            <input type="hidden" name="eventId" value="@item.Id" />
+                                            <button type="submit" class="btn btn-primary w-100 rounded-pill fw-bold">Register Now</button>
+                                        </form>
+                                    }
+                                }
+                                else
+                                {
+                                    <a asp-controller="Account" asp-action="Login" class="btn btn-outline-primary w-100 rounded-pill fw-bold mb-2">Login to Register</a>
+                                }
+                                
+                                <a asp-controller="Events" asp-action="Details" asp-route-id="@item.Id" class="btn btn-light text-primary w-100 rounded-pill fw-bold border">
+                                    View Details
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
 </div>

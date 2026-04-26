@@ -4,18 +4,26 @@ namespace OCVMS.ViewModels;
 
 public class RegisterViewModel
 {
-    [Required, StringLength(100)]
+    [Required(ErrorMessage = "Full Name is required.")]
+    [Display(Name = "Full Name")]
     public string FullName { get; set; } = string.Empty;
 
-    [Required, EmailAddress]
+    [Required(ErrorMessage = "Email Address is required.")]
+    [EmailAddress(ErrorMessage = "Please enter a valid email address.")]
     public string Email { get; set; } = string.Empty;
 
-    [Required, DataType(DataType.Password)]
+    [Required(ErrorMessage = "Password is required.")]
+    [StringLength(100, ErrorMessage = "The password must be at least {2} characters long.", MinimumLength = 6)]
+    [DataType(DataType.Password)]
     public string Password { get; set; } = string.Empty;
 
-    [Required, DataType(DataType.Password), Compare(nameof(Password))]
+    [DataType(DataType.Password)]
+    [Display(Name = "Confirm password")]
+    // මෙතැන ErrorMessage එක දැමීමෙන් සිංහල එරර් එක ඉංග්‍රීසි වේ
+    [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
     public string ConfirmPassword { get; set; } = string.Empty;
 
-    [Required]
+    [Required(ErrorMessage = "Please select a role.")]
+    [Display(Name = "Register As")]
     public string RoleName { get; set; } = "Volunteer";
 }

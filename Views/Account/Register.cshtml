@@ -1,21 +1,66 @@
 @model RegisterViewModel
 @{ ViewData["Title"] = "Register"; }
-<div class="row justify-content-center">
-    <div class="col-lg-6">
-        <div class="card card-modern p-4 p-lg-5">
-            <h2 class="fw-bold mb-4">Create your account</h2>
-            <form method="post">
-                <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
-                <div class="mb-3"><label asp-for="FullName" class="form-label"></label><input asp-for="FullName" class="form-control form-control-modern" /><span asp-validation-for="FullName" class="text-danger small"></span></div>
-                <div class="mb-3"><label asp-for="Email" class="form-label"></label><input asp-for="Email" class="form-control form-control-modern" /><span asp-validation-for="Email" class="text-danger small"></span></div>
-                <div class="row g-3">
-                    <div class="col-md-6"><label asp-for="Password" class="form-label"></label><input asp-for="Password" class="form-control form-control-modern" /><span asp-validation-for="Password" class="text-danger small"></span></div>
-                    <div class="col-md-6"><label asp-for="ConfirmPassword" class="form-label"></label><input asp-for="ConfirmPassword" class="form-control form-control-modern" /><span asp-validation-for="ConfirmPassword" class="text-danger small"></span></div>
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6 col-md-8">
+            <div class="card shadow-lg border-0 rounded-4 p-4 p-lg-5">
+                <div class="text-center mb-4">
+                    <h2 class="fw-bold text-primary">Create Your Account</h2>
+                    <p class="text-muted">Join OCVMS to start volunteering today.</p>
                 </div>
-                <div class="mt-3 mb-4"><label asp-for="RoleName" class="form-label">Register As</label><select asp-for="RoleName" class="form-select form-control-modern"><option>Volunteer</option><option>Organizer</option></select></div>
-                <button class="btn btn-gradient w-100 rounded-pill py-2">Create Account</button>
-            </form>
+
+                <form method="post">
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2 small mb-3"></div>
+
+                    <div class="mb-3">
+                        <label asp-for="FullName" class="form-label fw-medium">Full Name</label>
+                        <input asp-for="FullName" class="form-control rounded-pill px-3" placeholder="Enter your full name" />
+                        <span asp-validation-for="FullName" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Email" class="form-label fw-medium">Email Address</label>
+                        <input asp-for="Email" class="form-control rounded-pill px-3" placeholder="name@example.com" />
+                        <span asp-validation-for="Email" class="text-danger small"></span>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label asp-for="Password" class="form-label fw-medium">Password</label>
+                            <input asp-for="Password" class="form-control rounded-pill px-3" type="password" />
+                            <span asp-validation-for="Password" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="ConfirmPassword" class="form-label fw-medium">Confirm Password</label>
+                            <input asp-for="ConfirmPassword" class="form-control rounded-pill px-3" type="password" />
+                            <span asp-validation-for="ConfirmPassword" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label asp-for="RoleName" class="form-label fw-medium text-primary">Register As</label>
+                        <select asp-for="RoleName" class="form-select rounded-pill px-3 border-primary">
+                            <option value="Volunteer">Volunteer (I want to help)</option>
+                            <option value="Organizer">Organizer (I want to host events)</option>
+                        </select>
+                        <small class="text-muted d-block mt-1">Note: Organizers can create and manage events.</small>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 rounded-pill py-2 fw-bold shadow-sm">
+                        <i class="bi bi-person-plus-fill me-2"></i> Create Account
+                    </button>
+
+                    <div class="text-center mt-4">
+                        <span class="text-muted">Already have an account?</span>
+                        <a asp-action="Login" class="text-decoration-none fw-bold text-primary ms-1">Login Here</a>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 </div>
-@section Scripts { <partial name="_ValidationScriptsPartial" /> }
+
+@section Scripts { 
+    <partial name="_ValidationScriptsPartial" /> 
+}

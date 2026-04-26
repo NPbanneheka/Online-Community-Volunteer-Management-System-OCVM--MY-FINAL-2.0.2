@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using OCVMS.Data;
 
@@ -11,9 +12,11 @@ using OCVMS.Data;
 namespace OCVMS.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260425111754_UpdateCommunityPostFixed")]
+    partial class UpdateCommunityPostFixed
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -360,7 +363,8 @@ namespace OCVMS.Migrations
 
                     b.Property<string>("Content")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -619,7 +623,7 @@ namespace OCVMS.Migrations
             modelBuilder.Entity("OCVMS.Models.PostComment", b =>
                 {
                     b.HasOne("OCVMS.Models.CommunityPost", "Post")
-                        .WithMany("PostComments")
+                        .WithMany()
                         .HasForeignKey("CommunityPostId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -644,11 +648,6 @@ namespace OCVMS.Migrations
                         .IsRequired();
 
                     b.Navigation("OrganizerProfile");
-                });
-
-            modelBuilder.Entity("OCVMS.Models.CommunityPost", b =>
-                {
-                    b.Navigation("PostComments");
                 });
 
             modelBuilder.Entity("OCVMS.Models.UserProfile", b =>

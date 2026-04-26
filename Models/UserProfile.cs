@@ -6,32 +6,29 @@ public class UserProfile : BaseEntity
 {
     [Required]
     public string UserId { get; set; } = string.Empty;
-
-    [Required, StringLength(100)]
+    
+    [Required(ErrorMessage = "Full Name is required.")]
     public string FullName { get; set; } = string.Empty;
-
-    [EmailAddress]
+    
+    public string RoleName { get; set; } = string.Empty;
+    
+    [EmailAddress(ErrorMessage = "Please enter a valid email address.")]
     public string? PublicEmail { get; set; }
-
-    [StringLength(20)]
+    
+    [Phone(ErrorMessage = "Please enter a valid phone number.")]
     public string? ContactNumber { get; set; }
-
-    [StringLength(250)]
+    
     public string? Bio { get; set; }
-
-    [StringLength(250)]
     public string? Skills { get; set; }
-
-    [StringLength(120)]
     public string? Availability { get; set; }
-
-    [StringLength(250)]
     public string? ProfileImageUrl { get; set; }
-
-    [StringLength(120)]
     public string? OrganizationName { get; set; }
+    public bool IsVerified { get; set; } = false;
 
-    public bool IsVerified { get; set; }
-
-    public string RoleName { get; set; } = "Volunteer";
+    // --- NAVIGATION PROPERTIES ---
+    public virtual ICollection<CommunityPost> Posts { get; set; } = new List<CommunityPost>();
+    public virtual ICollection<PostComment> Comments { get; set; } = new List<PostComment>();
+    public virtual ICollection<HelpRequest> HelpRequests { get; set; } = new List<HelpRequest>();
+    public virtual ICollection<Notification> Notifications { get; set; } = new List<Notification>();
+    public virtual ICollection<VolunteerEvent> OrganizedEvents { get; set; } = new List<VolunteerEvent>();
 }

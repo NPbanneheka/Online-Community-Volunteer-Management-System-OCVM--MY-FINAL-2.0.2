@@ -1,35 +1,81 @@
 @model UserProfile?
 @{ ViewData["Title"] = "My Profile"; }
-@if (Model == null)
-{
-    <div class="card card-modern p-4">
-        <h3 class="fw-bold">Profile not found</h3>
-        <a asp-action="Edit" class="btn btn-gradient rounded-pill mt-3">Create Profile</a>
-    </div>
-}
-else
-{
-    <div class="row g-4">
-        <div class="col-lg-4">
-            <div class="card card-modern p-4 text-center h-100">
-                <div class="profile-avatar mx-auto mb-3">@Model.FullName.Substring(0,1).ToUpper()</div>
-                <h3 class="fw-bold mb-1">@Model.FullName</h3>
-                <div class="text-muted mb-2">@Model.RoleName</div>
-                @if (Model.IsVerified) { <span class="badge bg-success-subtle text-success rounded-pill">Verified User</span> }
-                <a asp-action="Edit" class="btn btn-gradient rounded-pill mt-4">Edit Profile</a>
+
+<div class="container py-4">
+    @if (TempData["Message"] != null) { <div class="alert alert-success border-0 shadow-sm rounded-pill"><i class="bi bi-check-circle-fill me-2"></i>@TempData["Message"]</div> }
+
+    @if (Model == null)
+    {
+        <div class="card card-modern p-4 text-center shadow-sm border-0 rounded-4 mt-4">
+            <i class="bi bi-person-x text-muted mb-3" style="font-size: 4rem;"></i>
+            <h3 class="fw-bold">Profile not found</h3>
+            <p class="text-secondary">Please create your profile to continue.</p>
+            <div>
+                <a asp-action="Edit" class="btn btn-primary rounded-pill px-4 mt-2">Create Profile</a>
             </div>
         </div>
-        <div class="col-lg-8">
-            <div class="card card-modern p-4">
-                <h5 class="fw-bold mb-3">Profile Details</h5>
-                <div class="row g-3">
-                    <div class="col-md-6"><div class="detail-box"><label>Email</label><div>@Model.PublicEmail</div></div></div>
-                    <div class="col-md-6"><div class="detail-box"><label>Contact</label><div>@Model.ContactNumber</div></div></div>
-                    <div class="col-md-6"><div class="detail-box"><label>Skills</label><div>@Model.Skills</div></div></div>
-                    <div class="col-md-6"><div class="detail-box"><label>Availability</label><div>@Model.Availability</div></div></div>
-                    <div class="col-12"><div class="detail-box"><label>Bio</label><div>@Model.Bio</div></div></div>
+    }
+    else
+    {
+        <div class="row g-4 mt-2">
+            <div class="col-lg-4">
+                <div class="card card-modern p-4 text-center h-100 shadow-sm border-0 rounded-4">
+                    
+                    <div class="mx-auto mb-3 shadow-sm" style="width: 120px; height: 120px; border-radius: 50%; overflow: hidden; background-color: #f0f4f8; display: flex; align-items: center; justify-content: center; border: 4px solid #fff;">
+                        @if (!string.IsNullOrEmpty(Model.ProfileImageUrl))
+                        {
+                            <img src="@Model.ProfileImageUrl" alt="Profile" style="width: 100%; height: 100%; object-fit: cover;" />
+                        }
+                        else
+                        {
+                            <span class="text-primary fw-bold" style="font-size: 3rem;">@(string.IsNullOrEmpty(Model.FullName) ? "U" : Model.FullName.Substring(0,1).ToUpper())</span>
+                        }
+                    </div>
+                    
+                    <h4 class="fw-bold mb-1 text-dark">@Model.FullName</h4>
+                    <div class="text-muted mb-2 small fw-bold">@Model.RoleName</div>
+                    
+                    @if (Model.IsVerified) 
+                    { 
+                        <div class="mb-3"><span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 py-2"><i class="bi bi-patch-check-fill me-1"></i> Verified User</span></div> 
+                    }
+                    
+                    <hr class="text-muted opacity-25"/>
+                    <a asp-action="Edit" class="btn btn-outline-primary rounded-pill w-100 fw-bold mt-2">Edit Profile</a>
+                </div>
+            </div>
+            
+            <div class="col-lg-8">
+                <div class="card card-modern p-4 shadow-sm border-0 rounded-4">
+                    <h5 class="fw-bold mb-4 border-bottom pb-3"><i class="bi bi-person-lines-fill text-primary me-2"></i> Profile Details</h5>
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <label class="text-muted small fw-bold mb-1">Email</label>
+                            <div class="text-dark fw-bold bg-light p-2 rounded-3">@Model.PublicEmail</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="text-muted small fw-bold mb-1">Contact</label>
+                            <div class="text-dark fw-bold bg-light p-2 rounded-3">@Model.ContactNumber</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="text-muted small fw-bold mb-1">Skills</label>
+                            <div class="text-dark bg-light p-2 rounded-3">@(string.IsNullOrEmpty(Model.Skills) ? "Not provided" : Model.Skills)</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="text-muted small fw-bold mb-1">Availability</label>
+                            <div class="text-dark bg-light p-2 rounded-3">@(string.IsNullOrEmpty(Model.Availability) ? "Not provided" : Model.Availability)</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="text-muted small fw-bold mb-1">Organization</label>
+                            <div class="text-dark bg-light p-2 rounded-3">@(string.IsNullOrEmpty(Model.OrganizationName) ? "Not provided" : Model.OrganizationName)</div>
+                        </div>
+                        <div class="col-12">
+                            <label class="text-muted small fw-bold mb-1">Bio</label>
+                            <div class="text-dark bg-light p-3 rounded-3" style="min-height: 80px;">@(string.IsNullOrEmpty(Model.Bio) ? "No bio provided." : Model.Bio)</div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-}
+    }
+</div>

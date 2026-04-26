@@ -1,8 +1,25 @@
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.AspNetCore.Identity;
+
 namespace OCVMS.Models;
 
 public class EventRegistration : BaseEntity
 {
+    // ඉවෙන්ට් එකේ ID එක
+    [Required]
     public int VolunteerEventId { get; set; }
+
+    // ඉවෙන්ට් එක සමඟ සම්බන්ධය (Navigation Property)
+    [ForeignKey("VolunteerEventId")]
+    public virtual VolunteerEvent? VolunteerEvent { get; set; }
+
+    // රෙජිස්ටර් වන පරිශීලකයාගේ ID එක
+    [Required]
     public string UserId { get; set; } = string.Empty;
-    public string AttendanceStatus { get; set; } = "Pending";
+
+    [ForeignKey("UserId")]
+    public virtual IdentityUser? User { get; set; }
+
+    public DateTime RegistrationDate { get; set; } = DateTime.Now;
 }

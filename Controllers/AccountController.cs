@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using OCVMS.Data;
@@ -10,76 +11,120 @@ public class AccountController : Controller
 {
     private readonly UserManager<IdentityUser> _userManager;
     private readonly SignInManager<IdentityUser> _signInManager;
+    private readonly RoleManager<IdentityRole> _roleManager;
     private readonly ApplicationDbContext _context;
 
     public AccountController(
         UserManager<IdentityUser> userManager,
         SignInManager<IdentityUser> signInManager,
+        RoleManager<IdentityRole> roleManager,
         ApplicationDbContext context)
     {
         _userManager = userManager;
         _signInManager = signInManager;
+        _roleManager = roleManager;
         _context = context;
     }
 
     [HttpGet]
-    public IActionResult Register() => View(new RegisterViewModel());
+    [AllowAnonymous]
+    public IActionResult Register() => View();
 
     [HttpPost]
+    [AllowAnonymous]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Register(RegisterViewModel model)
     {
-        if (!ModelState.IsValid) return View(model);
-
-        var user = new IdentityUser { UserName = model.Email, Email = model.Email, EmailConfirmed = true };
-        var result = await _userManager.CreateAsync(user, model.Password);
-
-        if (result.Succeeded)
+        var allowedPublicRoles = new[] { "Volunteer", "Organizer" };
+        if (!allowedPublicRoles.Contains(model.RoleName))
         {
-            await _userManager.AddToRoleAsync(user, model.RoleName);
-            _context.UserProfiles.Add(new UserProfile
-            {
-                UserId = user.Id,
-                FullName = model.FullName,
-                PublicEmail = model.Email,
-                RoleName = model.RoleName,
-                IsVerified = model.RoleName == "Admin"
-            });
-            await _context.SaveChangesAsync();
-            await _signInManager.SignInAsync(user, isPersistent: false);
-            return RedirectToAction("Index", "Dashboard");
+            ModelState.AddModelError(nameof(model.RoleName), "Please select a valid role.");
         }
 
-        foreach (var error in result.Errors)
-            ModelState.AddModelError(string.Empty, error.Description);
+        if (!ModelState.IsValid)
+        {
+            return View(model);
+        }
 
-        return View(model);
+        var user = new IdentityUser
+        {
+            UserName = model.Email,
+            Email = model.Email,
+            EmailConfirmed = true
+        };
+
+        var result = await _userManager.CreateAsync(user, model.Password);
+        if (!result.Succeeded)
+        {
+            foreach (var error in result.Errors)
+            {
+                ModelState.AddModelError(string.Empty, error.Description);
+            }
+            return View(model);
+        }
+
+        if (!await _roleManager.RoleExistsAsync(model.RoleName))
+        {
+            await _roleManager.CreateAsync(new IdentityRole(model.RoleName));
+        }
+
+        await _userManager.AddToRoleAsync(user, model.RoleName);
+
+        _context.UserProfiles.Add(new UserProfile
+        {
+            UserId = user.Id,
+            FullName = model.FullName,
+            PublicEmail = model.Email,
+            RoleName = model.RoleName,
+            IsVerified = model.RoleName == "Organizer" ? false : true
+        });
+
+        await _context.SaveChangesAsync();
+        await _signInManager.SignInAsync(user, isPersistent: false);
+
+        TempData["Message"] = "Account created successfully. Welcome to OCVMS!";
+        return RedirectToAction("Index", "Home");
     }
 
     [HttpGet]
-    public IActionResult Login() => View(new LoginViewModel());
+    [AllowAnonymous]
+    public IActionResult Login() => View();
 
     [HttpPost]
+    [AllowAnonymous]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Login(LoginViewModel model)
     {
-        if (!ModelState.IsValid) return View(model);
+        if (!ModelState.IsValid)
+        {
+            return View(model);
+        }
 
-        var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, false);
+        var result = await _signInManager.PasswordSignInAsync(
+            model.Email,
+            model.Password,
+            model.RememberMe,
+            lockoutOnFailure: false);
+
         if (result.Succeeded)
-            return RedirectToAction("Index", "Dashboard");
+        {
+            return RedirectToAction("Index", "Home");
+        }
 
-        ModelState.AddModelError(string.Empty, "Invalid login attempt.");
+        ModelState.AddModelError(string.Empty, "Email address or password is incorrect.");
         return View(model);
     }
 
     [HttpPost]
+    [Authorize]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Logout()
     {
         await _signInManager.SignOutAsync();
+        TempData["Message"] = "You have logged out successfully.";
         return RedirectToAction("Index", "Home");
     }
 
+    [AllowAnonymous]
     public IActionResult AccessDenied() => View();
 }

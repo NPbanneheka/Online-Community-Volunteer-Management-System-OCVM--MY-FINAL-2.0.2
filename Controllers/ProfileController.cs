@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using OCVMS.Data;
 using OCVMS.Models;
 using OCVMS.ViewModels;
+using System.IO;
 
 namespace OCVMS.Controllers;
 
@@ -64,7 +65,7 @@ public class ProfileController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Edit(ProfileEditViewModel model, IFormFile? ProfileImageFile)
+    public async Task<IActionResult> Edit(ProfileEditViewModel model)
     {
         var user = await _userManager.GetUserAsync(User);
         if (user == null) return RedirectToAction("Login", "Account");
@@ -80,6 +81,12 @@ public class ProfileController : Controller
             _context.UserProfiles.Add(profile);
         }
 
+        ModelState.Remove("ProfileImageUrl");
+        ModelState.Remove("ProfileImageFile");
+        ModelState.Remove("ProfileImage");
+        ModelState.Remove("UserId");
+        ModelState.Remove("RoleName");
+
         if (!ModelState.IsValid)
         {
             model.ProfileImageUrl = profile.ProfileImageUrl;
@@ -94,10 +101,13 @@ public class ProfileController : Controller
         profile.Availability = model.Availability;
         profile.OrganizationName = model.OrganizationName;
 
-        if (ProfileImageFile != null && ProfileImageFile.Length > 0)
+        // --- 100% ක් වැඩ කරන "Bulletproof" ෆොටෝ අප්ලෝඩ් ක්‍රමය ---
+        var uploadedFile = Request.Form.Files.FirstOrDefault();
+
+        if (uploadedFile != null && uploadedFile.Length > 0)
         {
             var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".webp" };
-            var extension = Path.GetExtension(ProfileImageFile.FileName).ToLowerInvariant();
+            var extension = Path.GetExtension(uploadedFile.FileName).ToLowerInvariant();
 
             if (!allowedExtensions.Contains(extension))
             {
@@ -106,7 +116,7 @@ public class ProfileController : Controller
                 return View(model);
             }
 
-            if (ProfileImageFile.Length > 2 * 1024 * 1024)
+            if (uploadedFile.Length > 2 * 1024 * 1024)
             {
                 ModelState.AddModelError("", "Image size must be less than 2MB.");
                 model.ProfileImageUrl = profile.ProfileImageUrl;
@@ -121,15 +131,16 @@ public class ProfileController : Controller
 
             using (var stream = new FileStream(filePath, FileMode.Create))
             {
-                await ProfileImageFile.CopyToAsync(stream);
+                await uploadedFile.CopyToAsync(stream);
             }
 
+            // පරණ ෆොටෝ එකක් තිබුණොත් ඒක මකා දැමීම
             if (!string.IsNullOrEmpty(profile.ProfileImageUrl))
             {
                 var oldRelativePath = profile.ProfileImageUrl.TrimStart('/').Replace("/", Path.DirectorySeparatorChar.ToString());
                 var oldFullPath = Path.Combine(_environment.WebRootPath, oldRelativePath);
-
-                if (System.IO.File.Exists(oldFullPath))
+                var profileUploadRoot = Path.Combine(_environment.WebRootPath, "uploads", "profiles");
+                if (oldFullPath.StartsWith(profileUploadRoot) && System.IO.File.Exists(oldFullPath))
                 {
                     System.IO.File.Delete(oldFullPath);
                 }
@@ -143,6 +154,7 @@ public class ProfileController : Controller
         }
 
         await _context.SaveChangesAsync();
+        TempData["Message"] = "Profile updated successfully!";
         return RedirectToAction(nameof(MyProfile));
     }
 
@@ -163,9 +175,7 @@ public class ProfileController : Controller
     public async Task<IActionResult> Index()
     {
         var userId = _userManager.GetUserId(User);
-
-        var profile = await _context.UserProfiles
-            .FirstOrDefaultAsync(p => p.UserId == userId);
+        var profile = await _context.UserProfiles.FirstOrDefaultAsync(p => p.UserId == userId);
 
         if (profile == null)
         {
@@ -174,11 +184,9 @@ public class ProfileController : Controller
                 UserId = userId!,
                 FullName = User.Identity?.Name ?? "User"
             };
-
             _context.UserProfiles.Add(profile);
             await _context.SaveChangesAsync();
         }
-
         return View(profile);
     }
 }

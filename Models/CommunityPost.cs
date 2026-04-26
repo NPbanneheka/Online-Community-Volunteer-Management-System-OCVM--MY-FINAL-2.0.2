@@ -1,18 +1,24 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace OCVMS.Models;
 
 public class CommunityPost : BaseEntity
 {
-    [Required, StringLength(150)]
+    [Required]
     public string Title { get; set; } = string.Empty;
 
-    [Required, StringLength(1200)]
+    [Required]
     public string Content { get; set; } = string.Empty;
 
-    public string UserId { get; set; } = string.Empty;
+    public string PostType { get; set; } = "Share"; 
 
-    public int? EventId { get; set; }
+    [Required]
+    public int UserProfileId { get; set; }
 
-    public int LikeCount { get; set; }
+    [ForeignKey("UserProfileId")]
+    public virtual UserProfile? User { get; set; }
+
+    // අලුතින් එක් කළ කොටස: පෝස්ට් එකට අදාළ කමෙන්ට්ස් ගබඩා කර තබා ගැනීමට
+    public virtual ICollection<PostComment> PostComments { get; set; } = new List<PostComment>();
 }
