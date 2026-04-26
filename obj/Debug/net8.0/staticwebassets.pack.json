@@ -1,0 +1,37 @@
+{
+  "Files": [
+    {
+      "Id": "C:\\Users\\SAJI\\Documents\\Online-Community-Volunteer-Management-System-OCVM--MY-FINAL-2.0.2\\wwwroot\\css\\site.css",
+      "PackagePath": "staticwebassets\\css\\site.css"
+    },
+    {
+      "Id": "C:\\Users\\SAJI\\Documents\\Online-Community-Volunteer-Management-System-OCVM--MY-FINAL-2.0.2\\wwwroot\\uploads\\profiles\\.gitkeep",
+      "PackagePath": "staticwebassets\\uploads\\profiles\\.gitkeep"
+    },
+    {
+      "Id": "C:\\Users\\SAJI\\Documents\\Online-Community-Volunteer-Management-System-OCVM--MY-FINAL-2.0.2\\wwwroot\\uploads\\profiles\\9426d871-faf2-40f4-87fb-ba65dfeaff54.png",
+      "PackagePath": "staticwebassets\\uploads\\profiles\\9426d871-faf2-40f4-87fb-ba65dfeaff54.png"
+    },
+    {
+      "Id": "C:\\Users\\SAJI\\Documents\\Online-Community-Volunteer-Management-System-OCVM--MY-FINAL-2.0.2\\wwwroot\\uploads\\profiles\\95d4a86b-ad8e-4973-beb8-9f1e160c94c0.png",
+      "PackagePath": "staticwebassets\\uploads\\profiles\\95d4a86b-ad8e-4973-beb8-9f1e160c94c0.png"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.OCVMS.Microsoft.AspNetCore.StaticWebAssets.props",
+      "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssets.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.build.OCVMS.props",
+      "PackagePath": "build\\OCVMS.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.buildMultiTargeting.OCVMS.props",
+      "PackagePath": "buildMultiTargeting\\OCVMS.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.buildTransitive.OCVMS.props",
+      "PackagePath": "buildTransitive\\OCVMS.props"
+    }
+  ],
+  "ElementsToRemove": []
+}
