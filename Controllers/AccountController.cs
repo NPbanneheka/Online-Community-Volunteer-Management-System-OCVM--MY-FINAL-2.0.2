@@ -28,7 +28,7 @@ public class AccountController : Controller
 
     [HttpGet]
     [AllowAnonymous]
-    public IActionResult Register() => View();
+    public IActionResult Register() => View(new RegisterViewModel());
 
     [HttpPost]
     [AllowAnonymous]
@@ -39,6 +39,11 @@ public class AccountController : Controller
         if (!allowedPublicRoles.Contains(model.RoleName))
         {
             ModelState.AddModelError(nameof(model.RoleName), "Please select a valid role.");
+        }
+
+        if (model.RoleName == "Organizer" && string.IsNullOrWhiteSpace(model.OrganizationName))
+        {
+            ModelState.AddModelError(nameof(model.OrganizationName), "Organization name is required for organizer accounts.");
         }
 
         if (!ModelState.IsValid)
@@ -70,19 +75,27 @@ public class AccountController : Controller
 
         await _userManager.AddToRoleAsync(user, model.RoleName);
 
+        var organizationName = model.RoleName == "Organizer"
+            ? model.OrganizationName?.Trim()
+            : null;
+
         _context.UserProfiles.Add(new UserProfile
         {
             UserId = user.Id,
-            FullName = model.FullName,
+            FullName = model.FullName.Trim(),
             PublicEmail = model.Email,
             RoleName = model.RoleName,
+            OrganizationName = organizationName,
             IsVerified = model.RoleName == "Organizer" ? false : true
         });
 
         await _context.SaveChangesAsync();
         await _signInManager.SignInAsync(user, isPersistent: false);
 
-        TempData["Message"] = "Account created successfully. Welcome to OCVMS!";
+        TempData["Message"] = model.RoleName == "Organizer"
+            ? "Organizer account created successfully. Your organization name was saved for secure ownership access."
+            : "Account created successfully. Welcome to OCVMS!";
+
         return RedirectToAction("Index", "Home");
     }
 

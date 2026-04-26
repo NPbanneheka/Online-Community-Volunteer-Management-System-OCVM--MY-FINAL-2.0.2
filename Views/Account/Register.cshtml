@@ -38,13 +38,21 @@
                         </div>
                     </div>
 
-                    <div class="mb-4">
+                    <div class="mb-3">
                         <label asp-for="RoleName" class="form-label fw-medium text-primary">Register As</label>
-                        <select asp-for="RoleName" class="form-select rounded-pill px-3 border-primary">
+                        <select asp-for="RoleName" id="roleSelect" class="form-select rounded-pill px-3 border-primary">
                             <option value="Volunteer">Volunteer (I want to help)</option>
                             <option value="Organizer">Organizer (I want to host events)</option>
                         </select>
-                        <small class="text-muted d-block mt-1">Note: Organizers can create and manage events.</small>
+                        <small class="text-muted d-block mt-1">Organizer accounts must provide their organization name for secure access control.</small>
+                        <span asp-validation-for="RoleName" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-4" id="organizationBox">
+                        <label asp-for="OrganizationName" class="form-label fw-medium">Organization Name</label>
+                        <input asp-for="OrganizationName" class="form-control rounded-pill px-3" placeholder="Enter your organization name" />
+                        <small class="text-muted d-block mt-1">Use the same spelling for all organizers in the same organization.</small>
+                        <span asp-validation-for="OrganizationName" class="text-danger small"></span>
                     </div>
 
                     <button type="submit" class="btn btn-primary w-100 rounded-pill py-2 fw-bold shadow-sm">
@@ -63,4 +71,22 @@
 
 @section Scripts { 
     <partial name="_ValidationScriptsPartial" /> 
+    <script>
+        function toggleOrganizationBox() {
+            const roleSelect = document.getElementById('roleSelect');
+            const organizationBox = document.getElementById('organizationBox');
+            const organizationInput = document.getElementById('OrganizationName');
+
+            if (roleSelect.value === 'Organizer') {
+                organizationBox.style.display = 'block';
+                organizationInput.setAttribute('required', 'required');
+            } else {
+                organizationBox.style.display = 'none';
+                organizationInput.removeAttribute('required');
+            }
+        }
+
+        document.getElementById('roleSelect').addEventListener('change', toggleOrganizationBox);
+        toggleOrganizationBox();
+    </script>
 }

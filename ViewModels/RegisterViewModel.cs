@@ -19,11 +19,14 @@ public class RegisterViewModel
 
     [DataType(DataType.Password)]
     [Display(Name = "Confirm password")]
-    // මෙතැන ErrorMessage එක දැමීමෙන් සිංහල එරර් එක ඉංග්‍රීසි වේ
     [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
     public string ConfirmPassword { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "Please select a role.")]
     [Display(Name = "Register As")]
     public string RoleName { get; set; } = "Volunteer";
+
+    [Display(Name = "Organization Name")]
+    [StringLength(120, ErrorMessage = "Organization name cannot be longer than 120 characters.")]
+    public string? OrganizationName { get; set; }
 }

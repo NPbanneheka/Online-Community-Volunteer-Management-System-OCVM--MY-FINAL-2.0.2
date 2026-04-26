@@ -4,6 +4,7 @@
     bool isRegistered = ViewBag.IsRegistered ?? false;
     int registeredCount = ViewBag.RegisteredCount ?? 0;
     int remainingSlots = ViewBag.RemainingSlots ?? 0;
+    bool canManageEvent = ViewBag.CanManageEvent ?? false;
 }
 
 <div class="container py-5">
@@ -56,6 +57,10 @@
                             <div>
                                 <small class="text-muted d-block">Organizer</small>
                                 <span class="fw-bold text-dark">@(Model.OrganizerProfile?.FullName ?? "Organizer")</span>
+                                @if (!string.IsNullOrWhiteSpace(Model.OrganizerProfile?.OrganizationName))
+                                {
+                                    <small class="text-muted d-block">@Model.OrganizerProfile.OrganizationName</small>
+                                }
                             </div>
                         </div>
 
@@ -86,6 +91,7 @@
                             else
                             {
                                 <form asp-controller="Events" asp-action="Register" method="post">
+                                    @Html.AntiForgeryToken()
                                     <input type="hidden" name="eventId" value="@Model.Id" />
                                     <button type="submit" class="btn btn-success w-100 py-3 fw-bold shadow-sm" style="border-radius: 8px; background-color: #198754;">
                                         Register for Event
@@ -107,10 +113,11 @@
                 <a asp-action="Index" class="btn btn-light rounded-pill px-4 fw-bold text-secondary">
                     <i class="bi bi-arrow-left me-2"></i> Back to Events List
                 </a>
-                @if (User.IsInRole("Admin") || User.IsInRole("Organizer"))
+                @if (canManageEvent)
                 {
                     <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning rounded-pill px-4 fw-bold">Edit Event</a>
                     <form asp-action="Delete" method="post" onsubmit="return confirm('Delete this event?');">
+                        @Html.AntiForgeryToken()
                         <input type="hidden" name="id" value="@Model.Id" />
                         <button type="submit" class="btn btn-outline-danger rounded-pill px-4 fw-bold">Delete Event</button>
                     </form>

@@ -41,13 +41,18 @@ public class EventsController : Controller
             .ThenBy(e => e.EventTime)
             .ToListAsync();
 
-        var userId = _userManager.GetUserId(User);
-        var currentProfile = userId == null
-            ? null
-            : await _context.UserProfiles.FirstOrDefaultAsync(x => x.UserId == userId);
+        var currentProfile = await GetCurrentProfileAsync();
+        var isAdmin = User.IsInRole("Admin");
 
         ViewBag.CurrentProfileId = currentProfile?.Id;
-        ViewBag.IsAdmin = User.IsInRole("Admin");
+        ViewBag.CurrentOrganizationName = currentProfile?.OrganizationName;
+        ViewBag.IsAdmin = isAdmin;
+        ViewBag.ManageableEventIds = eventsList
+            .Where(e => CanManageEvent(e, currentProfile, isAdmin))
+            .Select(e => e.Id)
+            .ToList();
+
+        var userId = _userManager.GetUserId(User);
         ViewBag.UserRegisteredEvents = userId == null
             ? new List<int>()
             : await _context.EventRegistrations
@@ -79,9 +84,7 @@ public class EventsController : Controller
     [Authorize(Roles = "Organizer,Admin")]
     public async Task<IActionResult> MyCreatedEvents()
     {
-        var userId = _userManager.GetUserId(User);
-        var profile = await _context.UserProfiles.FirstOrDefaultAsync(x => x.UserId == userId);
-
+        var profile = await GetCurrentProfileAsync();
         if (profile == null)
         {
             TempData["Message"] = "Please complete your profile before managing events.";
@@ -90,12 +93,17 @@ public class EventsController : Controller
 
         var isAdmin = User.IsInRole("Admin");
         var events = await _context.VolunteerEvents
+            .Include(e => e.OrganizerProfile)
             .Include(e => e.Registrations)
-            .Where(e => isAdmin || e.OrganizerProfileId == profile.Id)
             .OrderByDescending(e => e.CreatedAt)
             .ToListAsync();
 
+        events = events
+            .Where(e => CanManageEvent(e, profile, isAdmin))
+            .ToList();
+
         ViewBag.CurrentProfileId = profile.Id;
+        ViewBag.CurrentOrganizationName = profile.OrganizationName;
         ViewBag.IsAdmin = isAdmin;
 
         return View(events);
@@ -112,10 +120,7 @@ public class EventsController : Controller
             .Include(e => e.Registrations)
             .FirstOrDefaultAsync(e => e.Id == eventId);
 
-        if (volunteerEvent == null)
-        {
-            return NotFound();
-        }
+        if (volunteerEvent == null) return NotFound();
 
         if (string.Equals(volunteerEvent.Status, "Closed", StringComparison.OrdinalIgnoreCase))
         {
@@ -211,17 +216,31 @@ public class EventsController : Controller
         ViewBag.RegisteredCount = volunteerEvent.Registrations.Count;
         ViewBag.RemainingSlots = Math.Max(0, volunteerEvent.Capacity - volunteerEvent.Registrations.Count);
 
-        var profile = userId == null ? null : await _context.UserProfiles.FirstOrDefaultAsync(x => x.UserId == userId);
+        var profile = await GetCurrentProfileAsync();
+        var isAdmin = User.IsInRole("Admin");
         ViewBag.CurrentProfileId = profile?.Id;
-        ViewBag.IsAdmin = User.IsInRole("Admin");
-        ViewBag.CanManageEvent = await CanManageEventAsync(volunteerEvent);
+        ViewBag.IsAdmin = isAdmin;
+        ViewBag.CanManageEvent = CanManageEvent(volunteerEvent, profile, isAdmin);
 
         return View(volunteerEvent);
     }
 
     [Authorize(Roles = "Organizer,Admin")]
-    public IActionResult Create()
+    public async Task<IActionResult> Create()
     {
+        var profile = await GetCurrentProfileAsync();
+        if (profile == null)
+        {
+            TempData["Message"] = "Please complete your profile before creating an event.";
+            return RedirectToAction("Edit", "Profile");
+        }
+
+        if (User.IsInRole("Organizer") && string.IsNullOrWhiteSpace(profile.OrganizationName))
+        {
+            TempData["Message"] = "Please add your organization name to your profile before creating events.";
+            return RedirectToAction("Edit", "Profile");
+        }
+
         return View(new VolunteerEvent
         {
             EventDate = DateTime.Today.AddDays(7),
@@ -236,12 +255,17 @@ public class EventsController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(VolunteerEvent volunteerEvent)
     {
-        var identityUserId = _userManager.GetUserId(User);
-        var userProfile = await _context.UserProfiles.FirstOrDefaultAsync(u => u.UserId == identityUserId);
+        var userProfile = await GetCurrentProfileAsync();
 
         if (userProfile == null)
         {
             TempData["Message"] = "Please complete your user profile before creating an event.";
+            return RedirectToAction("Edit", "Profile");
+        }
+
+        if (User.IsInRole("Organizer") && string.IsNullOrWhiteSpace(userProfile.OrganizationName))
+        {
+            TempData["Message"] = "Please add your organization name to your profile before creating events.";
             return RedirectToAction("Edit", "Profile");
         }
 
@@ -274,7 +298,7 @@ public class EventsController : Controller
 
         await _context.SaveChangesAsync();
         TempData["Message"] = "Event created successfully!";
-        return RedirectToAction(nameof(Index));
+        return RedirectToAction(nameof(MyCreatedEvents));
     }
 
     [Authorize(Roles = "Organizer,Admin")]
@@ -282,7 +306,9 @@ public class EventsController : Controller
     {
         if (id == null) return NotFound();
 
-        var volunteerEvent = await _context.VolunteerEvents.FindAsync(id);
+        var volunteerEvent = await _context.VolunteerEvents
+            .Include(e => e.OrganizerProfile)
+            .FirstOrDefaultAsync(e => e.Id == id);
         if (volunteerEvent == null) return NotFound();
 
         if (!await CanManageEventAsync(volunteerEvent))
@@ -300,7 +326,9 @@ public class EventsController : Controller
     {
         if (id != volunteerEvent.Id) return NotFound();
 
-        var existingEvent = await _context.VolunteerEvents.FindAsync(id);
+        var existingEvent = await _context.VolunteerEvents
+            .Include(e => e.OrganizerProfile)
+            .FirstOrDefaultAsync(e => e.Id == id);
         if (existingEvent == null) return NotFound();
 
         if (!await CanManageEventAsync(existingEvent))
@@ -338,6 +366,7 @@ public class EventsController : Controller
     public async Task<IActionResult> Delete(int id)
     {
         var volunteerEvent = await _context.VolunteerEvents
+            .Include(e => e.OrganizerProfile)
             .Include(e => e.Registrations)
             .FirstOrDefaultAsync(e => e.Id == id);
 
@@ -360,14 +389,47 @@ public class EventsController : Controller
         return RedirectToAction(nameof(MyCreatedEvents));
     }
 
+    private async Task<UserProfile?> GetCurrentProfileAsync()
+    {
+        var userId = _userManager.GetUserId(User);
+        if (string.IsNullOrWhiteSpace(userId)) return null;
+        return await _context.UserProfiles.FirstOrDefaultAsync(x => x.UserId == userId);
+    }
+
     private async Task<bool> CanManageEventAsync(VolunteerEvent volunteerEvent)
     {
         if (User.IsInRole("Admin")) return true;
 
-        var userId = _userManager.GetUserId(User);
-        if (string.IsNullOrWhiteSpace(userId)) return false;
+        var profile = await GetCurrentProfileAsync();
+        if (profile == null) return false;
 
-        var profile = await _context.UserProfiles.FirstOrDefaultAsync(x => x.UserId == userId);
-        return profile != null && volunteerEvent.OrganizerProfileId == profile.Id;
+        if (volunteerEvent.OrganizerProfile == null)
+        {
+            volunteerEvent.OrganizerProfile = await _context.UserProfiles
+                .FirstOrDefaultAsync(p => p.Id == volunteerEvent.OrganizerProfileId);
+        }
+
+        return CanManageEvent(volunteerEvent, profile, false);
+    }
+
+    private static bool CanManageEvent(VolunteerEvent volunteerEvent, UserProfile? currentProfile, bool isAdmin)
+    {
+        if (isAdmin) return true;
+        if (currentProfile == null) return false;
+        if (volunteerEvent.OrganizerProfileId == currentProfile.Id) return true;
+
+        return IsOrganizerInSameOrganization(currentProfile, volunteerEvent.OrganizerProfile);
+    }
+
+    private static bool IsOrganizerInSameOrganization(UserProfile currentProfile, UserProfile? ownerProfile)
+    {
+        if (ownerProfile == null) return false;
+        if (currentProfile.RoleName != "Organizer" || ownerProfile.RoleName != "Organizer") return false;
+        if (string.IsNullOrWhiteSpace(currentProfile.OrganizationName) || string.IsNullOrWhiteSpace(ownerProfile.OrganizationName)) return false;
+
+        return string.Equals(
+            currentProfile.OrganizationName.Trim(),
+            ownerProfile.OrganizationName.Trim(),
+            StringComparison.OrdinalIgnoreCase);
     }
 }

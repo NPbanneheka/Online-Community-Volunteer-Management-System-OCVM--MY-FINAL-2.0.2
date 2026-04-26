@@ -4,6 +4,8 @@
 @{
     ViewData["Title"] = "Community Hub";
     var postCount = ViewBag.PostCount ?? 0;
+    var manageablePostIds = ViewBag.ManageablePostIds as List<int> ?? new List<int>();
+    var manageableCommentIds = ViewBag.ManageableCommentIds as List<int> ?? new List<int>();
 }
 <div class="container py-4">
     @if (TempData["Message"] != null) { <div class="alert alert-success border-0 shadow-sm rounded-pill"><i class="bi bi-check-circle-fill me-2"></i>@TempData["Message"]</div> }
@@ -26,6 +28,7 @@
         <div class="col-lg-6">
             <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
                 <form asp-action="CreatePost" method="post">
+                    @Html.AntiForgeryToken()
                     <div class="d-flex gap-2 mb-3">
                         <input type="radio" class="btn-check" name="postType" id="typeShare" value="Share" checked>
                         <label class="btn btn-outline-primary rounded-pill px-4 fw-bold" for="typeShare">
@@ -40,7 +43,6 @@
 
                     <input type="text" name="title" class="form-control bg-light border-0 mb-3 rounded-3 py-2" placeholder="Post Title..." required />
                     <textarea name="content" class="form-control bg-light border-0 mb-3 rounded-3" rows="3" placeholder="What's on your mind?" required></textarea>
-                    
                     <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm">Post to Feed</button>
                 </form>
             </div>
@@ -57,6 +59,7 @@
             {
                 foreach (var post in Model)
                 {
+                    var canManagePost = manageablePostIds.Contains(post.Id);
                     <div class="card border-0 shadow-sm rounded-4 p-4 mb-3 transition-hover">
                         <div class="d-flex justify-content-between mb-3">
                             <div class="d-flex align-items-center">
@@ -74,17 +77,33 @@
                                 <div>
                                     <h6 class="mb-0 fw-bold text-dark">@(post.User?.FullName ?? "Volunteer")</h6>
                                     <small class="text-muted">@post.CreatedAt.ToString("MMM dd, yyyy 'at' hh:mm tt")</small>
+                                    @if (!string.IsNullOrWhiteSpace(post.User?.OrganizationName))
+                                    {
+                                        <small class="text-primary d-block">@post.User.OrganizationName</small>
+                                    }
                                 </div>
                             </div>
-                            
-                            @if (post.PostType == "Help")
-                            {
-                                <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill px-3 py-2 align-self-start fw-bold"><i class="bi bi-exclamation-circle me-1"></i> Help Needed</span>
-                            }
-                            else
-                            {
-                                <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3 py-2 align-self-start fw-bold"><i class="bi bi-info-circle me-1"></i> Update</span>
-                            }
+                            <div class="text-end">
+                                @if (post.PostType == "Help")
+                                {
+                                    <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill px-3 py-2 align-self-start fw-bold"><i class="bi bi-exclamation-circle me-1"></i> Help Needed</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3 py-2 align-self-start fw-bold"><i class="bi bi-info-circle me-1"></i> Update</span>
+                                }
+                                @if (canManagePost)
+                                {
+                                    <div class="mt-2 d-flex gap-1 justify-content-end">
+                                        <a asp-action="EditPost" asp-route-id="@post.Id" class="btn btn-sm btn-outline-warning rounded-pill">Edit</a>
+                                        <form asp-action="DeletePost" method="post" onsubmit="return confirm('Delete this post?');">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="id" value="@post.Id" />
+                                            <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill">Delete</button>
+                                        </form>
+                                    </div>
+                                }
+                            </div>
                         </div>
                         <h5 class="fw-bold text-dark mb-2">@post.Title</h5>
                         <p class="text-secondary mb-3" style="white-space: pre-line;">@post.Content</p>
@@ -92,6 +111,7 @@
                         <hr class="text-muted opacity-25 mt-0 mb-3" />
                         
                         <form asp-action="AddComment" method="post" class="mb-3 d-flex gap-2">
+                            @Html.AntiForgeryToken()
                             <input type="hidden" name="postId" value="@post.Id" />
                             <input type="text" name="commentContent" class="form-control bg-light border-0 rounded-pill px-3" placeholder="Write a comment..." required />
                             <button type="submit" class="btn btn-primary rounded-pill px-3"><i class="bi bi-send-fill"></i></button>
@@ -103,6 +123,7 @@
                                 <h6 class="fw-bold mb-3 text-secondary small"><i class="bi bi-chat-dots me-1"></i> Comments (@post.PostComments.Count)</h6>
                                 @foreach (var comment in post.PostComments.OrderBy(c => c.CreatedAt))
                                 {
+                                    var canManageComment = manageableCommentIds.Contains(comment.Id);
                                     <div class="d-flex mb-2">
                                         @if (!string.IsNullOrEmpty(comment.User?.ProfileImageUrl))
                                         {
@@ -115,7 +136,17 @@
                                         <div class="bg-white p-2 px-3 rounded-4 shadow-sm w-100">
                                             <div class="d-flex justify-content-between align-items-center mb-1">
                                                 <span class="fw-bold small text-dark">@(comment.User?.FullName ?? "User")</span>
-                                                <span class="text-muted" style="font-size: 0.7rem;">@comment.CreatedAt.ToString("MMM dd, hh:mm tt")</span>
+                                                <div class="d-flex gap-2 align-items-center">
+                                                    <span class="text-muted" style="font-size: 0.7rem;">@comment.CreatedAt.ToString("MMM dd, hh:mm tt")</span>
+                                                    @if (canManageComment)
+                                                    {
+                                                        <form asp-action="DeleteComment" method="post" onsubmit="return confirm('Delete this comment?');">
+                                                            @Html.AntiForgeryToken()
+                                                            <input type="hidden" name="id" value="@comment.Id" />
+                                                            <button type="submit" class="btn btn-link btn-sm text-danger p-0">Delete</button>
+                                                        </form>
+                                                    }
+                                                </div>
                                             </div>
                                             <p class="mb-0 small text-secondary">@comment.Content</p>
                                         </div>

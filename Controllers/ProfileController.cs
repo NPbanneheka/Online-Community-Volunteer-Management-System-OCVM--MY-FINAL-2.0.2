@@ -43,15 +43,22 @@ public class ProfileController : Controller
         var user = await _userManager.GetUserAsync(User);
         if (user == null) return RedirectToAction("Login", "Account");
 
+        var roles = await _userManager.GetRolesAsync(user);
+        var roleName = roles.FirstOrDefault() ?? "Volunteer";
+
         var profile = await _context.UserProfiles.FirstOrDefaultAsync(x => x.UserId == user.Id)
                      ?? new UserProfile
                      {
                          UserId = user.Id,
-                         FullName = user.Email ?? "User"
+                         FullName = user.Email ?? "User",
+                         RoleName = roleName
                      };
 
         return View(new ProfileEditViewModel
         {
+            Id = profile.Id,
+            UserId = profile.UserId,
+            RoleName = string.IsNullOrWhiteSpace(profile.RoleName) ? roleName : profile.RoleName,
             FullName = profile.FullName,
             PublicEmail = profile.PublicEmail,
             ContactNumber = profile.ContactNumber,
@@ -86,22 +93,32 @@ public class ProfileController : Controller
         ModelState.Remove("ProfileImage");
         ModelState.Remove("UserId");
         ModelState.Remove("RoleName");
+        ModelState.Remove("Id");
+
+        var effectiveRole = string.IsNullOrWhiteSpace(profile.RoleName)
+            ? ((await _userManager.GetRolesAsync(user)).FirstOrDefault() ?? "Volunteer")
+            : profile.RoleName;
+
+        if (effectiveRole == "Organizer" && string.IsNullOrWhiteSpace(model.OrganizationName))
+        {
+            ModelState.AddModelError(nameof(model.OrganizationName), "Organization name is required for organizer profiles.");
+        }
 
         if (!ModelState.IsValid)
         {
             model.ProfileImageUrl = profile.ProfileImageUrl;
+            model.RoleName = effectiveRole;
             return View(model);
         }
 
-        profile.FullName = model.FullName;
+        profile.FullName = model.FullName.Trim();
         profile.PublicEmail = model.PublicEmail;
         profile.ContactNumber = model.ContactNumber;
         profile.Bio = model.Bio;
         profile.Skills = model.Skills;
         profile.Availability = model.Availability;
-        profile.OrganizationName = model.OrganizationName;
+        profile.OrganizationName = model.OrganizationName?.Trim();
 
-        // --- 100% ක් වැඩ කරන "Bulletproof" ෆොටෝ අප්ලෝඩ් ක්‍රමය ---
         var uploadedFile = Request.Form.Files.FirstOrDefault();
 
         if (uploadedFile != null && uploadedFile.Length > 0)
@@ -113,6 +130,7 @@ public class ProfileController : Controller
             {
                 ModelState.AddModelError("", "Only JPG, JPEG, PNG, and WEBP files are allowed.");
                 model.ProfileImageUrl = profile.ProfileImageUrl;
+                model.RoleName = effectiveRole;
                 return View(model);
             }
 
@@ -120,6 +138,7 @@ public class ProfileController : Controller
             {
                 ModelState.AddModelError("", "Image size must be less than 2MB.");
                 model.ProfileImageUrl = profile.ProfileImageUrl;
+                model.RoleName = effectiveRole;
                 return View(model);
             }
 
@@ -134,7 +153,6 @@ public class ProfileController : Controller
                 await uploadedFile.CopyToAsync(stream);
             }
 
-            // පරණ ෆොටෝ එකක් තිබුණොත් ඒක මකා දැමීම
             if (!string.IsNullOrEmpty(profile.ProfileImageUrl))
             {
                 var oldRelativePath = profile.ProfileImageUrl.TrimStart('/').Replace("/", Path.DirectorySeparatorChar.ToString());
@@ -182,7 +200,8 @@ public class ProfileController : Controller
             profile = new UserProfile
             {
                 UserId = userId!,
-                FullName = User.Identity?.Name ?? "User"
+                FullName = User.Identity?.Name ?? "User",
+                RoleName = User.IsInRole("Organizer") ? "Organizer" : "Volunteer"
             };
             _context.UserProfiles.Add(profile);
             await _context.SaveChangesAsync();

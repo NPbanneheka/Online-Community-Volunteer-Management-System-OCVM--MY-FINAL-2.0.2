@@ -28,12 +28,22 @@ public class CommunityController : Controller
             .OrderByDescending(p => p.CreatedAt)
             .ToListAsync();
 
-        var identityUserId = _userManager.GetUserId(User);
-        var userProfile = await _context.UserProfiles.FirstOrDefaultAsync(u => u.UserId == identityUserId);
+        var currentProfile = await GetCurrentProfileAsync();
+        var isAdmin = User.IsInRole("Admin");
 
-        ViewBag.CurrentProfileId = userProfile?.Id;
-        ViewBag.IsAdmin = User.IsInRole("Admin");
-        ViewBag.PostCount = userProfile != null ? posts.Count(p => p.UserProfileId == userProfile.Id) : 0;
+        ViewBag.CurrentProfileId = currentProfile?.Id;
+        ViewBag.CurrentOrganizationName = currentProfile?.OrganizationName;
+        ViewBag.IsAdmin = isAdmin;
+        ViewBag.PostCount = currentProfile != null ? posts.Count(p => p.UserProfileId == currentProfile.Id) : 0;
+        ViewBag.ManageablePostIds = posts
+            .Where(p => CanManagePost(p, currentProfile, isAdmin))
+            .Select(p => p.Id)
+            .ToList();
+        ViewBag.ManageableCommentIds = posts
+            .SelectMany(p => p.PostComments.Select(c => new { Post = p, Comment = c }))
+            .Where(x => isAdmin || (currentProfile != null && (x.Comment.UserProfileId == currentProfile.Id || CanManagePost(x.Post, currentProfile, false))))
+            .Select(x => x.Comment.Id)
+            .ToList();
 
         return View(posts);
     }
@@ -48,9 +58,7 @@ public class CommunityController : Controller
             return RedirectToAction(nameof(Feed));
         }
 
-        var identityUserId = _userManager.GetUserId(User);
-        var userProfile = await _context.UserProfiles.FirstOrDefaultAsync(u => u.UserId == identityUserId);
-
+        var userProfile = await GetCurrentProfileAsync();
         if (userProfile == null)
         {
             TempData["Error"] = "Please complete your user profile before posting.";
@@ -108,9 +116,7 @@ public class CommunityController : Controller
             return RedirectToAction(nameof(Feed));
         }
 
-        var identityUserId = _userManager.GetUserId(User);
-        var userProfile = await _context.UserProfiles.FirstOrDefaultAsync(u => u.UserId == identityUserId);
-
+        var userProfile = await GetCurrentProfileAsync();
         if (userProfile == null)
         {
             TempData["Error"] = "Please complete your user profile before commenting.";
@@ -141,7 +147,9 @@ public class CommunityController : Controller
     [HttpGet]
     public async Task<IActionResult> EditPost(int id)
     {
-        var post = await _context.CommunityPosts.FirstOrDefaultAsync(p => p.Id == id);
+        var post = await _context.CommunityPosts
+            .Include(p => p.User)
+            .FirstOrDefaultAsync(p => p.Id == id);
         if (post == null) return NotFound();
 
         if (!await CanManagePostAsync(post))
@@ -156,7 +164,9 @@ public class CommunityController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> EditPost(int id, string title, string content, string postType)
     {
-        var post = await _context.CommunityPosts.FirstOrDefaultAsync(p => p.Id == id);
+        var post = await _context.CommunityPosts
+            .Include(p => p.User)
+            .FirstOrDefaultAsync(p => p.Id == id);
         if (post == null) return NotFound();
 
         if (!await CanManagePostAsync(post))
@@ -167,7 +177,7 @@ public class CommunityController : Controller
         if (string.IsNullOrWhiteSpace(title) || string.IsNullOrWhiteSpace(content))
         {
             TempData["Error"] = "Title and content cannot be empty.";
-            return RedirectToAction(nameof(Feed));
+            return View(post);
         }
 
         post.Title = title.Trim();
@@ -185,6 +195,7 @@ public class CommunityController : Controller
     public async Task<IActionResult> DeletePost(int id)
     {
         var post = await _context.CommunityPosts
+            .Include(p => p.User)
             .Include(p => p.PostComments)
             .FirstOrDefaultAsync(p => p.Id == id);
 
@@ -212,7 +223,9 @@ public class CommunityController : Controller
     public async Task<IActionResult> DeleteComment(int id)
     {
         var comment = await _context.PostComments
+            .Include(c => c.User)
             .Include(c => c.Post)
+                .ThenInclude(p => p!.User)
             .FirstOrDefaultAsync(c => c.Id == id);
 
         if (comment == null) return NotFound();
@@ -229,28 +242,76 @@ public class CommunityController : Controller
         return RedirectToAction(nameof(Feed));
     }
 
+    private async Task<UserProfile?> GetCurrentProfileAsync()
+    {
+        var userId = _userManager.GetUserId(User);
+        if (string.IsNullOrWhiteSpace(userId)) return null;
+        return await _context.UserProfiles.FirstOrDefaultAsync(x => x.UserId == userId);
+    }
+
     private async Task<bool> CanManagePostAsync(CommunityPost post)
     {
         if (User.IsInRole("Admin")) return true;
 
-        var userId = _userManager.GetUserId(User);
-        if (string.IsNullOrWhiteSpace(userId)) return false;
+        var profile = await GetCurrentProfileAsync();
+        if (profile == null) return false;
 
-        var profile = await _context.UserProfiles.FirstOrDefaultAsync(x => x.UserId == userId);
-        return profile != null && post.UserProfileId == profile.Id;
+        if (post.User == null)
+        {
+            post.User = await _context.UserProfiles.FirstOrDefaultAsync(p => p.Id == post.UserProfileId);
+        }
+
+        return CanManagePost(post, profile, false);
     }
 
     private async Task<bool> CanManageCommentAsync(PostComment comment)
     {
         if (User.IsInRole("Admin")) return true;
 
-        var userId = _userManager.GetUserId(User);
-        if (string.IsNullOrWhiteSpace(userId)) return false;
-
-        var profile = await _context.UserProfiles.FirstOrDefaultAsync(x => x.UserId == userId);
+        var profile = await GetCurrentProfileAsync();
         if (profile == null) return false;
 
-        return comment.UserProfileId == profile.Id
-            || (comment.Post != null && comment.Post.UserProfileId == profile.Id);
+        if (comment.UserProfileId == profile.Id) return true;
+
+        if (comment.Post != null)
+        {
+            if (comment.Post.User == null)
+            {
+                comment.Post.User = await _context.UserProfiles.FirstOrDefaultAsync(p => p.Id == comment.Post.UserProfileId);
+            }
+
+            return CanManagePost(comment.Post, profile, false);
+        }
+
+        return false;
+    }
+
+    private static bool CanManagePost(CommunityPost post, UserProfile? currentProfile, bool isAdmin)
+    {
+        if (isAdmin) return true;
+        if (currentProfile == null) return false;
+        if (post.UserProfileId == currentProfile.Id) return true;
+
+        return IsOrganizerInSameOrganization(currentProfile, post.User);
+    }
+
+    private static bool CanManageComment(PostComment comment, UserProfile? currentProfile, bool isAdmin)
+    {
+        if (isAdmin) return true;
+        if (currentProfile == null) return false;
+        if (comment.UserProfileId == currentProfile.Id) return true;
+        return comment.Post != null && CanManagePost(comment.Post, currentProfile, false);
+    }
+
+    private static bool IsOrganizerInSameOrganization(UserProfile currentProfile, UserProfile? ownerProfile)
+    {
+        if (ownerProfile == null) return false;
+        if (currentProfile.RoleName != "Organizer" || ownerProfile.RoleName != "Organizer") return false;
+        if (string.IsNullOrWhiteSpace(currentProfile.OrganizationName) || string.IsNullOrWhiteSpace(ownerProfile.OrganizationName)) return false;
+
+        return string.Equals(
+            currentProfile.OrganizationName.Trim(),
+            ownerProfile.OrganizationName.Trim(),
+            StringComparison.OrdinalIgnoreCase);
     }
 }

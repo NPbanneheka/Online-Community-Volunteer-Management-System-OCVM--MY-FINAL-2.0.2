@@ -2,6 +2,7 @@
 @{
     ViewData["Title"] = "Volunteer Events";
     var registeredEventIds = ViewBag.UserRegisteredEvents as List<int> ?? new List<int>();
+    var manageableEventIds = ViewBag.ManageableEventIds as List<int> ?? new List<int>();
 }
 
 <div class="container py-4">
@@ -36,6 +37,7 @@
         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
             @foreach (var item in Model)
             {
+                var canManage = manageableEventIds.Contains(item.Id);
                 <div class="col">
                     <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden">
                         <div class="bg-primary bg-opacity-10 d-flex align-items-center justify-content-center" style="height: 160px;">
@@ -49,16 +51,25 @@
                                 <i class="bi bi-clock text-warning"></i> @item.EventTime.ToString(@"hh\:mm")
                             </p>
 
+                            <div class="mb-2 small text-muted">
+                                <i class="bi bi-person-badge text-info"></i> @(item.OrganizerProfile?.FullName ?? "Organizer")
+                                @if (!string.IsNullOrWhiteSpace(item.OrganizerProfile?.OrganizationName))
+                                {
+                                    <span> · @item.OrganizerProfile.OrganizationName</span>
+                                }
+                            </div>
+
                             <div class="mb-3 small text-muted">
                                 <i class="bi bi-people text-success"></i> @(item.Registrations?.Count ?? 0) / @item.Capacity registered
                             </div>
 
                             <div class="mt-auto">
-                                @if (User.IsInRole("Admin") || User.IsInRole("Organizer"))
+                                @if (canManage)
                                 {
                                     <div class="d-flex gap-2 mb-2">
                                         <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-warning btn-sm rounded-pill w-50 fw-bold">Edit</a>
                                         <form asp-action="Delete" method="post" class="w-50" onsubmit="return confirm('Delete this event?');">
+                                            @Html.AntiForgeryToken()
                                             <input type="hidden" name="id" value="@item.Id" />
                                             <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill w-100 fw-bold">Delete</button>
                                         </form>
@@ -75,6 +86,7 @@
                                     else
                                     {
                                         <form asp-controller="Events" asp-action="Register" method="post" class="mb-2">
+                                            @Html.AntiForgeryToken()
                                             <input type="hidden" name="eventId" value="@item.Id" />
                                             <button type="submit" class="btn btn-primary w-100 rounded-pill fw-bold">Register Now</button>
                                         </form>

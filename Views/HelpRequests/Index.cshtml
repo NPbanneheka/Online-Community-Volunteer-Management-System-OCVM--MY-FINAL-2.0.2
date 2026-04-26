@@ -1,6 +1,7 @@
 @model IEnumerable<OCVMS.Models.HelpRequest>
 @{
     ViewData["Title"] = "Help Requests";
+    var manageableHelpRequestIds = ViewBag.ManageableHelpRequestIds as List<int> ?? new List<int>();
 }
 
 <div class="container py-4">
@@ -34,6 +35,7 @@
                     "In Progress" => "warning",
                     _ => "primary"
                 };
+                var canManage = manageableHelpRequestIds.Contains(item.Id);
 
                 <div class="col-md-6">
                     <div class="card border-0 shadow-sm rounded-4 h-100">
@@ -45,10 +47,25 @@
                             <p class="text-secondary small mb-3">@item.Description</p>
                             <div class="text-muted small mb-3">
                                 <i class="bi bi-person me-1"></i> @(item.SubmittedBy?.FullName ?? "User")
+                                @if (!string.IsNullOrWhiteSpace(item.SubmittedBy?.OrganizationName))
+                                {
+                                    <span class="mx-2">·</span><i class="bi bi-building me-1"></i> @item.SubmittedBy.OrganizationName
+                                }
                                 <span class="mx-2">·</span>
                                 <i class="bi bi-calendar3 me-1"></i> @item.CreatedAt.ToString("MMM dd, yyyy")
                             </div>
-                            <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-outline-primary rounded-pill px-4 fw-bold">Open</a>
+                            <div class="d-flex flex-wrap gap-2">
+                                <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-outline-primary rounded-pill px-4 fw-bold">Open</a>
+                                @if (canManage)
+                                {
+                                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-warning rounded-pill px-4 fw-bold">Edit</a>
+                                    <form asp-action="Delete" method="post" onsubmit="return confirm('Delete this help request?');">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@item.Id" />
+                                        <button type="submit" class="btn btn-outline-danger rounded-pill px-4 fw-bold">Delete</button>
+                                    </form>
+                                }
+                            </div>
                         </div>
                     </div>
                 </div>

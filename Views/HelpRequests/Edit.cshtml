@@ -1,0 +1,40 @@
+@model OCVMS.Models.HelpRequest
+@{
+    ViewData["Title"] = "Edit Help Request";
+}
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm rounded-4 p-4 p-lg-5">
+                <h2 class="fw-bold mb-2">Edit Help Request</h2>
+                <p class="text-muted mb-4">Only the owner, same organization organizer, or admin can edit this request.</p>
+
+                <form asp-action="Edit" method="post">
+                    @Html.AntiForgeryToken()
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                    <input type="hidden" asp-for="Id" />
+
+                    <div class="mb-3">
+                        <label asp-for="Title" class="form-label fw-bold">Request Title</label>
+                        <input asp-for="Title" class="form-control rounded-3" />
+                        <span asp-validation-for="Title" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-4">
+                        <label asp-for="Description" class="form-label fw-bold">Description</label>
+                        <textarea asp-for="Description" class="form-control rounded-3" rows="5"></textarea>
+                        <span asp-validation-for="Description" class="text-danger small"></span>
+                    </div>
+
+                    <button type="submit" class="btn btn-warning rounded-pill px-5 fw-bold">Save Changes</button>
+                    <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-light rounded-pill px-4 ms-2 fw-bold">Cancel</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

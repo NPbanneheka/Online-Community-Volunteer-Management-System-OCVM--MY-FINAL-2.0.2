@@ -7,7 +7,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h2 class="fw-bold text-dark mb-1">Manage Events</h2>
-            <p class="text-muted mb-0">Review and update volunteer events created by you.</p>
+            <p class="text-muted mb-0">Review and update volunteer events that belong to your organization.</p>
         </div>
         <a asp-action="Create" class="btn btn-primary rounded-pill px-4 fw-bold">
             <i class="bi bi-plus-lg me-1"></i> Create Event
@@ -18,7 +18,7 @@
     {
         <div class="card border-0 shadow-sm rounded-4 text-center p-5">
             <i class="bi bi-calendar-plus text-muted opacity-25" style="font-size:4rem;"></i>
-            <h4 class="text-muted mt-3">No created events yet.</h4>
+            <h4 class="text-muted mt-3">No manageable events found.</h4>
             <p class="text-secondary">Create your first volunteer event and start organizing.</p>
         </div>
     }
@@ -43,6 +43,10 @@
                         <td>
                             <div class="fw-bold">@item.Title</div>
                             <small class="text-muted">@item.Description</small>
+                            @if (!string.IsNullOrWhiteSpace(item.OrganizerProfile?.OrganizationName))
+                            {
+                                <div><small class="text-primary">Organization: @item.OrganizerProfile.OrganizationName</small></div>
+                            }
                         </td>
                         <td>@item.EventDate.ToString("MMM dd, yyyy")<br/><small class="text-muted">@item.EventTime.ToString(@"hh\:mm")</small></td>
                         <td>@item.Location</td>
@@ -52,6 +56,7 @@
                             <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary rounded-pill">View</a>
                             <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-warning rounded-pill">Edit</a>
                             <form asp-action="Delete" method="post" class="d-inline" onsubmit="return confirm('Delete this event? This will also remove related registrations.');">
+                                @Html.AntiForgeryToken()
                                 <input type="hidden" name="id" value="@item.Id" />
                                 <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill">Delete</button>
                             </form>
