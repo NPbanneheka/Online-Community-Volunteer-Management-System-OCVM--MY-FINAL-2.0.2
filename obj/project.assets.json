@@ -4189,47 +4189,31 @@
     ]
   },
   "packageFolders": {
-<<<<<<< Updated upstream
-    "C:\\Users\\SAJITH PRIYASHAN\\.nuget\\packages\\": {}
-=======
     "C:\\Users\\DELL\\.nuget\\packages\\": {},
     "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
->>>>>>> Stashed changes
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-<<<<<<< Updated upstream
-      "projectUniqueName": "C:\\Users\\SAJITH PRIYASHAN\\Documents\\GitHub\\Online-Community-Volunteer-Management-System-OCVM--MY-FINAL-2.0.2\\OCVMS.csproj",
-      "projectName": "OCVMS",
-      "projectPath": "C:\\Users\\SAJITH PRIYASHAN\\Documents\\GitHub\\Online-Community-Volunteer-Management-System-OCVM--MY-FINAL-2.0.2\\OCVMS.csproj",
-      "packagesPath": "C:\\Users\\SAJITH PRIYASHAN\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\SAJITH PRIYASHAN\\Documents\\GitHub\\Online-Community-Volunteer-Management-System-OCVM--MY-FINAL-2.0.2\\obj\\",
-=======
       "projectUniqueName": "C:\\Users\\DELL\\OneDrive\\Documents\\GitHub\\Online-Community-Volunteer-Management-System-OCVM--MY-FINAL-2.0.2\\OCVMS.csproj",
       "projectName": "OCVMS",
       "projectPath": "C:\\Users\\DELL\\OneDrive\\Documents\\GitHub\\Online-Community-Volunteer-Management-System-OCVM--MY-FINAL-2.0.2\\OCVMS.csproj",
       "packagesPath": "C:\\Users\\DELL\\.nuget\\packages\\",
       "outputPath": "C:\\Users\\DELL\\OneDrive\\Documents\\GitHub\\Online-Community-Volunteer-Management-System-OCVM--MY-FINAL-2.0.2\\obj\\",
->>>>>>> Stashed changes
       "projectStyle": "PackageReference",
+      "fallbackFolders": [
+        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+      ],
       "configFilePaths": [
-<<<<<<< Updated upstream
-        "C:\\Users\\SAJITH PRIYASHAN\\AppData\\Roaming\\NuGet\\NuGet.Config"
-=======
         "C:\\Users\\DELL\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
->>>>>>> Stashed changes
       ],
       "originalTargetFrameworks": [
         "net8.0"
       ],
       "sources": {
-<<<<<<< Updated upstream
-=======
         "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
->>>>>>> Stashed changes
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
@@ -4247,12 +4231,8 @@
         "enableAudit": "true",
         "auditLevel": "low",
         "auditMode": "direct"
-<<<<<<< Updated upstream
-      }
-=======
       },
       "SdkAnalysisLevel": "9.0.300"
->>>>>>> Stashed changes
     },
     "frameworks": {
       "net8.0": {
@@ -4292,12 +4272,16 @@
             "privateAssets": "all"
           }
         },
-<<<<<<< Updated upstream
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.420/PortableRuntimeIdentifierGraph.json"
-=======
         "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.311/PortableRuntimeIdentifierGraph.json"
->>>>>>> Stashed changes
       }
     }
-  }
+  },
+  "logs": [
+    {
+      "code": "Undefined",
+      "level": "Warning",
+      "warningLevel": 1,
+      "message": "Problem reading the cache file C:\\Users\\DELL\\OneDrive\\Documents\\GitHub\\Online-Community-Volunteer-Management-System-OCVM--MY-FINAL-2.0.2\\obj\\project.nuget.cache : '<' is an invalid start of a property name. Expected a '\"'. Path: $ | LineNumber: 2 | BytePositionInLine: 0."
+    }
+  ]
 }
