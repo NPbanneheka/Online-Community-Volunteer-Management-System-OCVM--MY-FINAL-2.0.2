@@ -31,6 +31,8 @@ public class CommunityController : Controller
         var identityUserId = _userManager.GetUserId(User);
         var userProfile = await _context.UserProfiles.FirstOrDefaultAsync(u => u.UserId == identityUserId);
 
+        ViewBag.CurrentProfileId = userProfile?.Id;
+        ViewBag.IsAdmin = User.IsInRole("Admin");
         ViewBag.PostCount = userProfile != null ? posts.Count(p => p.UserProfileId == userProfile.Id) : 0;
 
         return View(posts);
@@ -134,5 +136,121 @@ public class CommunityController : Controller
         await _context.SaveChangesAsync();
 
         return RedirectToAction(nameof(Feed));
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> EditPost(int id)
+    {
+        var post = await _context.CommunityPosts.FirstOrDefaultAsync(p => p.Id == id);
+        if (post == null) return NotFound();
+
+        if (!await CanManagePostAsync(post))
+        {
+            return Forbid();
+        }
+
+        return View(post);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> EditPost(int id, string title, string content, string postType)
+    {
+        var post = await _context.CommunityPosts.FirstOrDefaultAsync(p => p.Id == id);
+        if (post == null) return NotFound();
+
+        if (!await CanManagePostAsync(post))
+        {
+            return Forbid();
+        }
+
+        if (string.IsNullOrWhiteSpace(title) || string.IsNullOrWhiteSpace(content))
+        {
+            TempData["Error"] = "Title and content cannot be empty.";
+            return RedirectToAction(nameof(Feed));
+        }
+
+        post.Title = title.Trim();
+        post.Content = content.Trim();
+        post.PostType = postType == "Help" ? "Help" : "Share";
+
+        await _context.SaveChangesAsync();
+
+        TempData["Message"] = "Post updated successfully.";
+        return RedirectToAction(nameof(Feed));
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> DeletePost(int id)
+    {
+        var post = await _context.CommunityPosts
+            .Include(p => p.PostComments)
+            .FirstOrDefaultAsync(p => p.Id == id);
+
+        if (post == null) return NotFound();
+
+        if (!await CanManagePostAsync(post))
+        {
+            return Forbid();
+        }
+
+        if (post.PostComments.Any())
+        {
+            _context.PostComments.RemoveRange(post.PostComments);
+        }
+
+        _context.CommunityPosts.Remove(post);
+        await _context.SaveChangesAsync();
+
+        TempData["Message"] = "Post deleted successfully.";
+        return RedirectToAction(nameof(Feed));
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> DeleteComment(int id)
+    {
+        var comment = await _context.PostComments
+            .Include(c => c.Post)
+            .FirstOrDefaultAsync(c => c.Id == id);
+
+        if (comment == null) return NotFound();
+
+        if (!await CanManageCommentAsync(comment))
+        {
+            return Forbid();
+        }
+
+        _context.PostComments.Remove(comment);
+        await _context.SaveChangesAsync();
+
+        TempData["Message"] = "Comment deleted successfully.";
+        return RedirectToAction(nameof(Feed));
+    }
+
+    private async Task<bool> CanManagePostAsync(CommunityPost post)
+    {
+        if (User.IsInRole("Admin")) return true;
+
+        var userId = _userManager.GetUserId(User);
+        if (string.IsNullOrWhiteSpace(userId)) return false;
+
+        var profile = await _context.UserProfiles.FirstOrDefaultAsync(x => x.UserId == userId);
+        return profile != null && post.UserProfileId == profile.Id;
+    }
+
+    private async Task<bool> CanManageCommentAsync(PostComment comment)
+    {
+        if (User.IsInRole("Admin")) return true;
+
+        var userId = _userManager.GetUserId(User);
+        if (string.IsNullOrWhiteSpace(userId)) return false;
+
+        var profile = await _context.UserProfiles.FirstOrDefaultAsync(x => x.UserId == userId);
+        if (profile == null) return false;
+
+        return comment.UserProfileId == profile.Id
+            || (comment.Post != null && comment.Post.UserProfileId == profile.Id);
     }
 }

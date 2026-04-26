@@ -23,12 +23,13 @@ public class HelpRequestsController : Controller
     {
         var userId = _userManager.GetUserId(User);
         var profile = await _context.UserProfiles.FirstOrDefaultAsync(x => x.UserId == userId);
+        var isAdmin = User.IsInRole("Admin");
 
         var query = _context.HelpRequests
             .Include(h => h.SubmittedBy)
             .AsQueryable();
 
-        if (!User.IsInRole("Admin") && !User.IsInRole("Organizer"))
+        if (!isAdmin)
         {
             query = query.Where(h => profile != null && h.UserProfileId == profile.Id);
         }
@@ -36,6 +37,9 @@ public class HelpRequestsController : Controller
         var requests = await query
             .OrderByDescending(h => h.CreatedAt)
             .ToListAsync();
+
+        ViewBag.CurrentProfileId = profile?.Id;
+        ViewBag.IsAdmin = isAdmin;
 
         return View(requests);
     }
@@ -101,20 +105,84 @@ public class HelpRequestsController : Controller
 
         if (helpRequest == null) return NotFound();
 
-        var userId = _userManager.GetUserId(User);
-        var profile = await _context.UserProfiles.FirstOrDefaultAsync(x => x.UserId == userId);
+        if (!await CanViewHelpRequestAsync(helpRequest)) return Forbid();
 
-        var canView = User.IsInRole("Admin")
-            || User.IsInRole("Organizer")
-            || (profile != null && profile.Id == helpRequest.UserProfileId);
+        ViewBag.CanManageHelpRequest = await CanManageHelpRequestAsync(helpRequest);
+        ViewBag.IsAdmin = User.IsInRole("Admin");
 
-        if (!canView) return Forbid();
+        return View(helpRequest);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> Edit(int? id)
+    {
+        if (id == null) return NotFound();
+
+        var helpRequest = await _context.HelpRequests.FirstOrDefaultAsync(h => h.Id == id);
+        if (helpRequest == null) return NotFound();
+
+        if (!await CanManageHelpRequestAsync(helpRequest))
+        {
+            return Forbid();
+        }
 
         return View(helpRequest);
     }
 
     [HttpPost]
-    [Authorize(Roles = "Admin,Organizer")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Edit(int id, HelpRequest helpRequest)
+    {
+        if (id != helpRequest.Id) return NotFound();
+
+        var existingRequest = await _context.HelpRequests.FirstOrDefaultAsync(h => h.Id == id);
+        if (existingRequest == null) return NotFound();
+
+        if (!await CanManageHelpRequestAsync(existingRequest))
+        {
+            return Forbid();
+        }
+
+        ModelState.Remove(nameof(HelpRequest.SubmittedBy));
+        ModelState.Remove(nameof(HelpRequest.UserProfileId));
+        ModelState.Remove(nameof(HelpRequest.Status));
+
+        if (!ModelState.IsValid)
+        {
+            helpRequest.UserProfileId = existingRequest.UserProfileId;
+            helpRequest.Status = existingRequest.Status;
+            return View(helpRequest);
+        }
+
+        existingRequest.Title = helpRequest.Title;
+        existingRequest.Description = helpRequest.Description;
+
+        await _context.SaveChangesAsync();
+
+        TempData["Message"] = "Help request updated successfully.";
+        return RedirectToAction(nameof(Details), new { id = existingRequest.Id });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Delete(int id)
+    {
+        var helpRequest = await _context.HelpRequests.FirstOrDefaultAsync(h => h.Id == id);
+        if (helpRequest == null) return NotFound();
+
+        if (!await CanManageHelpRequestAsync(helpRequest))
+        {
+            return Forbid();
+        }
+
+        _context.HelpRequests.Remove(helpRequest);
+        await _context.SaveChangesAsync();
+
+        TempData["Message"] = "Help request deleted successfully.";
+        return RedirectToAction(nameof(Index));
+    }
+
+    [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> UpdateStatus(int id, string status)
     {
@@ -128,6 +196,11 @@ public class HelpRequestsController : Controller
         var helpRequest = await _context.HelpRequests.FindAsync(id);
         if (helpRequest == null) return NotFound();
 
+        if (!await CanManageHelpRequestAsync(helpRequest))
+        {
+            return Forbid();
+        }
+
         helpRequest.Status = status;
 
         _context.Notifications.Add(new Notification
@@ -140,5 +213,27 @@ public class HelpRequestsController : Controller
 
         TempData["Message"] = "Help request status updated.";
         return RedirectToAction(nameof(Details), new { id });
+    }
+
+    private async Task<bool> CanViewHelpRequestAsync(HelpRequest helpRequest)
+    {
+        if (User.IsInRole("Admin")) return true;
+
+        var userId = _userManager.GetUserId(User);
+        if (string.IsNullOrWhiteSpace(userId)) return false;
+
+        var profile = await _context.UserProfiles.FirstOrDefaultAsync(x => x.UserId == userId);
+        return profile != null && helpRequest.UserProfileId == profile.Id;
+    }
+
+    private async Task<bool> CanManageHelpRequestAsync(HelpRequest helpRequest)
+    {
+        if (User.IsInRole("Admin")) return true;
+
+        var userId = _userManager.GetUserId(User);
+        if (string.IsNullOrWhiteSpace(userId)) return false;
+
+        var profile = await _context.UserProfiles.FirstOrDefaultAsync(x => x.UserId == userId);
+        return profile != null && helpRequest.UserProfileId == profile.Id;
     }
 }

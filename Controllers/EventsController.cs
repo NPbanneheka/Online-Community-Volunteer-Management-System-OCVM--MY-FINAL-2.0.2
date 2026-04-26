@@ -42,6 +42,12 @@ public class EventsController : Controller
             .ToListAsync();
 
         var userId = _userManager.GetUserId(User);
+        var currentProfile = userId == null
+            ? null
+            : await _context.UserProfiles.FirstOrDefaultAsync(x => x.UserId == userId);
+
+        ViewBag.CurrentProfileId = currentProfile?.Id;
+        ViewBag.IsAdmin = User.IsInRole("Admin");
         ViewBag.UserRegisteredEvents = userId == null
             ? new List<int>()
             : await _context.EventRegistrations
@@ -82,11 +88,15 @@ public class EventsController : Controller
             return RedirectToAction("Edit", "Profile");
         }
 
+        var isAdmin = User.IsInRole("Admin");
         var events = await _context.VolunteerEvents
             .Include(e => e.Registrations)
-            .Where(e => User.IsInRole("Admin") || e.OrganizerProfileId == profile.Id)
+            .Where(e => isAdmin || e.OrganizerProfileId == profile.Id)
             .OrderByDescending(e => e.CreatedAt)
             .ToListAsync();
+
+        ViewBag.CurrentProfileId = profile.Id;
+        ViewBag.IsAdmin = isAdmin;
 
         return View(events);
     }
@@ -201,6 +211,11 @@ public class EventsController : Controller
         ViewBag.RegisteredCount = volunteerEvent.Registrations.Count;
         ViewBag.RemainingSlots = Math.Max(0, volunteerEvent.Capacity - volunteerEvent.Registrations.Count);
 
+        var profile = userId == null ? null : await _context.UserProfiles.FirstOrDefaultAsync(x => x.UserId == userId);
+        ViewBag.CurrentProfileId = profile?.Id;
+        ViewBag.IsAdmin = User.IsInRole("Admin");
+        ViewBag.CanManageEvent = await CanManageEventAsync(volunteerEvent);
+
         return View(volunteerEvent);
     }
 
@@ -295,6 +310,7 @@ public class EventsController : Controller
 
         ModelState.Remove(nameof(VolunteerEvent.OrganizerProfile));
         ModelState.Remove(nameof(VolunteerEvent.Registrations));
+        ModelState.Remove(nameof(VolunteerEvent.OrganizerProfileId));
 
         if (!ModelState.IsValid)
         {
@@ -341,7 +357,7 @@ public class EventsController : Controller
         await _context.SaveChangesAsync();
 
         TempData["Message"] = "Event deleted successfully.";
-        return RedirectToAction(nameof(Index));
+        return RedirectToAction(nameof(MyCreatedEvents));
     }
 
     private async Task<bool> CanManageEventAsync(VolunteerEvent volunteerEvent)
@@ -349,6 +365,8 @@ public class EventsController : Controller
         if (User.IsInRole("Admin")) return true;
 
         var userId = _userManager.GetUserId(User);
+        if (string.IsNullOrWhiteSpace(userId)) return false;
+
         var profile = await _context.UserProfiles.FirstOrDefaultAsync(x => x.UserId == userId);
         return profile != null && volunteerEvent.OrganizerProfileId == profile.Id;
     }
