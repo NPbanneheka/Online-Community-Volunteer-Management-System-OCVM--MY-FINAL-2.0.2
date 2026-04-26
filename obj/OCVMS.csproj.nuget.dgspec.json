@@ -1,7 +1,6 @@
 {
   "format": 1,
   "restore": {
-<<<<<<< HEAD
     "D:\\Online-Community-Volunteer-Management-System-OCVM--MY-FINAL-2.0.2\\OCVMS.csproj": {}
   },
   "projects": {
@@ -21,31 +20,12 @@
           "C:\\Users\\DELL\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
-=======
-    "C:\\Users\\SAJI\\Documents\\Online-Community-Volunteer-Management-System-OCVM--MY-FINAL-2.0.2\\OCVMS.csproj": {}
-  },
-  "projects": {
-    "C:\\Users\\SAJI\\Documents\\Online-Community-Volunteer-Management-System-OCVM--MY-FINAL-2.0.2\\OCVMS.csproj": {
-      "version": "1.0.0",
-      "restore": {
-        "projectUniqueName": "C:\\Users\\SAJI\\Documents\\Online-Community-Volunteer-Management-System-OCVM--MY-FINAL-2.0.2\\OCVMS.csproj",
-        "projectName": "OCVMS",
-        "projectPath": "C:\\Users\\SAJI\\Documents\\Online-Community-Volunteer-Management-System-OCVM--MY-FINAL-2.0.2\\OCVMS.csproj",
-        "packagesPath": "C:\\Users\\SAJI\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\SAJI\\Documents\\Online-Community-Volunteer-Management-System-OCVM--MY-FINAL-2.0.2\\obj\\",
-        "projectStyle": "PackageReference",
-        "configFilePaths": [
-          "C:\\Users\\SAJI\\AppData\\Roaming\\NuGet\\NuGet.Config"
->>>>>>> 07a1ecec8d0650fd5cdea994ccec9617d395842a
         ],
         "originalTargetFrameworks": [
           "net8.0"
         ],
         "sources": {
-<<<<<<< HEAD
           "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
-=======
->>>>>>> 07a1ecec8d0650fd5cdea994ccec9617d395842a
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -63,12 +43,8 @@
           "enableAudit": "true",
           "auditLevel": "low",
           "auditMode": "direct"
-<<<<<<< HEAD
         },
         "SdkAnalysisLevel": "9.0.300"
-=======
-        }
->>>>>>> 07a1ecec8d0650fd5cdea994ccec9617d395842a
       },
       "frameworks": {
         "net8.0": {
@@ -108,11 +84,7 @@
               "privateAssets": "all"
             }
           },
-<<<<<<< HEAD
           "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.311/PortableRuntimeIdentifierGraph.json"
-=======
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.419/PortableRuntimeIdentifierGraph.json"
->>>>>>> 07a1ecec8d0650fd5cdea994ccec9617d395842a
         }
       }
     }
