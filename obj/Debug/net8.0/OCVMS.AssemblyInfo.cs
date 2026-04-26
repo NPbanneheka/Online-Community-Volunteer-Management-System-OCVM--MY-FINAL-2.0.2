@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("OCVMS")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+d684660cfbc24322de9065592aba7444968cd5ff")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+07a1ecec8d0650fd5cdea994ccec9617d395842a")]
 [assembly: System.Reflection.AssemblyProductAttribute("OCVMS")]
 [assembly: System.Reflection.AssemblyTitleAttribute("OCVMS")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
