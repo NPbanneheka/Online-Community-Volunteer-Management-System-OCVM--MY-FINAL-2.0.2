@@ -1,0 +1,58 @@
+{
+  "Version": 1,
+  "Hash": "C6NApccbej44rRTj3zqsLIC2hADu9q0mKJ7wCxbyiTk=",
+  "Source": "OCVMS",
+  "BasePath": "_content/OCVMS",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [
+    {
+      "Name": "OCVMS\\wwwroot",
+      "Source": "OCVMS",
+      "ContentRoot": "C:\\Users\\SAJI\\Documents\\Online-Community-Volunteer-Management-System-OCVM--MY-FINAL-2.0.2\\wwwroot\\",
+      "BasePath": "_content/OCVMS",
+      "Pattern": "**"
+    }
+  ],
+  "Assets": [
+    {
+      "Identity": "C:\\Users\\SAJI\\Documents\\Online-Community-Volunteer-Management-System-OCVM--MY-FINAL-2.0.2\\wwwroot\\css\\site.css",
+      "SourceId": "OCVMS",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\Users\\SAJI\\Documents\\Online-Community-Volunteer-Management-System-OCVM--MY-FINAL-2.0.2\\wwwroot\\",
+      "BasePath": "_content/OCVMS",
+      "RelativePath": "css/site.css",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\css\\site.css"
+    },
+    {
+      "Identity": "C:\\Users\\SAJI\\Documents\\Online-Community-Volunteer-Management-System-OCVM--MY-FINAL-2.0.2\\wwwroot\\uploads\\profiles\\.gitkeep",
+      "SourceId": "OCVMS",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\Users\\SAJI\\Documents\\Online-Community-Volunteer-Management-System-OCVM--MY-FINAL-2.0.2\\wwwroot\\",
+      "BasePath": "_content/OCVMS",
+      "RelativePath": "uploads/profiles/.gitkeep",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\uploads\\profiles\\.gitkeep"
+    }
+  ]
+}
