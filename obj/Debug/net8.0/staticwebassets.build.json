@@ -1,1 +1,62 @@
+<<<<<<< HEAD
 {"Version":1,"Hash":"+XkTRw6HZmIzXbJ49a/sRESRy4cE7V7+a3df9lG7vA0=","Source":"OCVMS","BasePath":"_content/OCVMS","Mode":"Default","ManifestType":"Build","ReferencedProjectsConfiguration":[],"DiscoveryPatterns":[{"Name":"OCVMS\\wwwroot","Source":"OCVMS","ContentRoot":"D:\\Online-Community-Volunteer-Management-System-OCVM--MY-FINAL-2.0.2\\wwwroot\\","BasePath":"_content/OCVMS","Pattern":"**"}],"Assets":[{"Identity":"D:\\Online-Community-Volunteer-Management-System-OCVM--MY-FINAL-2.0.2\\wwwroot\\css\\site.css","SourceId":"OCVMS","SourceType":"Discovered","ContentRoot":"D:\\Online-Community-Volunteer-Management-System-OCVM--MY-FINAL-2.0.2\\wwwroot\\","BasePath":"_content/OCVMS","RelativePath":"css/site#[.{fingerprint}]?.css","AssetKind":"All","AssetMode":"All","AssetRole":"Primary","AssetMergeBehavior":"","AssetMergeSource":"","RelatedAsset":"","AssetTraitName":"","AssetTraitValue":"","Fingerprint":"n3bzhi3r37","Integrity":"80tpJ5Tdldd8z8HIq0Atj9BeUpZ9Zo41TmPpb9nFU78=","CopyToOutputDirectory":"Never","CopyToPublishDirectory":"PreserveNewest","OriginalItemSpec":"wwwroot\\css\\site.css","FileLength":2387,"LastWriteTime":"2026-04-26T10:27:24+00:00"},{"Identity":"D:\\Online-Community-Volunteer-Management-System-OCVM--MY-FINAL-2.0.2\\wwwroot\\uploads\\profiles\\.gitkeep","SourceId":"OCVMS","SourceType":"Discovered","ContentRoot":"D:\\Online-Community-Volunteer-Management-System-OCVM--MY-FINAL-2.0.2\\wwwroot\\","BasePath":"_content/OCVMS","RelativePath":"uploads/profiles/#[.{fingerprint}]?.gitkeep","AssetKind":"All","AssetMode":"All","AssetRole":"Primary","AssetMergeBehavior":"","AssetMergeSource":"","RelatedAsset":"","AssetTraitName":"","AssetTraitValue":"","Fingerprint":"5ipweew5fc","Integrity":"47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=","CopyToOutputDirectory":"Never","CopyToPublishDirectory":"PreserveNewest","OriginalItemSpec":"wwwroot\\uploads\\profiles\\.gitkeep","FileLength":0,"LastWriteTime":"2026-04-26T10:27:24+00:00"}],"Endpoints":[{"Route":"css/site.css","AssetFile":"D:\\Online-Community-Volunteer-Management-System-OCVM--MY-FINAL-2.0.2\\wwwroot\\css\\site.css","Selectors":[],"ResponseHeaders":[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Content-Length","Value":"2387"},{"Name":"Content-Type","Value":"text/css"},{"Name":"ETag","Value":"\"80tpJ5Tdldd8z8HIq0Atj9BeUpZ9Zo41TmPpb9nFU78=\""},{"Name":"Last-Modified","Value":"Sun, 26 Apr 2026 10:27:24 GMT"},{"Name":"Cache-Control","Value":"no-cache"}],"EndpointProperties":[{"Name":"integrity","Value":"sha256-80tpJ5Tdldd8z8HIq0Atj9BeUpZ9Zo41TmPpb9nFU78="}]},{"Route":"css/site.n3bzhi3r37.css","AssetFile":"D:\\Online-Community-Volunteer-Management-System-OCVM--MY-FINAL-2.0.2\\wwwroot\\css\\site.css","Selectors":[],"ResponseHeaders":[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Content-Length","Value":"2387"},{"Name":"Content-Type","Value":"text/css"},{"Name":"ETag","Value":"\"80tpJ5Tdldd8z8HIq0Atj9BeUpZ9Zo41TmPpb9nFU78=\""},{"Name":"Last-Modified","Value":"Sun, 26 Apr 2026 10:27:24 GMT"},{"Name":"Cache-Control","Value":"max-age=31536000, immutable"}],"EndpointProperties":[{"Name":"fingerprint","Value":"n3bzhi3r37"},{"Name":"label","Value":"css/site.css"},{"Name":"integrity","Value":"sha256-80tpJ5Tdldd8z8HIq0Atj9BeUpZ9Zo41TmPpb9nFU78="}]},{"Route":"uploads/profiles/.5ipweew5fc.gitkeep","AssetFile":"D:\\Online-Community-Volunteer-Management-System-OCVM--MY-FINAL-2.0.2\\wwwroot\\uploads\\profiles\\.gitkeep","Selectors":[],"ResponseHeaders":[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Content-Length","Value":"0"},{"Name":"Content-Type","Value":"application/octet-stream"},{"Name":"ETag","Value":"\"47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=\""},{"Name":"Last-Modified","Value":"Sun, 26 Apr 2026 10:27:24 GMT"},{"Name":"Cache-Control","Value":"max-age=31536000, immutable"}],"EndpointProperties":[{"Name":"fingerprint","Value":"5ipweew5fc"},{"Name":"label","Value":"uploads/profiles/.gitkeep"},{"Name":"integrity","Value":"sha256-47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU="}]},{"Route":"uploads/profiles/.gitkeep","AssetFile":"D:\\Online-Community-Volunteer-Management-System-OCVM--MY-FINAL-2.0.2\\wwwroot\\uploads\\profiles\\.gitkeep","Selectors":[],"ResponseHeaders":[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Content-Length","Value":"0"},{"Name":"Content-Type","Value":"application/octet-stream"},{"Name":"ETag","Value":"\"47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=\""},{"Name":"Last-Modified","Value":"Sun, 26 Apr 2026 10:27:24 GMT"},{"Name":"Cache-Control","Value":"no-cache"}],"EndpointProperties":[{"Name":"integrity","Value":"sha256-47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU="}]}]}
+=======
+{
+  "Version": 1,
+  "Hash": "C6NApccbej44rRTj3zqsLIC2hADu9q0mKJ7wCxbyiTk=",
+  "Source": "OCVMS",
+  "BasePath": "_content/OCVMS",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [
+    {
+      "Name": "OCVMS\\wwwroot",
+      "Source": "OCVMS",
+      "ContentRoot": "C:\\Users\\SAJI\\Documents\\Online-Community-Volunteer-Management-System-OCVM--MY-FINAL-2.0.2\\wwwroot\\",
+      "BasePath": "_content/OCVMS",
+      "Pattern": "**"
+    }
+  ],
+  "Assets": [
+    {
+      "Identity": "C:\\Users\\SAJI\\Documents\\Online-Community-Volunteer-Management-System-OCVM--MY-FINAL-2.0.2\\wwwroot\\css\\site.css",
+      "SourceId": "OCVMS",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\Users\\SAJI\\Documents\\Online-Community-Volunteer-Management-System-OCVM--MY-FINAL-2.0.2\\wwwroot\\",
+      "BasePath": "_content/OCVMS",
+      "RelativePath": "css/site.css",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\css\\site.css"
+    },
+    {
+      "Identity": "C:\\Users\\SAJI\\Documents\\Online-Community-Volunteer-Management-System-OCVM--MY-FINAL-2.0.2\\wwwroot\\uploads\\profiles\\.gitkeep",
+      "SourceId": "OCVMS",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\Users\\SAJI\\Documents\\Online-Community-Volunteer-Management-System-OCVM--MY-FINAL-2.0.2\\wwwroot\\",
+      "BasePath": "_content/OCVMS",
+      "RelativePath": "uploads/profiles/.gitkeep",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\uploads\\profiles\\.gitkeep"
+    }
+  ]
+}
+>>>>>>> 07a1ecec8d0650fd5cdea994ccec9617d395842a
