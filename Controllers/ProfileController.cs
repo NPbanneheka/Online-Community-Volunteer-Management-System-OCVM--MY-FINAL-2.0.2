@@ -33,7 +33,7 @@ public class ProfileController : Controller
         var user = await _userManager.GetUserAsync(User);
         if (user == null) return RedirectToAction("Login", "Account");
 
-        var profile = await _context.UserProfiles.FirstOrDefaultAsync(x => x.UserId == user.Id);
+        var profile = await GetPrimaryProfileForUserAsync(user.Id);
         return View(profile);
     }
 
@@ -46,12 +46,14 @@ public class ProfileController : Controller
         var roles = await _userManager.GetRolesAsync(user);
         var roleName = roles.FirstOrDefault() ?? "Volunteer";
 
-        var profile = await _context.UserProfiles.FirstOrDefaultAsync(x => x.UserId == user.Id)
+        var profile = await GetPrimaryProfileForUserAsync(user.Id)
                      ?? new UserProfile
                      {
                          UserId = user.Id,
                          FullName = user.Email ?? "User",
-                         RoleName = roleName
+                         PublicEmail = user.Email,
+                         RoleName = roleName,
+                         IsVerified = roleName != "Organizer"
                      };
 
         return View(new ProfileEditViewModel
@@ -77,13 +79,15 @@ public class ProfileController : Controller
         var user = await _userManager.GetUserAsync(User);
         if (user == null) return RedirectToAction("Login", "Account");
 
-        var profile = await _context.UserProfiles.FirstOrDefaultAsync(x => x.UserId == user.Id);
+        var profile = await GetPrimaryProfileForUserAsync(user.Id);
         if (profile == null)
         {
+            var roleName = (await _userManager.GetRolesAsync(user)).FirstOrDefault() ?? "Volunteer";
             profile = new UserProfile
             {
                 UserId = user.Id,
-                RoleName = (await _userManager.GetRolesAsync(user)).FirstOrDefault() ?? "Volunteer"
+                RoleName = roleName,
+                IsVerified = roleName != "Organizer"
             };
             _context.UserProfiles.Add(profile);
         }
@@ -158,7 +162,7 @@ public class ProfileController : Controller
                 var oldRelativePath = profile.ProfileImageUrl.TrimStart('/').Replace("/", Path.DirectorySeparatorChar.ToString());
                 var oldFullPath = Path.Combine(_environment.WebRootPath, oldRelativePath);
                 var profileUploadRoot = Path.Combine(_environment.WebRootPath, "uploads", "profiles");
-                if (oldFullPath.StartsWith(profileUploadRoot) && System.IO.File.Exists(oldFullPath))
+                if (oldFullPath.StartsWith(profileUploadRoot, StringComparison.OrdinalIgnoreCase) && System.IO.File.Exists(oldFullPath))
                 {
                     System.IO.File.Delete(oldFullPath);
                 }
@@ -179,7 +183,7 @@ public class ProfileController : Controller
     [AllowAnonymous]
     public async Task<IActionResult> ViewProfile(string id)
     {
-        var profile = await _context.UserProfiles.FirstOrDefaultAsync(x => x.UserId == id);
+        var profile = await GetPrimaryProfileForUserAsync(id);
         if (profile == null) return NotFound();
 
         ViewBag.AverageRating = await _context.UserRatings
@@ -190,7 +194,7 @@ public class ProfileController : Controller
         return View(profile);
     }
 
-    public async Task<IActionResult> Index()
+    public IActionResult Index()
     {
         return RedirectToAction(nameof(MyProfile));
     }
@@ -198,10 +202,22 @@ public class ProfileController : Controller
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> ManageUsers()
     {
-        var profiles = await _context.UserProfiles
+        var allProfiles = await _context.UserProfiles
             .OrderBy(p => p.RoleName)
             .ThenBy(p => p.FullName)
             .ToListAsync();
+
+        // If older test runs created duplicate profiles for the same Identity user,
+        // show only the most reliable profile row in the admin list.
+        var profiles = allProfiles
+            .GroupBy(p => p.UserId)
+            .Select(g => g
+                .OrderByDescending(p => p.IsVerified)
+                .ThenByDescending(p => p.CreatedAt)
+                .First())
+            .OrderBy(p => p.RoleName)
+            .ThenBy(p => p.FullName)
+            .ToList();
 
         return View(profiles);
     }
@@ -214,7 +230,16 @@ public class ProfileController : Controller
         var profile = await _context.UserProfiles.FirstOrDefaultAsync(p => p.Id == id);
         if (profile == null) return NotFound();
 
-        profile.IsVerified = isVerified;
+        // Update all profile rows for the same Identity user. This also fixes older duplicate-profile data.
+        var relatedProfiles = await _context.UserProfiles
+            .Where(p => p.UserId == profile.UserId)
+            .ToListAsync();
+
+        foreach (var relatedProfile in relatedProfiles)
+        {
+            relatedProfile.IsVerified = isVerified;
+        }
+
         await _context.SaveChangesAsync();
 
         TempData["Message"] = isVerified
@@ -222,5 +247,108 @@ public class ProfileController : Controller
             : $"{profile.FullName} has been marked as pending verification.";
 
         return RedirectToAction(nameof(ManageUsers));
+    }
+
+    [HttpPost]
+    [Authorize(Roles = "Admin")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> DeleteUser(int id)
+    {
+        var profile = await _context.UserProfiles.FirstOrDefaultAsync(p => p.Id == id);
+        if (profile == null) return NotFound();
+
+        var user = await _userManager.FindByIdAsync(profile.UserId);
+        if (user == null)
+        {
+            TempData["Message"] = "Identity account was not found. Please check this user manually.";
+            return RedirectToAction(nameof(ManageUsers));
+        }
+
+        var currentUserId = _userManager.GetUserId(User);
+        if (user.Id == currentUserId)
+        {
+            TempData["Message"] = "You cannot delete your own admin account while logged in.";
+            return RedirectToAction(nameof(ManageUsers));
+        }
+
+        if (await _userManager.IsInRoleAsync(user, "Admin"))
+        {
+            TempData["Message"] = "Admin accounts cannot be deleted from this page.";
+            return RedirectToAction(nameof(ManageUsers));
+        }
+
+        await using var transaction = await _context.Database.BeginTransactionAsync();
+
+        var profileIds = await _context.UserProfiles
+            .Where(p => p.UserId == user.Id)
+            .Select(p => p.Id)
+            .ToListAsync();
+
+        var organizedEventIds = await _context.VolunteerEvents
+            .Where(e => profileIds.Contains(e.OrganizerProfileId))
+            .Select(e => e.Id)
+            .ToListAsync();
+
+        var postIds = await _context.CommunityPosts
+            .Where(p => profileIds.Contains(p.UserProfileId))
+            .Select(p => p.Id)
+            .ToListAsync();
+
+        _context.UserRatings.RemoveRange(await _context.UserRatings
+            .Where(r => r.FromUserId == user.Id || r.ToUserId == user.Id || organizedEventIds.Contains(r.EventId))
+            .ToListAsync());
+
+        _context.EventRegistrations.RemoveRange(await _context.EventRegistrations
+            .Where(r => r.UserId == user.Id || organizedEventIds.Contains(r.VolunteerEventId))
+            .ToListAsync());
+
+        _context.Notifications.RemoveRange(await _context.Notifications
+            .Where(n => profileIds.Contains(n.UserProfileId))
+            .ToListAsync());
+
+        _context.PostComments.RemoveRange(await _context.PostComments
+            .Where(c => profileIds.Contains(c.UserProfileId) || postIds.Contains(c.CommunityPostId))
+            .ToListAsync());
+
+        _context.CommunityPosts.RemoveRange(await _context.CommunityPosts
+            .Where(p => profileIds.Contains(p.UserProfileId))
+            .ToListAsync());
+
+        _context.HelpRequests.RemoveRange(await _context.HelpRequests
+            .Where(h => profileIds.Contains(h.UserProfileId))
+            .ToListAsync());
+
+        _context.VolunteerEvents.RemoveRange(await _context.VolunteerEvents
+            .Where(e => organizedEventIds.Contains(e.Id))
+            .ToListAsync());
+
+        _context.UserProfiles.RemoveRange(await _context.UserProfiles
+            .Where(p => profileIds.Contains(p.Id))
+            .ToListAsync());
+
+        await _context.SaveChangesAsync();
+
+        var deleteResult = await _userManager.DeleteAsync(user);
+        if (!deleteResult.Succeeded)
+        {
+            await transaction.RollbackAsync();
+            TempData["Message"] = "User account could not be deleted: " +
+                                  string.Join(", ", deleteResult.Errors.Select(e => e.Description));
+            return RedirectToAction(nameof(ManageUsers));
+        }
+
+        await transaction.CommitAsync();
+
+        TempData["Message"] = $"{profile.FullName}'s account and related data were deleted successfully.";
+        return RedirectToAction(nameof(ManageUsers));
+    }
+
+    private async Task<UserProfile?> GetPrimaryProfileForUserAsync(string userId)
+    {
+        return await _context.UserProfiles
+            .Where(x => x.UserId == userId)
+            .OrderByDescending(x => x.IsVerified)
+            .ThenByDescending(x => x.CreatedAt)
+            .FirstOrDefaultAsync();
     }
 }
