@@ -69,6 +69,7 @@ using (var scope = app.Services.CreateScope())
     {
         await EnsureRuntimeSchemaAsync(services);
         await DbInitializer.SeedRolesAndAdminAsync(services);
+        //await TestDataSeeder.SeedAsync(services);
     }
     catch (Exception ex)
     {
