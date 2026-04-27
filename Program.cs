@@ -14,7 +14,7 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(connectionString));
+    options.UseSqlServer(connectionString, sqlOptions => sqlOptions.EnableRetryOnFailure()));
 
 builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
 {
@@ -34,6 +34,9 @@ builder.Services.ConfigureApplicationCookie(options =>
 {
     options.LoginPath = "/Account/Login";
     options.AccessDeniedPath = "/Account/AccessDenied";
+    options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
+    options.SlidingExpiration = false;
+    options.Cookie.IsEssential = true;
 });
 
 var app = builder.Build();
@@ -64,6 +67,7 @@ using (var scope = app.Services.CreateScope())
     var services = scope.ServiceProvider;
     try
     {
+        await EnsureRuntimeSchemaAsync(services);
         await DbInitializer.SeedRolesAndAdminAsync(services);
     }
     catch (Exception ex)
@@ -79,3 +83,27 @@ app.MapControllerRoute(
 
 app.MapRazorPages();
 app.Run();
+
+
+static async Task EnsureRuntimeSchemaAsync(IServiceProvider services)
+{
+    var context = services.GetRequiredService<ApplicationDbContext>();
+
+    // These idempotent checks allow the updated project to run on the restored group database
+    // even if the latest registration-date columns were not present in the original backup.
+    await context.Database.ExecuteSqlRawAsync(@"
+IF COL_LENGTH('VolunteerEvents', 'RegistrationOpenDate') IS NULL
+BEGIN
+    ALTER TABLE [VolunteerEvents] ADD [RegistrationOpenDate] datetime2 NOT NULL CONSTRAINT [DF_VolunteerEvents_RegistrationOpenDate] DEFAULT (SYSUTCDATETIME());
+END;
+
+IF COL_LENGTH('VolunteerEvents', 'RegistrationClosingDate') IS NULL
+BEGIN
+    ALTER TABLE [VolunteerEvents] ADD [RegistrationClosingDate] datetime2 NULL;
+END;
+
+UPDATE [VolunteerEvents]
+SET [RegistrationClosingDate] = [EventDate]
+WHERE [RegistrationClosingDate] IS NULL;
+");
+}

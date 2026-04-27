@@ -7,7 +7,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h2 class="fw-bold text-dark mb-1">Manage Events</h2>
-            <p class="text-muted mb-0">Review and update volunteer events that belong to your organization.</p>
+            <p class="text-muted mb-0">Review events in your organization, view joined volunteers, and send event notifications.</p>
         </div>
         <a asp-action="Create" class="btn btn-primary rounded-pill px-4 fw-bold">
             <i class="bi bi-plus-lg me-1"></i> Create Event
@@ -30,7 +30,7 @@
                     <tr>
                         <th>Event</th>
                         <th>Date / Time</th>
-                        <th>Location</th>
+                        <th>Open / Close</th>
                         <th>Capacity</th>
                         <th>Status</th>
                         <th class="text-end">Actions</th>
@@ -40,22 +40,37 @@
                 @foreach (var item in Model)
                 {
                     <tr>
-                        <td>
-                            <div class="fw-bold">@item.Title</div>
-                            <small class="text-muted">@item.Description</small>
-                            @if (!string.IsNullOrWhiteSpace(item.OrganizerProfile?.OrganizationName))
-                            {
-                                <div><small class="text-primary">Organization: @item.OrganizerProfile.OrganizationName</small></div>
-                            }
+                        <td style="min-width: 260px;">
+                            <div class="d-flex align-items-center gap-3">
+                                @if (!string.IsNullOrWhiteSpace(item.ImageUrl))
+                                {
+                                    <img src="@item.ImageUrl" class="rounded-3" style="width:70px;height:55px;object-fit:cover;" alt="Event" />
+                                }
+                                else
+                                {
+                                    <div class="bg-light rounded-3 d-flex align-items-center justify-content-center" style="width:70px;height:55px;"><i class="bi bi-image text-muted"></i></div>
+                                }
+                                <div>
+                                    <div class="fw-bold">@item.Title</div>
+                                    <small class="text-muted">@item.Location</small>
+                                    @if (!string.IsNullOrWhiteSpace(item.OrganizerProfile?.OrganizationName))
+                                    {
+                                        <div><small class="text-primary">Organization: @item.OrganizerProfile.OrganizationName</small></div>
+                                    }
+                                </div>
+                            </div>
                         </td>
                         <td>@item.EventDate.ToString("MMM dd, yyyy")<br/><small class="text-muted">@item.EventTime.ToString(@"hh\:mm")</small></td>
-                        <td>@item.Location</td>
-                        <td>@(item.Registrations?.Count ?? 0) / @item.Capacity</td>
+                        <td>@item.RegistrationOpenDate.ToString("MMM dd")<br/><small class="text-muted">Close: @(item.RegistrationClosingDate?.ToString("MMM dd") ?? "Not set")</small></td>
+                        <td><a asp-action="JoinedVolunteers" asp-route-id="@item.Id" class="fw-bold text-decoration-none">@(item.Registrations?.Count ?? 0) / @item.Capacity</a></td>
                         <td><span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3 py-2">@item.Status</span></td>
-                        <td class="text-end">
-                            <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary rounded-pill">View</a>
-                            <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-warning rounded-pill">Edit</a>
-                            <form asp-action="Delete" method="post" class="d-inline" onsubmit="return confirm('Delete this event? This will also remove related registrations.');">
+                        <td class="text-end" style="min-width: 260px;">
+                            <div class="btn-group btn-group-sm" role="group">
+                                <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-outline-primary">View</a>
+                                <a asp-action="JoinedVolunteers" asp-route-id="@item.Id" class="btn btn-outline-info">Volunteers</a>
+                                <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-warning">Edit</a>
+                            </div>
+                            <form asp-action="Delete" method="post" class="d-inline ms-1" onsubmit="return confirm('Delete this event? This will also remove related registrations.');">
                                 @Html.AntiForgeryToken()
                                 <input type="hidden" name="id" value="@item.Id" />
                                 <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill">Delete</button>

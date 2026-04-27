@@ -7,9 +7,6 @@ using OCVMS.ViewModels;
 
 namespace OCVMS.Controllers;
 
-/// <summary>
-/// පරිශීලකයාගේ ක්‍රියාකාරකම් සහ පද්ධතියේ දත්ත සාරාංශය පාලනය කරයි.
-/// </summary>
 [Authorize]
 public class DashboardController : Controller
 {
@@ -24,41 +21,33 @@ public class DashboardController : Controller
 
     public async Task<IActionResult> Index()
     {
-        // 1. දැනට ලොග් වී සිටින පරිශීලකයා ලබා ගැනීම
         var user = await _userManager.GetUserAsync(User);
         if (user == null) return RedirectToAction("Login", "Account");
 
-        // 2. Dashboard එකට අවශ්‍ය සංඛ්‍යාලේඛන ගණනය කිරීම (Linq Queries)
+        var profile = await _context.UserProfiles.FirstOrDefaultAsync(x => x.UserId == user.Id);
+        var ratingsQuery = _context.UserRatings.Where(x => x.ToUserId == user.Id);
+
         var vm = new DashboardViewModel
         {
-            // පද්ධතියේ ඇති මුළු ඉවෙන්ට් ගණන
             TotalEvents = await _context.VolunteerEvents.CountAsync(),
-            
-            // මම (පරිශීලකයා) ලියාපදිංචි වී ඇති ඉවෙන්ට් ගණන
+            ActiveEvents = await _context.VolunteerEvents.CountAsync(x => x.Status != "Closed" && x.Status != "Completed" && x.Status != "Cancelled"),
             MyRegistrations = await _context.EventRegistrations.CountAsync(x => x.UserId == user.Id),
-            
-            // Community එකේ ඇති මුළු පෝස්ට් ගණන
             CommunityPosts = await _context.CommunityPosts.CountAsync(),
-            
-            // මට ලැබී ඇති සාමාන්‍ය රේටින්ග් අගය (Average Score)
-            AverageRating = await _context.UserRatings
-                .Where(x => x.ToUserId == user.Id)
-                .Select(x => (double?)x.Score)
-                .AverageAsync() ?? 0
+            CommunityHelpPosts = await _context.CommunityPosts.CountAsync(x => x.PostType == "Help"),
+            AverageRating = await ratingsQuery.Select(x => (double?)x.Score).AverageAsync() ?? 0,
+            RatingCount = await ratingsQuery.CountAsync()
         };
 
-        // 3. අමතර දත්ත ලබා ගැනීම (ViewBag හරහා)
-        ViewBag.MyProfile = await _context.UserProfiles.FirstOrDefaultAsync(x => x.UserId == user.Id);
-        
-        // ඉදිරියට එන ඉවෙන්ට් 5ක් (Upcoming Events)
+        ViewBag.MyProfile = profile;
+
         ViewBag.UpcomingEvents = await _context.VolunteerEvents
-            .Where(x => x.EventDate >= DateTime.Now)
+            .Where(x => x.EventDate >= DateTime.Today && x.Status != "Closed" && x.Status != "Completed" && x.Status != "Cancelled")
             .OrderBy(x => x.EventDate)
             .Take(5)
             .ToListAsync();
 
-        // මෑතකදී දමන ලද පෝස්ට් 5ක් (Recent Community Posts)
         ViewBag.RecentPosts = await _context.CommunityPosts
+            .Include(p => p.User)
             .OrderByDescending(x => x.CreatedAt)
             .Take(5)
             .ToListAsync();

@@ -19,22 +19,46 @@ public class CommunityController : Controller
         _userManager = userManager;
     }
 
-    public async Task<IActionResult> Feed()
+    public async Task<IActionResult> Feed(string? filter, string? sortOrder)
     {
-        var posts = await _context.CommunityPosts
+        filter = string.IsNullOrWhiteSpace(filter) ? "All" : filter;
+        sortOrder = string.IsNullOrWhiteSpace(sortOrder) ? "Newest" : sortOrder;
+
+        var postsQuery = _context.CommunityPosts
             .Include(p => p.User)
             .Include(p => p.PostComments)
                 .ThenInclude(c => c.User)
-            .OrderByDescending(p => p.CreatedAt)
-            .ToListAsync();
+            .AsQueryable();
+
+        if (filter == "Help")
+        {
+            postsQuery = postsQuery.Where(p => p.PostType == "Help");
+        }
+        else if (filter == "Share")
+        {
+            postsQuery = postsQuery.Where(p => p.PostType != "Help");
+        }
+
+        postsQuery = sortOrder == "Oldest"
+            ? postsQuery.OrderBy(p => p.CreatedAt)
+            : postsQuery.OrderByDescending(p => p.CreatedAt);
+
+        var posts = await postsQuery.ToListAsync();
+        var allPosts = await _context.CommunityPosts.ToListAsync();
 
         var currentProfile = await GetCurrentProfileAsync();
         var isAdmin = User.IsInRole("Admin");
 
+        ViewBag.CurrentProfile = currentProfile;
         ViewBag.CurrentProfileId = currentProfile?.Id;
         ViewBag.CurrentOrganizationName = currentProfile?.OrganizationName;
         ViewBag.IsAdmin = isAdmin;
-        ViewBag.PostCount = currentProfile != null ? posts.Count(p => p.UserProfileId == currentProfile.Id) : 0;
+        ViewBag.PostCount = currentProfile != null ? allPosts.Count(p => p.UserProfileId == currentProfile.Id) : 0;
+        ViewBag.TotalPostCount = allPosts.Count;
+        ViewBag.HelpPostCount = allPosts.Count(p => p.PostType == "Help");
+        ViewBag.MyHelpPostCount = currentProfile != null ? allPosts.Count(p => p.UserProfileId == currentProfile.Id && p.PostType == "Help") : 0;
+        ViewBag.Filter = filter;
+        ViewBag.SortOrder = sortOrder;
         ViewBag.ManageablePostIds = posts
             .Where(p => CanManagePost(p, currentProfile, isAdmin))
             .Select(p => p.Id)

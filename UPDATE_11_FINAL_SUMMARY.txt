@@ -1,0 +1,55 @@
+OCVMS - 11 Requested Updates Applied
+====================================
+
+1. Community Help filter added:
+   - Community Feed can filter All Posts / Normal Posts / Community Help.
+   - Posts can be sorted by newest or oldest time order.
+
+2. Community counters improved:
+   - Sidebar now shows My Posts, My Help, Total Posts, and Community Help counts.
+
+3. Profile image display improved:
+   - Dashboard and Community Feed show uploaded profile photos.
+   - Community cards show profile image, name, public email, organization, and verified status.
+   - Profile/event images use object-fit cover and centered alignment for clean display.
+
+4. Duplicate profile update message reduced:
+   - Local duplicate TempData message rendering removed from profile page; layout handles success messages.
+
+5. Verification feature improved:
+   - Verified / Pending Verification badges shown on profile, dashboard, community and event organizer display.
+   - Admin can manage verification from Profile > User Verification.
+
+6. Joined volunteers and event notifications:
+   - Organizers/Admins can open Joined Volunteers from event details or Manage Events.
+   - Volunteer profile photo, name, email, contact and verification status are shown.
+   - Organizer/Admin can send a notification to all volunteers registered for that event.
+
+7. Login session privacy fix:
+   - Remember Me is removed from login UI.
+   - Login is non-persistent and cookie expiration is limited.
+
+8. Manage Events action buttons organized:
+   - Buttons are arranged as View, Volunteers, Edit, Delete.
+
+9. Dashboard average rating improved:
+   - Shows N/A when there are no ratings.
+   - Shows average and rating count when ratings exist.
+   - Event details page includes a simple rating form for registered volunteers.
+
+10. Event open/closing dates added:
+   - Event create/edit includes Registration Open Date and Registration Closing Date.
+   - Events automatically close after the closing date.
+   - Runtime schema patch adds missing columns to restored databases automatically.
+
+11. Event image upload/display added:
+   - Create/Edit event forms support event photo upload.
+   - Events list, details, dashboard, manage events and my events display event images.
+
+Important run note:
+- If you are using the restored backup database, do not run dotnet ef database update repeatedly.
+- Recommended run commands:
+  dotnet clean .\OCVMS.csproj
+  dotnet restore .\OCVMS.csproj
+  dotnet build .\OCVMS.csproj
+  dotnet run --project ".\OCVMS.csproj"

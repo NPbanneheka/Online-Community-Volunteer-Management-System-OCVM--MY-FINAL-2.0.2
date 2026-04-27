@@ -21,10 +21,19 @@ public class VolunteerEvent : BaseEntity
     [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd}", ApplyFormatInEditMode = true)]
     public DateTime EventDate { get; set; }
 
-    // අලුතින් එකතු කළ 'වෙලාව' සඳහා කොටස
     [Required(ErrorMessage = "Event Time is required.")]
     [DataType(DataType.Time)]
     public TimeSpan EventTime { get; set; }
+
+    [Display(Name = "Registration Open Date")]
+    [DataType(DataType.Date)]
+    [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd}", ApplyFormatInEditMode = true)]
+    public DateTime RegistrationOpenDate { get; set; } = DateTime.Today;
+
+    [Display(Name = "Registration Closing Date")]
+    [DataType(DataType.Date)]
+    [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd}", ApplyFormatInEditMode = true)]
+    public DateTime? RegistrationClosingDate { get; set; }
 
     [Required(ErrorMessage = "Capacity is required.")]
     [Range(1, 10000, ErrorMessage = "Capacity must be at least 1.")]
@@ -36,9 +45,16 @@ public class VolunteerEvent : BaseEntity
     public int OrganizerProfileId { get; set; }
 
     [ForeignKey("OrganizerProfileId")]
-    [ValidateNever] 
+    [ValidateNever]
     public virtual UserProfile? OrganizerProfile { get; set; }
 
     [ValidateNever]
     public virtual ICollection<EventRegistration> Registrations { get; set; } = new List<EventRegistration>();
+
+    [NotMapped]
+    public bool IsRegistrationOpen => DateTime.Today >= RegistrationOpenDate.Date
+        && (!RegistrationClosingDate.HasValue || DateTime.Today <= RegistrationClosingDate.Value.Date)
+        && !string.Equals(Status, "Closed", StringComparison.OrdinalIgnoreCase)
+        && !string.Equals(Status, "Completed", StringComparison.OrdinalIgnoreCase)
+        && !string.Equals(Status, "Cancelled", StringComparison.OrdinalIgnoreCase);
 }

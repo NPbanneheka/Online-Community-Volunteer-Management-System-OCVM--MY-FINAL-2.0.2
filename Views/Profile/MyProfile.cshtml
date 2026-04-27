@@ -2,8 +2,6 @@
 @{ ViewData["Title"] = "My Profile"; }
 
 <div class="container py-4">
-    @if (TempData["Message"] != null) { <div class="alert alert-success border-0 shadow-sm rounded-pill"><i class="bi bi-check-circle-fill me-2"></i>@TempData["Message"]</div> }
-
     @if (Model == null)
     {
         <div class="card card-modern p-4 text-center shadow-sm border-0 rounded-4 mt-4">
@@ -38,6 +36,10 @@
                     @if (Model.IsVerified) 
                     { 
                         <div class="mb-3"><span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 py-2"><i class="bi bi-patch-check-fill me-1"></i> Verified User</span></div> 
+                    }
+                    else
+                    {
+                        <div class="mb-3"><span class="badge bg-warning bg-opacity-10 text-warning rounded-pill px-3 py-2"><i class="bi bi-hourglass-split me-1"></i> Pending Verification</span></div>
                     }
                     
                     <hr class="text-muted opacity-25"/>

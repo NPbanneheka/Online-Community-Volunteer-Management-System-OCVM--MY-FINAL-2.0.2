@@ -1,13 +1,12 @@
 @model OCVMS.Models.VolunteerEvent
-@{ 
-    ViewData["Title"] = "Create Event"; 
-}
+@{ ViewData["Title"] = "Create Event"; }
 
 <div class="container py-4">
     <div class="card shadow-sm border-0 rounded-4 p-4 p-lg-5">
-        <h2 class="fw-bold mb-4">Create New Event</h2>
+        <h2 class="fw-bold mb-2">Create New Event</h2>
+        <p class="text-muted mb-4">Add event details, registration open/closing dates, capacity, and a suitable event photo.</p>
 
-        <form asp-action="Create" method="post" novalidate>
+        <form asp-action="Create" method="post" enctype="multipart/form-data" novalidate>
             <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
             <div class="row g-4">
@@ -15,6 +14,20 @@
                     <label asp-for="Title" class="form-label fw-bold">Event Title</label>
                     <input asp-for="Title" class="form-control" placeholder="E.g., Beach Cleanup, Book Donation" />
                     <span asp-validation-for="Title" class="text-danger small"></span>
+                </div>
+
+                <div class="col-md-4">
+                    <label asp-for="RegistrationOpenDate" class="form-label fw-bold">Open Date</label>
+                    <input asp-for="RegistrationOpenDate" type="date" class="form-control" />
+                    <small class="text-muted">Volunteers can register from this date.</small>
+                    <span asp-validation-for="RegistrationOpenDate" class="text-danger small"></span>
+                </div>
+
+                <div class="col-md-4">
+                    <label asp-for="RegistrationClosingDate" class="form-label fw-bold">Closing Date</label>
+                    <input asp-for="RegistrationClosingDate" type="date" class="form-control" />
+                    <small class="text-muted">After this date the event closes automatically.</small>
+                    <span asp-validation-for="RegistrationClosingDate" class="text-danger small"></span>
                 </div>
 
                 <div class="col-md-4">
@@ -30,9 +43,19 @@
                 </div>
                 
                 <div class="col-md-4">
-                    <label asp-for="Capacity" class="form-label fw-bold">Capacity (No. of Volunteers)</label>
+                    <label asp-for="Capacity" class="form-label fw-bold">Capacity</label>
                     <input asp-for="Capacity" type="number" min="1" class="form-control" placeholder="E.g., 20" />
                     <span asp-validation-for="Capacity" class="text-danger small"></span>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">Event Photo</label>
+                    <input type="file" name="eventImage" class="form-control" accept="image/*" onchange="previewEventImage(event)" />
+                    <small class="text-muted">JPG, PNG, WEBP up to 4MB. Image is centered automatically.</small>
+                </div>
+
+                <div class="col-12" id="eventImagePreviewWrap" style="display:none;">
+                    <img id="eventImagePreview" src="#" class="rounded-4 shadow-sm w-100" style="max-height:260px; object-fit:cover; object-position:center;" alt="Event preview" />
                 </div>
 
                 <div class="col-12">
@@ -58,4 +81,16 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        function previewEventImage(event) {
+            const file = event.target.files && event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('eventImagePreview').src = e.target.result;
+                document.getElementById('eventImagePreviewWrap').style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        }
+    </script>
 }

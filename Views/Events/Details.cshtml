@@ -5,13 +5,35 @@
     int registeredCount = ViewBag.RegisteredCount ?? 0;
     int remainingSlots = ViewBag.RemainingSlots ?? 0;
     bool canManageEvent = ViewBag.CanManageEvent ?? false;
+    bool canRate = ViewBag.CanRate ?? false;
+    var myRating = ViewBag.MyRating as UserRating;
+    double averageRating = ViewBag.AverageRating ?? 0.0;
+    int ratingCount = ViewBag.RatingCount ?? 0;
+    var isRegistrationOpen = Model.IsRegistrationOpen;
 }
 
 <div class="container py-5">
     <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
-        <div class="bg-primary bg-opacity-10 p-5 text-center">
-            <i class="bi bi-calendar-star text-primary opacity-50" style="font-size: 5rem;"></i>
-            <h2 class="fw-bold text-dark mt-3">@Model.Title</h2>
+        @if (!string.IsNullOrWhiteSpace(Model.ImageUrl))
+        {
+            <img src="@Model.ImageUrl" class="w-100" style="height: 320px; object-fit: cover; object-position: center;" alt="@Model.Title" />
+        }
+        else
+        {
+            <div class="bg-primary bg-opacity-10 p-5 text-center">
+                <i class="bi bi-calendar-star text-primary opacity-50" style="font-size: 5rem;"></i>
+            </div>
+        }
+        <div class="bg-white p-4 text-center border-bottom">
+            <h2 class="fw-bold text-dark mt-2">@Model.Title</h2>
+            <div class="d-flex justify-content-center gap-2 flex-wrap">
+                <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3 py-2">@Model.Status</span>
+                <span class="badge @(isRegistrationOpen ? "bg-success" : "bg-secondary") bg-opacity-10 @(isRegistrationOpen ? "text-success" : "text-secondary") rounded-pill px-3 py-2">@(isRegistrationOpen ? "Registration Open" : "Registration Closed")</span>
+                @if (ratingCount > 0)
+                {
+                    <span class="badge bg-warning bg-opacity-10 text-warning rounded-pill px-3 py-2"><i class="bi bi-star-fill"></i> @averageRating.ToString("0.0") (@ratingCount)</span>
+                }
+            </div>
         </div>
         
         <div class="card-body p-4 p-md-5">
@@ -19,6 +41,38 @@
                 <div class="col-lg-7">
                     <h4 class="fw-bold border-bottom pb-2 mb-4">About the Event</h4>
                     <p class="text-secondary" style="white-space: pre-line; line-height: 1.8;">@Model.Description</p>
+
+                    @if (canRate)
+                    {
+                        <div class="card border-0 bg-light rounded-4 p-4 mt-4">
+                            <h5 class="fw-bold mb-3"><i class="bi bi-star text-warning me-1"></i> Rate this Event</h5>
+                            <form asp-action="RateEvent" method="post" class="row g-2">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@Model.Id" />
+                                <div class="col-md-3">
+                                    <select name="score" class="form-select rounded-pill" required>
+                                        @for (int i = 5; i >= 1; i--)
+                                        {
+                                            if (myRating?.Score == i)
+                                            {
+                                                <option value="@i" selected>@i Stars</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="@i">@i Stars</option>
+                                            }
+                                        }
+                                    </select>
+                                </div>
+                                <div class="col-md-7">
+                                    <input name="reviewText" class="form-control rounded-pill" placeholder="Optional short review" value="@myRating?.ReviewText" />
+                                </div>
+                                <div class="col-md-2 d-grid">
+                                    <button type="submit" class="btn btn-warning rounded-pill fw-bold">Save</button>
+                                </div>
+                            </form>
+                        </div>
+                    }
                 </div>
                 
                 <div class="col-lg-5">
@@ -30,91 +84,91 @@
                         
                         <div class="d-flex align-items-center mb-3">
                             <div class="bg-white p-2 rounded shadow-sm me-3"><i class="bi bi-calendar-event text-primary fs-5"></i></div>
-                            <div>
-                                <small class="text-muted d-block">Date</small>
-                                <span class="fw-bold text-dark">@Model.EventDate.ToString("MMMM dd, yyyy")</span>
-                            </div>
+                            <div><small class="text-muted d-block">Event Date</small><span class="fw-bold text-dark">@Model.EventDate.ToString("MMMM dd, yyyy")</span></div>
                         </div>
-                        
                         <div class="d-flex align-items-center mb-3">
                             <div class="bg-white p-2 rounded shadow-sm me-3"><i class="bi bi-clock text-warning fs-5"></i></div>
-                            <div>
-                                <small class="text-muted d-block">Time</small>
-                                <span class="fw-bold text-dark">@Model.EventTime.ToString(@"hh\:mm")</span>
-                            </div>
+                            <div><small class="text-muted d-block">Time</small><span class="fw-bold text-dark">@Model.EventTime.ToString(@"hh\:mm")</span></div>
                         </div>
-                        
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="bg-white p-2 rounded shadow-sm me-3"><i class="bi bi-door-open text-success fs-5"></i></div>
+                            <div><small class="text-muted d-block">Open Date</small><span class="fw-bold text-dark">@Model.RegistrationOpenDate.ToString("MMMM dd, yyyy")</span></div>
+                        </div>
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="bg-white p-2 rounded shadow-sm me-3"><i class="bi bi-hourglass-split text-danger fs-5"></i></div>
+                            <div><small class="text-muted d-block">Closing Date</small><span class="fw-bold text-dark">@(Model.RegistrationClosingDate?.ToString("MMMM dd, yyyy") ?? "Not set")</span></div>
+                        </div>
                         <div class="d-flex align-items-center mb-3">
                             <div class="bg-white p-2 rounded shadow-sm me-3"><i class="bi bi-geo-alt text-danger fs-5"></i></div>
-                            <div>
-                                <small class="text-muted d-block">Location</small>
-                                <span class="fw-bold text-dark">@Model.Location</span>
-                            </div>
+                            <div><small class="text-muted d-block">Location</small><span class="fw-bold text-dark">@Model.Location</span></div>
                         </div>
-
                         <div class="d-flex align-items-center mb-3">
                             <div class="bg-white p-2 rounded shadow-sm me-3"><i class="bi bi-person-badge text-info fs-5"></i></div>
                             <div>
                                 <small class="text-muted d-block">Organizer</small>
                                 <span class="fw-bold text-dark">@(Model.OrganizerProfile?.FullName ?? "Organizer")</span>
+                                @if (Model.OrganizerProfile?.IsVerified == true)
+                                {
+                                    <i class="bi bi-patch-check-fill text-success ms-1"></i>
+                                }
                                 @if (!string.IsNullOrWhiteSpace(Model.OrganizerProfile?.OrganizationName))
                                 {
-                                    <small class="text-muted d-block">@Model.OrganizerProfile.OrganizationName</small>
+                                    <small class="d-block text-primary">@Model.OrganizerProfile.OrganizationName</small>
                                 }
                             </div>
                         </div>
-
                         <div class="d-flex align-items-center mb-4">
                             <div class="bg-white p-2 rounded shadow-sm me-3"><i class="bi bi-people text-success fs-5"></i></div>
                             <div>
                                 <small class="text-muted d-block">Capacity</small>
-                                <span class="fw-bold text-dark">@registeredCount / @Model.Capacity registered · @remainingSlots slots left</span>
+                                @if (canManageEvent)
+                                {
+                                    <a asp-action="JoinedVolunteers" asp-route-id="@Model.Id" class="fw-bold text-dark text-decoration-none">@registeredCount / @Model.Capacity registered (@remainingSlots left)</a>
+                                    <small class="d-block text-muted">Click to view volunteers and send event notices.</small>
+                                }
+                                else
+                                {
+                                    <span class="fw-bold text-dark">@registeredCount / @Model.Capacity registered (@remainingSlots left)</span>
+                                }
                             </div>
                         </div>
-
-                        <hr class="my-4" />
-
+                        
                         @if (User.Identity?.IsAuthenticated == true)
                         {
                             if (isRegistered)
                             {
-                                <div class="alert alert-success text-center fw-bold rounded-pill mb-0">
-                                    <i class="bi bi-check-circle-fill me-2"></i> You are Already Registered!
-                                </div>
+                                <form asp-action="Unregister" method="post">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="eventId" value="@Model.Id" />
+                                    <button type="submit" class="btn btn-outline-danger w-100 rounded-pill fw-bold">Cancel Registration</button>
+                                </form>
                             }
-                            else if (remainingSlots <= 0)
+                            else if (!isRegistrationOpen)
                             {
-                                <div class="alert alert-warning text-center fw-bold rounded-pill mb-0">
-                                    <i class="bi bi-exclamation-triangle-fill me-2"></i> Event capacity is full.
-                                </div>
+                                <button class="btn btn-secondary w-100 rounded-pill fw-bold" disabled>Registration Closed</button>
                             }
                             else
                             {
-                                <form asp-controller="Events" asp-action="Register" method="post">
+                                <form asp-action="Register" method="post">
                                     @Html.AntiForgeryToken()
                                     <input type="hidden" name="eventId" value="@Model.Id" />
-                                    <button type="submit" class="btn btn-success w-100 py-3 fw-bold shadow-sm" style="border-radius: 8px; background-color: #198754;">
-                                        Register for Event
-                                    </button>
+                                    <button type="submit" class="btn btn-primary w-100 rounded-pill fw-bold py-2">Register Now</button>
                                 </form>
                             }
                         }
                         else
                         {
-                            <a asp-controller="Account" asp-action="Login" class="btn btn-outline-success w-100 py-3 fw-bold" style="border-radius: 8px;">
-                                Login to Register
-                            </a>
+                            <a asp-controller="Account" asp-action="Login" class="btn btn-primary w-100 rounded-pill fw-bold">Login to Register</a>
                         }
                     </div>
                 </div>
             </div>
-            
-            <div class="mt-5 pt-3 border-top d-flex gap-2 flex-wrap">
-                <a asp-action="Index" class="btn btn-light rounded-pill px-4 fw-bold text-secondary">
-                    <i class="bi bi-arrow-left me-2"></i> Back to Events List
-                </a>
+
+            <div class="d-flex flex-wrap gap-2 mt-5">
+                <a asp-action="Index" class="btn btn-light rounded-pill px-4 fw-bold">Back to Events</a>
                 @if (canManageEvent)
                 {
+                    <a asp-action="JoinedVolunteers" asp-route-id="@Model.Id" class="btn btn-info text-white rounded-pill px-4 fw-bold">Joined Volunteers</a>
                     <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning rounded-pill px-4 fw-bold">Edit Event</a>
                     <form asp-action="Delete" method="post" onsubmit="return confirm('Delete this event?');">
                         @Html.AntiForgeryToken()

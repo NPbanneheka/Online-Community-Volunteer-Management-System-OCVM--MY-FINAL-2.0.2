@@ -3,11 +3,15 @@
     ViewData["Title"] = "Volunteer Events";
     var registeredEventIds = ViewBag.UserRegisteredEvents as List<int> ?? new List<int>();
     var manageableEventIds = ViewBag.ManageableEventIds as List<int> ?? new List<int>();
+    var statusFilter = (string)(ViewBag.StatusFilter ?? "Active");
 }
 
 <div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="fw-bold">Volunteer Events</h1>
+        <div>
+            <h1 class="fw-bold mb-1">Volunteer Events</h1>
+            <p class="text-muted mb-0">Browse active events, view registration closing dates, and join opportunities.</p>
+        </div>
         @if (User.IsInRole("Admin") || User.IsInRole("Organizer"))
         {
             <a asp-action="Create" class="btn btn-primary rounded-pill px-4 fw-bold">
@@ -16,11 +20,23 @@
         }
     </div>
 
-    <form asp-action="Index" method="get" class="mb-5">
-        <div class="input-group shadow-sm rounded-pill overflow-hidden">
-            <input type="text" name="searchTerm" class="form-control border-0 px-4" placeholder="Search events by title, location, or description..." value="@ViewBag.SearchTerm">
-            <button class="btn btn-dark px-4" type="submit">Search</button>
-            <a asp-action="Index" class="btn btn-outline-secondary px-4">Clear</a>
+    <form asp-action="Index" method="get" class="mb-5 card border-0 shadow-sm rounded-4 p-3">
+        <div class="row g-2 align-items-end">
+            <div class="col-md-7">
+                <label class="form-label small fw-bold text-muted">Search</label>
+                <input type="text" name="searchTerm" class="form-control rounded-pill px-4" placeholder="Search events by title, location, or description..." value="@ViewBag.SearchTerm">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small fw-bold text-muted">Status</label>
+                <select name="statusFilter" class="form-select rounded-pill">
+                    @if (statusFilter == "Active") { <option value="Active" selected>Active Events</option> } else { <option value="Active">Active Events</option> }
+                    @if (statusFilter == "Closed") { <option value="Closed" selected>Closed/Completed</option> } else { <option value="Closed">Closed/Completed</option> }
+                    @if (statusFilter == "All") { <option value="All" selected>All Events</option> } else { <option value="All">All Events</option> }
+                </select>
+            </div>
+            <div class="col-md-2 d-grid">
+                <button class="btn btn-dark rounded-pill" type="submit">Apply</button>
+            </div>
         </div>
     </form>
 
@@ -29,7 +45,7 @@
         <div class="alert alert-light text-center rounded-4 p-5 shadow-sm border-0">
             <i class="bi bi-calendar-x text-muted" style="font-size: 4rem; opacity: 0.5;"></i>
             <h4 class="mt-3 text-muted fw-bold">No events found.</h4>
-            <p class="text-secondary">Check back later or try a different search term.</p>
+            <p class="text-secondary">Check back later or try a different search/filter.</p>
         </div>
     }
     else
@@ -38,21 +54,37 @@
             @foreach (var item in Model)
             {
                 var canManage = manageableEventIds.Contains(item.Id);
+                var isClosed = !item.IsRegistrationOpen;
                 <div class="col">
                     <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden">
-                        <div class="bg-primary bg-opacity-10 d-flex align-items-center justify-content-center" style="height: 160px;">
-                            <i class="bi bi-calendar-event text-primary opacity-25" style="font-size: 4rem;"></i>
-                        </div>
-                        <div class="card-body p-4">
-                            <h5 class="fw-bold text-dark mb-1">@item.Title</h5>
+                        @if (!string.IsNullOrWhiteSpace(item.ImageUrl))
+                        {
+                            <img src="@item.ImageUrl" class="event-card-image" alt="@item.Title" />
+                        }
+                        else
+                        {
+                            <div class="bg-primary bg-opacity-10 d-flex align-items-center justify-content-center" style="height: 170px;">
+                                <i class="bi bi-calendar-event text-primary opacity-25" style="font-size: 4rem;"></i>
+                            </div>
+                        }
+                        <div class="card-body p-4 d-flex flex-column">
+                            <div class="d-flex justify-content-between align-items-start mb-2 gap-2">
+                                <h5 class="fw-bold text-dark mb-1">@item.Title</h5>
+                                <span class="badge @(isClosed ? "bg-secondary" : "bg-success") bg-opacity-10 @(isClosed ? "text-secondary" : "text-success") rounded-pill">@(isClosed ? "Closed" : "Open")</span>
+                            </div>
                             <p class="text-muted small mb-3">
                                 <i class="bi bi-geo-alt-fill text-danger"></i> @item.Location<br/>
-                                <i class="bi bi-calendar3 text-primary"></i> @item.EventDate.ToString("MMM dd, yyyy")<br/>
-                                <i class="bi bi-clock text-warning"></i> @item.EventTime.ToString(@"hh\:mm")
+                                <i class="bi bi-calendar3 text-primary"></i> Event: @item.EventDate.ToString("MMM dd, yyyy")<br/>
+                                <i class="bi bi-clock text-warning"></i> @item.EventTime.ToString(@"hh\:mm")<br/>
+                                <i class="bi bi-hourglass-split text-info"></i> Registration closes: @(item.RegistrationClosingDate?.ToString("MMM dd, yyyy") ?? item.EventDate.ToString("MMM dd, yyyy"))
                             </p>
 
                             <div class="mb-2 small text-muted">
                                 <i class="bi bi-person-badge text-info"></i> @(item.OrganizerProfile?.FullName ?? "Organizer")
+                                @if (item.OrganizerProfile?.IsVerified == true)
+                                {
+                                    <i class="bi bi-patch-check-fill text-success ms-1" title="Verified organizer"></i>
+                                }
                                 @if (!string.IsNullOrWhiteSpace(item.OrganizerProfile?.OrganizationName))
                                 {
                                     <span> · @item.OrganizerProfile.OrganizationName</span>
@@ -67,12 +99,8 @@
                                 @if (canManage)
                                 {
                                     <div class="d-flex gap-2 mb-2">
+                                        <a asp-action="JoinedVolunteers" asp-route-id="@item.Id" class="btn btn-info btn-sm rounded-pill w-50 fw-bold text-white">Volunteers</a>
                                         <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-warning btn-sm rounded-pill w-50 fw-bold">Edit</a>
-                                        <form asp-action="Delete" method="post" class="w-50" onsubmit="return confirm('Delete this event?');">
-                                            @Html.AntiForgeryToken()
-                                            <input type="hidden" name="id" value="@item.Id" />
-                                            <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill w-100 fw-bold">Delete</button>
-                                        </form>
                                     </div>
                                 }
                                 @if (User.Identity?.IsAuthenticated == true)
@@ -82,6 +110,10 @@
                                         <div class="btn btn-success w-100 rounded-pill fw-bold disabled mb-2">
                                             <i class="bi bi-check-circle-fill me-2"></i> Already Registered
                                         </div>
+                                    }
+                                    else if (isClosed)
+                                    {
+                                        <div class="btn btn-secondary w-100 rounded-pill fw-bold disabled mb-2">Registration Closed</div>
                                     }
                                     else
                                     {
@@ -96,10 +128,7 @@
                                 {
                                     <a asp-controller="Account" asp-action="Login" class="btn btn-outline-primary w-100 rounded-pill fw-bold mb-2">Login to Register</a>
                                 }
-                                
-                                <a asp-controller="Events" asp-action="Details" asp-route-id="@item.Id" class="btn btn-light text-primary w-100 rounded-pill fw-bold border">
-                                    View Details
-                                </a>
+                                <a asp-controller="Events" asp-action="Details" asp-route-id="@item.Id" class="btn btn-light text-primary w-100 rounded-pill fw-bold border">View Details</a>
                             </div>
                         </div>
                     </div>

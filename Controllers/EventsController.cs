@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -12,16 +14,20 @@ public class EventsController : Controller
 {
     private readonly ApplicationDbContext _context;
     private readonly UserManager<IdentityUser> _userManager;
+    private readonly IWebHostEnvironment _environment;
 
-    public EventsController(ApplicationDbContext context, UserManager<IdentityUser> userManager)
+    public EventsController(ApplicationDbContext context, UserManager<IdentityUser> userManager, IWebHostEnvironment environment)
     {
         _context = context;
         _userManager = userManager;
+        _environment = environment;
     }
 
     [AllowAnonymous]
-    public async Task<IActionResult> Index(string? searchTerm)
+    public async Task<IActionResult> Index(string? searchTerm, string? statusFilter)
     {
+        await AutoCloseExpiredEventsAsync();
+
         var eventsQuery = _context.VolunteerEvents
             .Include(e => e.OrganizerProfile)
             .Include(e => e.Registrations)
@@ -34,6 +40,16 @@ public class EventsController : Controller
                 e.Title.Contains(term) ||
                 e.Location.Contains(term) ||
                 e.Description.Contains(term));
+        }
+
+        statusFilter = string.IsNullOrWhiteSpace(statusFilter) ? "Active" : statusFilter;
+        if (statusFilter == "Active")
+        {
+            eventsQuery = eventsQuery.Where(e => e.Status != "Closed" && e.Status != "Completed" && e.Status != "Cancelled");
+        }
+        else if (statusFilter == "Closed")
+        {
+            eventsQuery = eventsQuery.Where(e => e.Status == "Closed" || e.Status == "Completed" || e.Status == "Cancelled");
         }
 
         var eventsList = await eventsQuery
@@ -61,11 +77,14 @@ public class EventsController : Controller
                 .ToListAsync();
 
         ViewBag.SearchTerm = searchTerm;
+        ViewBag.StatusFilter = statusFilter;
         return View(eventsList);
     }
 
     public async Task<IActionResult> MyEvents()
     {
+        await AutoCloseExpiredEventsAsync();
+
         var userId = _userManager.GetUserId(User);
         if (userId == null) return RedirectToAction("Login", "Account");
 
@@ -84,6 +103,8 @@ public class EventsController : Controller
     [Authorize(Roles = "Organizer,Admin")]
     public async Task<IActionResult> MyCreatedEvents()
     {
+        await AutoCloseExpiredEventsAsync();
+
         var profile = await GetCurrentProfileAsync();
         if (profile == null)
         {
@@ -113,6 +134,8 @@ public class EventsController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Register(int eventId)
     {
+        await AutoCloseExpiredEventsAsync();
+
         var userId = _userManager.GetUserId(User);
         if (userId == null) return RedirectToAction("Login", "Account");
 
@@ -122,9 +145,9 @@ public class EventsController : Controller
 
         if (volunteerEvent == null) return NotFound();
 
-        if (string.Equals(volunteerEvent.Status, "Closed", StringComparison.OrdinalIgnoreCase))
+        if (!volunteerEvent.IsRegistrationOpen)
         {
-            TempData["Message"] = "This event is currently closed for registrations.";
+            TempData["Message"] = "Registration is not open for this event.";
             return RedirectToAction(nameof(Details), new { id = eventId });
         }
 
@@ -202,6 +225,7 @@ public class EventsController : Controller
     public async Task<IActionResult> Details(int? id)
     {
         if (id == null) return NotFound();
+        await AutoCloseExpiredEventsAsync();
 
         var volunteerEvent = await _context.VolunteerEvents
             .Include(e => e.OrganizerProfile)
@@ -221,6 +245,14 @@ public class EventsController : Controller
         ViewBag.CurrentProfileId = profile?.Id;
         ViewBag.IsAdmin = isAdmin;
         ViewBag.CanManageEvent = CanManageEvent(volunteerEvent, profile, isAdmin);
+        ViewBag.CanRate = userId != null && (ViewBag.IsRegistered == true);
+        ViewBag.MyRating = userId == null ? null : await _context.UserRatings
+            .FirstOrDefaultAsync(r => r.EventId == volunteerEvent.Id && r.FromUserId == userId);
+        ViewBag.AverageRating = await _context.UserRatings
+            .Where(r => r.EventId == volunteerEvent.Id)
+            .Select(r => (double?)r.Score)
+            .AverageAsync() ?? 0;
+        ViewBag.RatingCount = await _context.UserRatings.CountAsync(r => r.EventId == volunteerEvent.Id);
 
         return View(volunteerEvent);
     }
@@ -245,6 +277,8 @@ public class EventsController : Controller
         {
             EventDate = DateTime.Today.AddDays(7),
             EventTime = new TimeSpan(9, 0, 0),
+            RegistrationOpenDate = DateTime.Today,
+            RegistrationClosingDate = DateTime.Today.AddDays(6),
             Status = "Upcoming",
             Capacity = 10
         });
@@ -253,7 +287,7 @@ public class EventsController : Controller
     [HttpPost]
     [Authorize(Roles = "Organizer,Admin")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create(VolunteerEvent volunteerEvent)
+    public async Task<IActionResult> Create(VolunteerEvent volunteerEvent, IFormFile? eventImage)
     {
         var userProfile = await GetCurrentProfileAsync();
 
@@ -271,15 +305,32 @@ public class EventsController : Controller
 
         volunteerEvent.OrganizerProfileId = userProfile.Id;
         volunteerEvent.Status = string.IsNullOrWhiteSpace(volunteerEvent.Status) ? "Upcoming" : volunteerEvent.Status;
+        if (!volunteerEvent.RegistrationClosingDate.HasValue)
+        {
+            volunteerEvent.RegistrationClosingDate = volunteerEvent.EventDate;
+        }
 
         ModelState.Remove(nameof(VolunteerEvent.OrganizerProfileId));
         ModelState.Remove(nameof(VolunteerEvent.OrganizerProfile));
         ModelState.Remove(nameof(VolunteerEvent.Registrations));
         ModelState.Remove(nameof(VolunteerEvent.Status));
+        ModelState.Remove(nameof(VolunteerEvent.ImageUrl));
+        ModelState.Remove("eventImage");
+
+        if (volunteerEvent.RegistrationClosingDate.HasValue && volunteerEvent.RegistrationClosingDate.Value.Date < volunteerEvent.RegistrationOpenDate.Date)
+        {
+            ModelState.AddModelError(nameof(VolunteerEvent.RegistrationClosingDate), "Closing date cannot be before the opening date.");
+        }
 
         if (!ModelState.IsValid)
         {
             return View(volunteerEvent);
+        }
+
+        var imageUrl = await SaveEventImageAsync(eventImage, null);
+        if (imageUrl != null)
+        {
+            volunteerEvent.ImageUrl = imageUrl;
         }
 
         _context.VolunteerEvents.Add(volunteerEvent);
@@ -322,7 +373,7 @@ public class EventsController : Controller
     [HttpPost]
     [Authorize(Roles = "Organizer,Admin")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Edit(int id, VolunteerEvent volunteerEvent)
+    public async Task<IActionResult> Edit(int id, VolunteerEvent volunteerEvent, IFormFile? eventImage)
     {
         if (id != volunteerEvent.Id) return NotFound();
 
@@ -339,10 +390,18 @@ public class EventsController : Controller
         ModelState.Remove(nameof(VolunteerEvent.OrganizerProfile));
         ModelState.Remove(nameof(VolunteerEvent.Registrations));
         ModelState.Remove(nameof(VolunteerEvent.OrganizerProfileId));
+        ModelState.Remove(nameof(VolunteerEvent.ImageUrl));
+        ModelState.Remove("eventImage");
+
+        if (volunteerEvent.RegistrationClosingDate.HasValue && volunteerEvent.RegistrationClosingDate.Value.Date < volunteerEvent.RegistrationOpenDate.Date)
+        {
+            ModelState.AddModelError(nameof(VolunteerEvent.RegistrationClosingDate), "Closing date cannot be before the opening date.");
+        }
 
         if (!ModelState.IsValid)
         {
             volunteerEvent.OrganizerProfileId = existingEvent.OrganizerProfileId;
+            volunteerEvent.ImageUrl = existingEvent.ImageUrl;
             return View(volunteerEvent);
         }
 
@@ -351,9 +410,16 @@ public class EventsController : Controller
         existingEvent.Location = volunteerEvent.Location;
         existingEvent.EventDate = volunteerEvent.EventDate;
         existingEvent.EventTime = volunteerEvent.EventTime;
+        existingEvent.RegistrationOpenDate = volunteerEvent.RegistrationOpenDate;
+        existingEvent.RegistrationClosingDate = volunteerEvent.RegistrationClosingDate;
         existingEvent.Capacity = volunteerEvent.Capacity;
         existingEvent.Status = volunteerEvent.Status;
-        existingEvent.ImageUrl = volunteerEvent.ImageUrl;
+
+        var imageUrl = await SaveEventImageAsync(eventImage, existingEvent.ImageUrl);
+        if (imageUrl != null)
+        {
+            existingEvent.ImageUrl = imageUrl;
+        }
 
         await _context.SaveChangesAsync();
         TempData["Message"] = "Event updated successfully!";
@@ -382,11 +448,108 @@ public class EventsController : Controller
             _context.EventRegistrations.RemoveRange(volunteerEvent.Registrations);
         }
 
+        DeleteLocalFile(volunteerEvent.ImageUrl, "events");
         _context.VolunteerEvents.Remove(volunteerEvent);
         await _context.SaveChangesAsync();
 
         TempData["Message"] = "Event deleted successfully.";
         return RedirectToAction(nameof(MyCreatedEvents));
+    }
+
+    [Authorize(Roles = "Organizer,Admin")]
+    public async Task<IActionResult> JoinedVolunteers(int id)
+    {
+        var volunteerEvent = await _context.VolunteerEvents
+            .Include(e => e.OrganizerProfile)
+            .Include(e => e.Registrations)
+                .ThenInclude(r => r.User)
+            .FirstOrDefaultAsync(e => e.Id == id);
+
+        if (volunteerEvent == null) return NotFound();
+        if (!await CanManageEventAsync(volunteerEvent)) return Forbid();
+
+        var registeredUserIds = volunteerEvent.Registrations.Select(r => r.UserId).ToList();
+        var profiles = await _context.UserProfiles
+            .Where(p => registeredUserIds.Contains(p.UserId))
+            .ToListAsync();
+
+        ViewBag.VolunteerProfiles = profiles;
+        return View(volunteerEvent);
+    }
+
+    [HttpPost]
+    [Authorize(Roles = "Organizer,Admin")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> SendVolunteerNotification(int id, string message)
+    {
+        var volunteerEvent = await _context.VolunteerEvents
+            .Include(e => e.OrganizerProfile)
+            .Include(e => e.Registrations)
+            .FirstOrDefaultAsync(e => e.Id == id);
+
+        if (volunteerEvent == null) return NotFound();
+        if (!await CanManageEventAsync(volunteerEvent)) return Forbid();
+
+        if (string.IsNullOrWhiteSpace(message))
+        {
+            TempData["Message"] = "Please enter a message before sending.";
+            return RedirectToAction(nameof(JoinedVolunteers), new { id });
+        }
+
+        var registeredUserIds = volunteerEvent.Registrations.Select(r => r.UserId).ToList();
+        var volunteerProfiles = await _context.UserProfiles
+            .Where(p => registeredUserIds.Contains(p.UserId))
+            .ToListAsync();
+
+        foreach (var profile in volunteerProfiles)
+        {
+            _context.Notifications.Add(new Notification
+            {
+                UserProfileId = profile.Id,
+                Message = $"Event notice for '{volunteerEvent.Title}': {message.Trim()}"
+            });
+        }
+
+        await _context.SaveChangesAsync();
+        TempData["Message"] = $"Notification sent to {volunteerProfiles.Count} registered volunteer(s).";
+        return RedirectToAction(nameof(JoinedVolunteers), new { id });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> RateEvent(int id, int score, string? reviewText)
+    {
+        var userId = _userManager.GetUserId(User);
+        if (userId == null) return RedirectToAction("Login", "Account");
+
+        if (score < 1 || score > 5)
+        {
+            TempData["Message"] = "Please select a rating between 1 and 5.";
+            return RedirectToAction(nameof(Details), new { id });
+        }
+
+        var volunteerEvent = await _context.VolunteerEvents
+            .Include(e => e.OrganizerProfile)
+            .FirstOrDefaultAsync(e => e.Id == id);
+        if (volunteerEvent == null) return NotFound();
+
+        var isRegistered = await _context.EventRegistrations.AnyAsync(r => r.VolunteerEventId == id && r.UserId == userId);
+        if (!isRegistered && !User.IsInRole("Admin")) return Forbid();
+
+        var toUserId = volunteerEvent.OrganizerProfile?.UserId ?? userId;
+        var rating = await _context.UserRatings.FirstOrDefaultAsync(r => r.EventId == id && r.FromUserId == userId && r.ToUserId == toUserId);
+        if (rating == null)
+        {
+            rating = new UserRating { EventId = id, FromUserId = userId, ToUserId = toUserId };
+            _context.UserRatings.Add(rating);
+        }
+
+        rating.Score = score;
+        rating.ReviewText = reviewText;
+        await _context.SaveChangesAsync();
+
+        TempData["Message"] = "Thank you. Your rating was saved.";
+        return RedirectToAction(nameof(Details), new { id });
     }
 
     private async Task<UserProfile?> GetCurrentProfileAsync()
@@ -431,5 +594,74 @@ public class EventsController : Controller
             currentProfile.OrganizationName.Trim(),
             ownerProfile.OrganizationName.Trim(),
             StringComparison.OrdinalIgnoreCase);
+    }
+
+    private async Task<string?> SaveEventImageAsync(IFormFile? file, string? oldImageUrl)
+    {
+        if (file == null || file.Length == 0) return null;
+
+        var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".webp" };
+        var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
+
+        if (!allowedExtensions.Contains(extension))
+        {
+            ModelState.AddModelError("", "Only JPG, JPEG, PNG, and WEBP event images are allowed.");
+            return null;
+        }
+
+        if (file.Length > 4 * 1024 * 1024)
+        {
+            ModelState.AddModelError("", "Event image size must be less than 4MB.");
+            return null;
+        }
+
+        var uploadsFolder = Path.Combine(_environment.WebRootPath, "uploads", "events");
+        Directory.CreateDirectory(uploadsFolder);
+
+        var uniqueFileName = Guid.NewGuid().ToString() + extension;
+        var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+        using (var stream = new FileStream(filePath, FileMode.Create))
+        {
+            await file.CopyToAsync(stream);
+        }
+
+        DeleteLocalFile(oldImageUrl, "events");
+        return "/uploads/events/" + uniqueFileName;
+    }
+
+    private void DeleteLocalFile(string? relativeUrl, string folderName)
+    {
+        if (string.IsNullOrWhiteSpace(relativeUrl)) return;
+
+        var relativePath = relativeUrl.TrimStart('/').Replace("/", Path.DirectorySeparatorChar.ToString());
+        var fullPath = Path.Combine(_environment.WebRootPath, relativePath);
+        var uploadRoot = Path.Combine(_environment.WebRootPath, "uploads", folderName);
+
+        if (fullPath.StartsWith(uploadRoot) && System.IO.File.Exists(fullPath))
+        {
+            System.IO.File.Delete(fullPath);
+        }
+    }
+
+    private async Task AutoCloseExpiredEventsAsync()
+    {
+        var today = DateTime.Today;
+        var expiredEvents = await _context.VolunteerEvents
+            .Where(e => e.RegistrationClosingDate.HasValue
+                        && e.RegistrationClosingDate.Value.Date < today
+                        && e.Status != "Closed"
+                        && e.Status != "Completed"
+                        && e.Status != "Cancelled")
+            .ToListAsync();
+
+        if (!expiredEvents.Any()) return;
+
+        foreach (var item in expiredEvents)
+        {
+            item.Status = "Closed";
+        }
+
+        await _context.SaveChangesAsync();
     }
 }

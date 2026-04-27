@@ -113,10 +113,11 @@ public class AccountController : Controller
             return View(model);
         }
 
+        // For better privacy on shared/lab computers, do not keep users signed in after the browser session ends.
         var result = await _signInManager.PasswordSignInAsync(
             model.Email,
             model.Password,
-            model.RememberMe,
+            isPersistent: false,
             lockoutOnFailure: false);
 
         if (result.Succeeded)

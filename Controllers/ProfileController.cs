@@ -192,20 +192,35 @@ public class ProfileController : Controller
 
     public async Task<IActionResult> Index()
     {
-        var userId = _userManager.GetUserId(User);
-        var profile = await _context.UserProfiles.FirstOrDefaultAsync(p => p.UserId == userId);
+        return RedirectToAction(nameof(MyProfile));
+    }
 
-        if (profile == null)
-        {
-            profile = new UserProfile
-            {
-                UserId = userId!,
-                FullName = User.Identity?.Name ?? "User",
-                RoleName = User.IsInRole("Organizer") ? "Organizer" : "Volunteer"
-            };
-            _context.UserProfiles.Add(profile);
-            await _context.SaveChangesAsync();
-        }
-        return View(profile);
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> ManageUsers()
+    {
+        var profiles = await _context.UserProfiles
+            .OrderBy(p => p.RoleName)
+            .ThenBy(p => p.FullName)
+            .ToListAsync();
+
+        return View(profiles);
+    }
+
+    [HttpPost]
+    [Authorize(Roles = "Admin")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Verify(int id, bool isVerified)
+    {
+        var profile = await _context.UserProfiles.FirstOrDefaultAsync(p => p.Id == id);
+        if (profile == null) return NotFound();
+
+        profile.IsVerified = isVerified;
+        await _context.SaveChangesAsync();
+
+        TempData["Message"] = isVerified
+            ? $"{profile.FullName} has been marked as verified."
+            : $"{profile.FullName} has been marked as pending verification.";
+
+        return RedirectToAction(nameof(ManageUsers));
     }
 }
