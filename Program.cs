@@ -69,6 +69,7 @@ using (var scope = app.Services.CreateScope())
     {
         await EnsureRuntimeSchemaAsync(services);
         await DbInitializer.SeedRolesAndAdminAsync(services);
+        //await TestDataSeeder.SeedAsync(services);
     }
     catch (Exception ex)
     {
@@ -91,18 +92,19 @@ static async Task EnsureRuntimeSchemaAsync(IServiceProvider services)
 
     // These idempotent checks allow the updated project to run on the restored group database
     // even if the latest registration-date columns were not present in the original backup.
+    // The ALTER statements are executed separately to avoid SQL Server parsing errors when columns do not exist yet.
     await context.Database.ExecuteSqlRawAsync(@"
-IF COL_LENGTH('VolunteerEvents', 'RegistrationOpenDate') IS NULL
-BEGIN
-    ALTER TABLE [VolunteerEvents] ADD [RegistrationOpenDate] datetime2 NOT NULL CONSTRAINT [DF_VolunteerEvents_RegistrationOpenDate] DEFAULT (SYSUTCDATETIME());
-END;
+IF COL_LENGTH('dbo.VolunteerEvents', 'RegistrationOpenDate') IS NULL
+    EXEC('ALTER TABLE [dbo].[VolunteerEvents] ADD [RegistrationOpenDate] datetime2 NOT NULL CONSTRAINT [DF_VolunteerEvents_RegistrationOpenDate] DEFAULT (SYSUTCDATETIME()) WITH VALUES');
+");
 
-IF COL_LENGTH('VolunteerEvents', 'RegistrationClosingDate') IS NULL
-BEGIN
-    ALTER TABLE [VolunteerEvents] ADD [RegistrationClosingDate] datetime2 NULL;
-END;
+    await context.Database.ExecuteSqlRawAsync(@"
+IF COL_LENGTH('dbo.VolunteerEvents', 'RegistrationClosingDate') IS NULL
+    EXEC('ALTER TABLE [dbo].[VolunteerEvents] ADD [RegistrationClosingDate] datetime2 NULL');
+");
 
-UPDATE [VolunteerEvents]
+    await context.Database.ExecuteSqlRawAsync(@"
+UPDATE [dbo].[VolunteerEvents]
 SET [RegistrationClosingDate] = [EventDate]
 WHERE [RegistrationClosingDate] IS NULL;
 ");

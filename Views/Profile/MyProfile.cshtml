@@ -43,7 +43,12 @@
                     }
                     
                     <hr class="text-muted opacity-25"/>
-                    <a asp-action="Edit" class="btn btn-outline-primary rounded-pill w-100 fw-bold mt-2">Edit Profile</a>
+                    <div class="d-grid gap-2 mt-2">
+                        <a asp-action="Edit" class="btn btn-outline-primary rounded-pill fw-bold">Edit Profile</a>
+                        <a asp-controller="Account" asp-action="ChangePassword" class="btn btn-outline-secondary rounded-pill fw-bold">
+                            <i class="bi bi-key me-1"></i> Change Password
+                        </a>
+                    </div>
                 </div>
             </div>
             
