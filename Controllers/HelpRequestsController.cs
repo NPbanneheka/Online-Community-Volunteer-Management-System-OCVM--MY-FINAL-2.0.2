@@ -61,7 +61,7 @@ public class HelpRequestsController : Controller
 
         if (profile == null)
         {
-            TempData["Message"] = "Please complete your profile before submitting a help request.";
+            TempData["Message"] = "Please complete your profile before submitting a support request.";
             return RedirectToAction("Edit", "Profile");
         }
 
@@ -80,7 +80,7 @@ public class HelpRequestsController : Controller
         _context.HelpRequests.Add(helpRequest);
 
         var notifyProfiles = await _context.UserProfiles
-            .Where(p => p.RoleName == "Admin" || p.RoleName == "Organizer")
+            .Where(p => p.RoleName == "Admin")
             .ToListAsync();
 
         foreach (var notifyProfile in notifyProfiles)
@@ -88,13 +88,13 @@ public class HelpRequestsController : Controller
             _context.Notifications.Add(new Notification
             {
                 UserProfileId = notifyProfile.Id,
-                Message = $"New help request submitted: {helpRequest.Title}."
+                Message = $"New support request submitted: {helpRequest.Title}."
             });
         }
 
         await _context.SaveChangesAsync();
 
-        TempData["Message"] = "Help request submitted successfully.";
+        TempData["Message"] = "Support request submitted successfully.";
         return RedirectToAction(nameof(Index));
     }
 
@@ -167,7 +167,7 @@ public class HelpRequestsController : Controller
 
         await _context.SaveChangesAsync();
 
-        TempData["Message"] = "Help request updated successfully.";
+        TempData["Message"] = "Support request updated successfully.";
         return RedirectToAction(nameof(Details), new { id = existingRequest.Id });
     }
 
@@ -188,12 +188,12 @@ public class HelpRequestsController : Controller
         _context.HelpRequests.Remove(helpRequest);
         await _context.SaveChangesAsync();
 
-        TempData["Message"] = "Help request deleted successfully.";
+        TempData["Message"] = "Support request deleted successfully.";
         return RedirectToAction(nameof(Index));
     }
 
     [HttpPost]
-    [Authorize(Roles = "Admin,Organizer")]
+    [Authorize(Roles = "Admin")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> UpdateStatus(int id, string status)
     {
@@ -219,12 +219,12 @@ public class HelpRequestsController : Controller
         _context.Notifications.Add(new Notification
         {
             UserProfileId = helpRequest.UserProfileId,
-            Message = $"Your help request '{helpRequest.Title}' status changed to {status}."
+            Message = $"Your support request '{helpRequest.Title}' status changed to {status}."
         });
 
         await _context.SaveChangesAsync();
 
-        TempData["Message"] = "Help request status updated.";
+        TempData["Message"] = "Support request status updated.";
         return RedirectToAction(nameof(Details), new { id });
     }
 
@@ -260,35 +260,24 @@ public class HelpRequestsController : Controller
     {
         if (isAdmin) return true;
         if (currentProfile == null) return false;
-        if (helpRequest.UserProfileId == currentProfile.Id) return true;
 
-        return IsOrganizerInSameOrganization(currentProfile, helpRequest.SubmittedBy);
+        // Support Requests are for system/app issues.
+        // Users can view only their own support requests; Admin can view all.
+        return helpRequest.UserProfileId == currentProfile.Id;
     }
 
     private static bool CanManageHelpRequest(HelpRequest helpRequest, UserProfile? currentProfile, bool isAdmin)
     {
         if (isAdmin) return true;
         if (currentProfile == null) return false;
-        if (helpRequest.UserProfileId == currentProfile.Id) return true;
 
-        return IsOrganizerInSameOrganization(currentProfile, helpRequest.SubmittedBy);
+        // Only the request owner or Admin can edit/delete a support request.
+        return helpRequest.UserProfileId == currentProfile.Id;
     }
 
     private static bool CanUpdateHelpRequestStatus(HelpRequest helpRequest, UserProfile? currentProfile, bool isAdmin)
     {
-        if (isAdmin) return true;
-        return currentProfile != null && IsOrganizerInSameOrganization(currentProfile, helpRequest.SubmittedBy);
-    }
-
-    private static bool IsOrganizerInSameOrganization(UserProfile currentProfile, UserProfile? ownerProfile)
-    {
-        if (ownerProfile == null) return false;
-        if (currentProfile.RoleName != "Organizer" || ownerProfile.RoleName != "Organizer") return false;
-        if (string.IsNullOrWhiteSpace(currentProfile.OrganizationName) || string.IsNullOrWhiteSpace(ownerProfile.OrganizationName)) return false;
-
-        return string.Equals(
-            currentProfile.OrganizationName.Trim(),
-            ownerProfile.OrganizationName.Trim(),
-            StringComparison.OrdinalIgnoreCase);
+        // Support request status is handled by Admin/system support side only.
+        return isAdmin;
     }
 }

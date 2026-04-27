@@ -12,7 +12,7 @@ Main fixes and improvements:
    - Localization retained.
    - Role/admin seeding retained with safer error logging.
 3. Improved ApplicationDbContext:
-   - Stronger relationships for events, posts, comments, help requests, notifications.
+   - Stronger relationships for events, posts, comments, support requests, notifications.
    - Unique logical indexes for profiles, registrations, and ratings.
 4. Improved account system:
    - Public registration restricted to Volunteer and Organizer.
@@ -33,8 +33,8 @@ Main fixes and improvements:
    - Community posts and comments improved.
    - Comments validate post existence.
    - Notifications added for help posts and comments.
-8. Added Help Requests module:
-   - Submit help request.
+8. Added Support Requests module:
+   - Submit support request.
    - View requests.
    - Admin/Organizer can update request status.
    - User receives notification when status changes.

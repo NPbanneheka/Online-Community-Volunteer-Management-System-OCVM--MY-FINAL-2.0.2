@@ -1,17 +1,17 @@
 @model IEnumerable<OCVMS.Models.HelpRequest>
 @{
-    ViewData["Title"] = "Help Requests";
+    ViewData["Title"] = "Support Requests";
     var manageableHelpRequestIds = ViewBag.ManageableHelpRequestIds as List<int> ?? new List<int>();
 }
 
 <div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h2 class="fw-bold mb-1">Help Requests</h2>
-            <p class="text-muted mb-0">Track community support requests and their current status.</p>
+            <h2 class="fw-bold mb-1">Support Requests</h2>
+            <p class="text-muted mb-0">Report system issues, bugs, errors, or difficulties to the admin team.</p>
         </div>
         <a asp-action="Create" class="btn btn-primary rounded-pill px-4 fw-bold">
-            <i class="bi bi-plus-circle me-1"></i> New Request
+            <i class="bi bi-plus-circle me-1"></i> New Support Request
         </a>
     </div>
 
@@ -19,8 +19,8 @@
     {
         <div class="card border-0 shadow-sm rounded-4 text-center p-5">
             <i class="bi bi-life-preserver text-muted opacity-25" style="font-size:4rem;"></i>
-            <h4 class="text-muted mt-3">No help requests found.</h4>
-            <p class="text-secondary">Create a request when community support is needed.</p>
+            <h4 class="text-muted mt-3">No support requests found.</h4>
+            <p class="text-secondary">Submit a support request if you face an issue while using the system.</p>
         </div>
     }
     else
@@ -59,7 +59,7 @@
                                 @if (canManage)
                                 {
                                     <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-warning rounded-pill px-4 fw-bold">Edit</a>
-                                    <form asp-action="Delete" method="post" onsubmit="return confirm('Delete this help request?');">
+                                    <form asp-action="Delete" method="post" onsubmit="return confirm('Delete this support request?');">
                                         @Html.AntiForgeryToken()
                                         <input type="hidden" name="id" value="@item.Id" />
                                         <button type="submit" class="btn btn-outline-danger rounded-pill px-4 fw-bold">Delete</button>

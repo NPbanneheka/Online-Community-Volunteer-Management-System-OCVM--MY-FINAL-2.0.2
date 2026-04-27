@@ -37,12 +37,12 @@
 
                         <input type="radio" class="btn-check" name="postType" id="typeHelp" value="Help">
                         <label class="btn btn-outline-danger rounded-pill px-4 fw-bold" for="typeHelp">
-                            <i class="bi bi-life-preserver me-1"></i> Request Help
+                            <i class="bi bi-life-preserver me-1"></i> Community Help
                         </label>
                     </div>
 
                     <input type="text" name="title" class="form-control bg-light border-0 mb-3 rounded-3 py-2" placeholder="Post Title..." required />
-                    <textarea name="content" class="form-control bg-light border-0 mb-3 rounded-3" rows="3" placeholder="What's on your mind?" required></textarea>
+                    <textarea name="content" class="form-control bg-light border-0 mb-3 rounded-3" rows="3" placeholder="Share an update or explain the urgent community/event help you need..." required></textarea>
                     <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm">Post to Feed</button>
                 </form>
             </div>
@@ -86,7 +86,7 @@
                             <div class="text-end">
                                 @if (post.PostType == "Help")
                                 {
-                                    <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill px-3 py-2 align-self-start fw-bold"><i class="bi bi-exclamation-circle me-1"></i> Help Needed</span>
+                                    <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill px-3 py-2 align-self-start fw-bold"><i class="bi bi-exclamation-circle me-1"></i> Community Help Needed</span>
                                 }
                                 else
                                 {
@@ -162,7 +162,7 @@
         <div class="col-lg-3">
             <div class="card border-0 shadow-sm rounded-4 p-4 text-white" style="background-color: #0d6efd;">
                 <h6 class="fw-bold"><i class="bi bi-lightbulb-fill text-warning me-2"></i> Quick Tip</h6>
-                <p class="small mb-0 opacity-75" style="line-height: 1.6;">Use "Request Help" if you need immediate assistance from the community for an event or situation.</p>
+                <p class="small mb-0 opacity-75" style="line-height: 1.6;">Use "Community Help" to request urgent support from volunteers or organizers for events, resources, or community situations.</p>
             </div>
         </div>
     </div>

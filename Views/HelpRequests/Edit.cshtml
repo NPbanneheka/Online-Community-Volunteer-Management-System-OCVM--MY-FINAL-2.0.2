@@ -1,14 +1,14 @@
 @model OCVMS.Models.HelpRequest
 @{
-    ViewData["Title"] = "Edit Help Request";
+    ViewData["Title"] = "Edit Support Request";
 }
 
 <div class="container py-4">
     <div class="row justify-content-center">
         <div class="col-lg-8">
             <div class="card border-0 shadow-sm rounded-4 p-4 p-lg-5">
-                <h2 class="fw-bold mb-2">Edit Help Request</h2>
-                <p class="text-muted mb-4">Only the owner, same organization organizer, or admin can edit this request.</p>
+                <h2 class="fw-bold mb-2">Edit Support Request</h2>
+                <p class="text-muted mb-4">Only the request owner or admin can edit this support request.</p>
 
                 <form asp-action="Edit" method="post">
                     @Html.AntiForgeryToken()
@@ -16,7 +16,7 @@
                     <input type="hidden" asp-for="Id" />
 
                     <div class="mb-3">
-                        <label asp-for="Title" class="form-label fw-bold">Request Title</label>
+                        <label asp-for="Title" class="form-label fw-bold">Support Request Title</label>
                         <input asp-for="Title" class="form-control rounded-3" />
                         <span asp-validation-for="Title" class="text-danger small"></span>
                     </div>

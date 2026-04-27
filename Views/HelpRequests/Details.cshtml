@@ -1,6 +1,6 @@
 @model OCVMS.Models.HelpRequest
 @{
-    ViewData["Title"] = "Help Request Details";
+    ViewData["Title"] = "Support Request Details";
     var statuses = new[] { "Pending", "In Progress", "Resolved", "Closed" };
     bool canManageHelpRequest = ViewBag.CanManageHelpRequest ?? false;
     bool canUpdateHelpRequestStatus = ViewBag.CanUpdateHelpRequestStatus ?? false;
@@ -61,7 +61,7 @@
             @if (canManageHelpRequest)
             {
                 <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning rounded-pill px-4 fw-bold">Edit Request</a>
-                <form asp-action="Delete" method="post" onsubmit="return confirm('Delete this help request?');">
+                <form asp-action="Delete" method="post" onsubmit="return confirm('Delete this support request?');">
                     @Html.AntiForgeryToken()
                     <input type="hidden" name="id" value="@Model.Id" />
                     <button type="submit" class="btn btn-outline-danger rounded-pill px-4 fw-bold">Delete Request</button>

@@ -4,10 +4,10 @@ OCVMS Ownership / Organization Security Fix Summary
 This version fixes the ownership authorization issue reported during final testing.
 
 Security rules applied:
-1. Admin can manage all events, community posts, comments, and help requests.
+1. Admin can manage all events, community posts, comments, and support requests.
 2. Organizer can manage records created by organizers from the same organization.
 3. Organizer cannot edit/delete records created by a different organization.
-4. Volunteer can only manage their own community posts, own comments, and own help requests.
+4. Volunteer can only manage their own community posts, own comments, and own support requests.
 5. Volunteer cannot edit/delete events.
 6. UI buttons are hidden when the logged-in user is not allowed to manage that record.
 7. Controller-level checks are also applied, so direct URL access is blocked.
