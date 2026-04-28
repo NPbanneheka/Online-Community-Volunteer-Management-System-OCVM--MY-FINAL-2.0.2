@@ -1,139 +1,97 @@
-@model IEnumerable<OCVMS.Models.VolunteerEvent>
-@{
-    ViewData["Title"] = "Volunteer Events";
-    var registeredEventIds = ViewBag.UserRegisteredEvents as List<int> ?? new List<int>();
-    var manageableEventIds = ViewBag.ManageableEventIds as List<int> ?? new List<int>();
-    var statusFilter = (string)(ViewBag.StatusFilter ?? "Active");
-}
+@model OCVMS.Models.VolunteerEvent
+@{ ViewData["Title"] = "Create Event"; }
 
 <div class="container py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h1 class="fw-bold mb-1">Volunteer Events</h1>
-            <p class="text-muted mb-0">Browse active events, view registration closing dates, and join opportunities.</p>
-        </div>
-        @if (User.IsInRole("Admin") || User.IsInRole("Organizer"))
-        {
-            <a asp-action="Create" class="btn btn-primary rounded-pill px-4 fw-bold">
-                <i class="bi bi-plus-lg me-1"></i> Create New Event
-            </a>
-        }
-    </div>
+    <div class="card shadow-sm border-0 rounded-4 p-4 p-lg-5">
+        <h2 class="fw-bold mb-2">Create New Event</h2>
+        <p class="text-muted mb-4">Add event details, registration open/closing dates, capacity, and a suitable event photo.</p>
 
-    <form asp-action="Index" method="get" class="mb-5 card border-0 shadow-sm rounded-4 p-3">
-        <div class="row g-2 align-items-end">
-            <div class="col-md-7">
-                <label class="form-label small fw-bold text-muted">Search</label>
-                <input type="text" name="searchTerm" class="form-control rounded-pill px-4" placeholder="Search events by title, location, or description..." value="@ViewBag.SearchTerm">
-            </div>
-            <div class="col-md-3">
-                <label class="form-label small fw-bold text-muted">Status</label>
-                <select name="statusFilter" class="form-select rounded-pill">
-                    @if (statusFilter == "Active") { <option value="Active" selected>Active Events</option> } else { <option value="Active">Active Events</option> }
-                    @if (statusFilter == "Closed") { <option value="Closed" selected>Closed/Completed</option> } else { <option value="Closed">Closed/Completed</option> }
-                    @if (statusFilter == "All") { <option value="All" selected>All Events</option> } else { <option value="All">All Events</option> }
-                </select>
-            </div>
-            <div class="col-md-2 d-grid">
-                <button class="btn btn-dark rounded-pill" type="submit">Apply</button>
-            </div>
-        </div>
-    </form>
+        <form asp-action="Create" method="post" enctype="multipart/form-data" novalidate>
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
-    @if (Model == null || !Model.Any())
-    {
-        <div class="alert alert-light text-center rounded-4 p-5 shadow-sm border-0">
-            <i class="bi bi-calendar-x text-muted" style="font-size: 4rem; opacity: 0.5;"></i>
-            <h4 class="mt-3 text-muted fw-bold">No events found.</h4>
-            <p class="text-secondary">Check back later or try a different search/filter.</p>
-        </div>
-    }
-    else
-    {
-        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-            @foreach (var item in Model)
-            {
-                var canManage = manageableEventIds.Contains(item.Id);
-                var isClosed = !item.IsRegistrationOpen;
-                <div class="col">
-                    <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden">
-                        @if (!string.IsNullOrWhiteSpace(item.ImageUrl))
-                        {
-                            <img src="@item.ImageUrl" class="event-card-image" alt="@item.Title" />
-                        }
-                        else
-                        {
-                            <div class="bg-primary bg-opacity-10 d-flex align-items-center justify-content-center" style="height: 170px;">
-                                <i class="bi bi-calendar-event text-primary opacity-25" style="font-size: 4rem;"></i>
-                            </div>
-                        }
-                        <div class="card-body p-4 d-flex flex-column">
-                            <div class="d-flex justify-content-between align-items-start mb-2 gap-2">
-                                <h5 class="fw-bold text-dark mb-1">@item.Title</h5>
-                                <span class="badge @(isClosed ? "bg-secondary" : "bg-success") bg-opacity-10 @(isClosed ? "text-secondary" : "text-success") rounded-pill">@(isClosed ? "Closed" : "Open")</span>
-                            </div>
-                            <p class="text-muted small mb-3">
-                                <i class="bi bi-geo-alt-fill text-danger"></i> @item.Location<br/>
-                                <i class="bi bi-calendar3 text-primary"></i> Event: @item.EventDate.ToString("MMM dd, yyyy")<br/>
-                                <i class="bi bi-clock text-warning"></i> @item.EventTime.ToString(@"hh\:mm")<br/>
-                                <i class="bi bi-hourglass-split text-info"></i> Registration closes: @(item.RegistrationClosingDate?.ToString("MMM dd, yyyy") ?? item.EventDate.ToString("MMM dd, yyyy"))
-                            </p>
-
-                            <div class="mb-2 small text-muted">
-                                <i class="bi bi-person-badge text-info"></i> @(item.OrganizerProfile?.FullName ?? "Organizer")
-                                @if (item.OrganizerProfile?.IsVerified == true)
-                                {
-                                    <i class="bi bi-patch-check-fill text-success ms-1" title="Verified organizer"></i>
-                                }
-                                @if (!string.IsNullOrWhiteSpace(item.OrganizerProfile?.OrganizationName))
-                                {
-                                    <span> · @item.OrganizerProfile.OrganizationName</span>
-                                }
-                            </div>
-
-                            <div class="mb-3 small text-muted">
-                                <i class="bi bi-people text-success"></i> @(item.Registrations?.Count ?? 0) / @item.Capacity registered
-                            </div>
-
-                            <div class="mt-auto">
-                                @if (canManage)
-                                {
-                                    <div class="d-flex gap-2 mb-2">
-                                        <a asp-action="JoinedVolunteers" asp-route-id="@item.Id" class="btn btn-info btn-sm rounded-pill w-50 fw-bold text-white">Volunteers</a>
-                                        <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-warning btn-sm rounded-pill w-50 fw-bold">Edit</a>
-                                    </div>
-                                }
-                                @if (User.Identity?.IsAuthenticated == true)
-                                {
-                                    if (registeredEventIds.Contains(item.Id))
-                                    {
-                                        <div class="btn btn-success w-100 rounded-pill fw-bold disabled mb-2">
-                                            <i class="bi bi-check-circle-fill me-2"></i> Already Registered
-                                        </div>
-                                    }
-                                    else if (isClosed)
-                                    {
-                                        <div class="btn btn-secondary w-100 rounded-pill fw-bold disabled mb-2">Registration Closed</div>
-                                    }
-                                    else
-                                    {
-                                        <form asp-controller="Events" asp-action="Register" method="post" class="mb-2">
-                                            @Html.AntiForgeryToken()
-                                            <input type="hidden" name="eventId" value="@item.Id" />
-                                            <button type="submit" class="btn btn-primary w-100 rounded-pill fw-bold">Register Now</button>
-                                        </form>
-                                    }
-                                }
-                                else
-                                {
-                                    <a asp-controller="Account" asp-action="Login" class="btn btn-outline-primary w-100 rounded-pill fw-bold mb-2">Login to Register</a>
-                                }
-                                <a asp-controller="Events" asp-action="Details" asp-route-id="@item.Id" class="btn btn-light text-primary w-100 rounded-pill fw-bold border">View Details</a>
-                            </div>
-                        </div>
-                    </div>
+            <div class="row g-4">
+                <div class="col-12">
+                    <label asp-for="Title" class="form-label fw-bold">Event Title</label>
+                    <input asp-for="Title" class="form-control" placeholder="E.g., Beach Cleanup, Book Donation" />
+                    <span asp-validation-for="Title" class="text-danger small"></span>
                 </div>
-            }
-        </div>
-    }
+
+                <div class="col-md-4">
+                    <label asp-for="RegistrationOpenDate" class="form-label fw-bold">Registration Open Date</label>
+                    <input asp-for="RegistrationOpenDate" type="date" class="form-control" />
+                    <small class="text-muted">Volunteers can start registering from this date.</small>
+                    <span asp-validation-for="RegistrationOpenDate" class="text-danger small"></span>
+                </div>
+
+                <div class="col-md-4">
+                    <label asp-for="RegistrationClosingDate" class="form-label fw-bold">Registration Closing Date</label>
+                    <input asp-for="RegistrationClosingDate" type="date" class="form-control" />
+                    <small class="text-muted">Volunteer registration will close after this date.</small>
+                    <span asp-validation-for="RegistrationClosingDate" class="text-danger small"></span>
+                </div>
+
+                <div class="col-md-4">
+                    <label asp-for="EventDate" class="form-label fw-bold">Event Date</label>
+                    <input asp-for="EventDate" type="date" class="form-control" />
+                    <small class="text-muted">The actual date when the event will be held.</small>
+                    <span asp-validation-for="EventDate" class="text-danger small"></span>
+                </div>
+                
+                <div class="col-md-4">
+                    <label asp-for="EventTime" class="form-label fw-bold">Event Time</label>
+                    <input asp-for="EventTime" type="time" class="form-control" />
+                    <span asp-validation-for="EventTime" class="text-danger small"></span>
+                </div>
+                
+                <div class="col-md-4">
+                    <label asp-for="Capacity" class="form-label fw-bold">Capacity</label>
+                    <input asp-for="Capacity" type="number" min="1" class="form-control" placeholder="E.g., 20" />
+                    <span asp-validation-for="Capacity" class="text-danger small"></span>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">Event Photo</label>
+                    <input type="file" name="eventImage" class="form-control" accept="image/*" onchange="previewEventImage(event)" />
+                    <small class="text-muted">JPG, PNG, WEBP up to 4MB. Image is centered automatically.</small>
+                </div>
+
+                <div class="col-12" id="eventImagePreviewWrap" style="display:none;">
+                    <img id="eventImagePreview" src="#" class="rounded-4 shadow-sm w-100" style="max-height:260px; object-fit:cover; object-position:center;" alt="Event preview" />
+                </div>
+
+                <div class="col-12">
+                    <label asp-for="Location" class="form-label fw-bold">Location</label>
+                    <input asp-for="Location" class="form-control" placeholder="Where is it happening?" />
+                    <span asp-validation-for="Location" class="text-danger small"></span>
+                </div>
+
+                <div class="col-12">
+                    <label asp-for="Description" class="form-label fw-bold">Description</label>
+                    <textarea asp-for="Description" class="form-control" rows="4" placeholder="Explain the event details, what volunteers should bring, etc..."></textarea>
+                    <span asp-validation-for="Description" class="text-danger small"></span>
+                </div>
+            </div>
+
+            <div class="mt-5">
+                <button type="submit" class="btn btn-primary px-4 rounded-pill fw-bold">Publish Event</button>
+                <a asp-action="Index" class="btn btn-light ms-2 rounded-pill fw-bold">Cancel</a>
+            </div>
+        </form>
+    </div>
 </div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        function previewEventImage(event) {
+            const file = event.target.files && event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('eventImagePreview').src = e.target.result;
+                document.getElementById('eventImagePreviewWrap').style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        }
+    </script>
+}
