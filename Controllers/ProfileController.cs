@@ -162,7 +162,9 @@ public class ProfileController : Controller
                 var oldRelativePath = profile.ProfileImageUrl.TrimStart('/').Replace("/", Path.DirectorySeparatorChar.ToString());
                 var oldFullPath = Path.GetFullPath(Path.Combine(_environment.WebRootPath, oldRelativePath));
                 var profileUploadRoot = Path.GetFullPath(Path.Combine(_environment.WebRootPath, "uploads", "profiles"));
-                if (oldFullPath.StartsWith(profileUploadRoot + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase) && System.IO.File.Exists(oldFullPath))
+
+                if (oldFullPath.StartsWith(profileUploadRoot + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)
+                    && System.IO.File.Exists(oldFullPath))
                 {
                     System.IO.File.Delete(oldFullPath);
                 }
@@ -170,6 +172,7 @@ public class ProfileController : Controller
 
             profile.ProfileImageUrl = "/uploads/profiles/" + uniqueFileName;
         }
+
         // If no new image is uploaded, keep the existing saved image path.
         // Do not trust the hidden ProfileImageUrl field because it can be changed from the browser.
 
@@ -252,112 +255,131 @@ public class ProfileController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteUser(int id)
     {
-        var profile = await _context.UserProfiles.FirstOrDefaultAsync(p => p.Id == id);
-        if (profile == null)
+        var strategy = _context.Database.CreateExecutionStrategy();
+
+        return await strategy.ExecuteAsync(async () =>
         {
-            TempData["Message"] = "User profile was not found.";
-            return RedirectToAction(nameof(ManageUsers));
-        }
-
-        var user = await _userManager.FindByIdAsync(profile.UserId);
-        if (user == null)
-        {
-            TempData["Message"] = "Identity account was not found. Please check this user manually.";
-            return RedirectToAction(nameof(ManageUsers));
-        }
-
-        var currentUserId = _userManager.GetUserId(User);
-        if (user.Id == currentUserId)
-        {
-            TempData["Message"] = "You cannot delete your own admin account while logged in.";
-            return RedirectToAction(nameof(ManageUsers));
-        }
-
-        if (await _userManager.IsInRoleAsync(user, "Admin"))
-        {
-            TempData["Message"] = "Admin accounts are protected and cannot be deleted from this page.";
-            return RedirectToAction(nameof(ManageUsers));
-        }
-
-        await using var transaction = await _context.Database.BeginTransactionAsync();
-
-        try
-        {
-            var profileIds = await _context.UserProfiles
-                .Where(p => p.UserId == user.Id)
-                .Select(p => p.Id)
-                .ToListAsync();
-
-            var organizedEventIds = await _context.VolunteerEvents
-                .Where(e => profileIds.Contains(e.OrganizerProfileId))
-                .Select(e => e.Id)
-                .ToListAsync();
-
-            var postIds = await _context.CommunityPosts
-                .Where(p => profileIds.Contains(p.UserProfileId))
-                .Select(p => p.Id)
-                .ToListAsync();
-
-            _context.UserRatings.RemoveRange(await _context.UserRatings
-                .Where(r => r.FromUserId == user.Id || r.ToUserId == user.Id || organizedEventIds.Contains(r.EventId))
-                .ToListAsync());
-
-            _context.EventRegistrations.RemoveRange(await _context.EventRegistrations
-                .Where(r => r.UserId == user.Id || organizedEventIds.Contains(r.VolunteerEventId))
-                .ToListAsync());
-
-            _context.Notifications.RemoveRange(await _context.Notifications
-                .Where(n => profileIds.Contains(n.UserProfileId))
-                .ToListAsync());
-
-            _context.PostComments.RemoveRange(await _context.PostComments
-                .Where(c => profileIds.Contains(c.UserProfileId) || postIds.Contains(c.CommunityPostId))
-                .ToListAsync());
-
-            _context.CommunityPosts.RemoveRange(await _context.CommunityPosts
-                .Where(p => profileIds.Contains(p.UserProfileId))
-                .ToListAsync());
-
-            _context.HelpRequests.RemoveRange(await _context.HelpRequests
-                .Where(h => profileIds.Contains(h.UserProfileId))
-                .ToListAsync());
-
-            _context.VolunteerEvents.RemoveRange(await _context.VolunteerEvents
-                .Where(e => organizedEventIds.Contains(e.Id))
-                .ToListAsync());
-
-            _context.UserProfiles.RemoveRange(await _context.UserProfiles
-                .Where(p => profileIds.Contains(p.Id))
-                .ToListAsync());
-
-            await _context.SaveChangesAsync();
-
-            var roles = await _userManager.GetRolesAsync(user);
-            if (roles.Any())
+            var profile = await _context.UserProfiles.FirstOrDefaultAsync(p => p.Id == id);
+            if (profile == null)
             {
-                await _userManager.RemoveFromRolesAsync(user, roles);
-            }
-
-            var deleteResult = await _userManager.DeleteAsync(user);
-            if (!deleteResult.Succeeded)
-            {
-                await transaction.RollbackAsync();
-                TempData["Message"] = "User account could not be deleted: " +
-                                      string.Join(", ", deleteResult.Errors.Select(e => e.Description));
+                TempData["Message"] = "User profile was not found.";
                 return RedirectToAction(nameof(ManageUsers));
             }
 
-            await transaction.CommitAsync();
+            var user = await _userManager.FindByIdAsync(profile.UserId);
+            if (user == null)
+            {
+                TempData["Message"] = "Identity account was not found. Please check this user manually.";
+                return RedirectToAction(nameof(ManageUsers));
+            }
 
-            TempData["Message"] = $"{profile.FullName}'s account and all related data were deleted successfully.";
-            return RedirectToAction(nameof(ManageUsers));
-        }
-        catch (Exception ex)
-        {
-            await transaction.RollbackAsync();
-            TempData["Message"] = "User could not be deleted. Error: " + ex.Message;
-            return RedirectToAction(nameof(ManageUsers));
-        }
+            var currentUserId = _userManager.GetUserId(User);
+            if (user.Id == currentUserId)
+            {
+                TempData["Message"] = "You cannot delete your own admin account while logged in.";
+                return RedirectToAction(nameof(ManageUsers));
+            }
+
+            if (await _userManager.IsInRoleAsync(user, "Admin"))
+            {
+                TempData["Message"] = "Admin accounts are protected and cannot be deleted from this page.";
+                return RedirectToAction(nameof(ManageUsers));
+            }
+
+            await using var transaction = await _context.Database.BeginTransactionAsync();
+
+            try
+            {
+                var profileIds = await _context.UserProfiles
+                    .Where(p => p.UserId == user.Id)
+                    .Select(p => p.Id)
+                    .ToListAsync();
+
+                var organizedEventIds = await _context.VolunteerEvents
+                    .Where(e => profileIds.Contains(e.OrganizerProfileId))
+                    .Select(e => e.Id)
+                    .ToListAsync();
+
+                var postIds = await _context.CommunityPosts
+                    .Where(p => profileIds.Contains(p.UserProfileId))
+                    .Select(p => p.Id)
+                    .ToListAsync();
+
+                _context.UserRatings.RemoveRange(await _context.UserRatings
+                    .Where(r => r.FromUserId == user.Id || r.ToUserId == user.Id || organizedEventIds.Contains(r.EventId))
+                    .ToListAsync());
+
+                _context.EventRegistrations.RemoveRange(await _context.EventRegistrations
+                    .Where(r => r.UserId == user.Id || organizedEventIds.Contains(r.VolunteerEventId))
+                    .ToListAsync());
+
+                _context.Notifications.RemoveRange(await _context.Notifications
+                    .Where(n => profileIds.Contains(n.UserProfileId))
+                    .ToListAsync());
+
+                _context.PostComments.RemoveRange(await _context.PostComments
+                    .Where(c => profileIds.Contains(c.UserProfileId) || postIds.Contains(c.CommunityPostId))
+                    .ToListAsync());
+
+                _context.CommunityPosts.RemoveRange(await _context.CommunityPosts
+                    .Where(p => profileIds.Contains(p.UserProfileId))
+                    .ToListAsync());
+
+                _context.HelpRequests.RemoveRange(await _context.HelpRequests
+                    .Where(h => profileIds.Contains(h.UserProfileId))
+                    .ToListAsync());
+
+                _context.VolunteerEvents.RemoveRange(await _context.VolunteerEvents
+                    .Where(e => organizedEventIds.Contains(e.Id))
+                    .ToListAsync());
+
+                _context.UserProfiles.RemoveRange(await _context.UserProfiles
+                    .Where(p => profileIds.Contains(p.Id))
+                    .ToListAsync());
+
+                await _context.SaveChangesAsync();
+
+                var roles = await _userManager.GetRolesAsync(user);
+                if (roles.Any())
+                {
+                    var removeRolesResult = await _userManager.RemoveFromRolesAsync(user, roles);
+
+                    if (!removeRolesResult.Succeeded)
+                    {
+                        await transaction.RollbackAsync();
+
+                        TempData["Message"] = "User roles could not be removed: " +
+                                              string.Join(", ", removeRolesResult.Errors.Select(e => e.Description));
+
+                        return RedirectToAction(nameof(ManageUsers));
+                    }
+                }
+
+                var deleteResult = await _userManager.DeleteAsync(user);
+
+                if (!deleteResult.Succeeded)
+                {
+                    await transaction.RollbackAsync();
+
+                    TempData["Message"] = "User account could not be deleted: " +
+                                          string.Join(", ", deleteResult.Errors.Select(e => e.Description));
+
+                    return RedirectToAction(nameof(ManageUsers));
+                }
+
+                await transaction.CommitAsync();
+
+                TempData["Message"] = $"{profile.FullName}'s account and all related data were deleted successfully.";
+                return RedirectToAction(nameof(ManageUsers));
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+
+                TempData["Message"] = "User could not be deleted. Error: " + ex.Message;
+                return RedirectToAction(nameof(ManageUsers));
+            }
+        });
     }
 
     private async Task<UserProfile?> GetPrimaryProfileForUserAsync(string userId)
