@@ -13,7 +13,7 @@
 
     <div class="alert alert-info rounded-4 border-0">
         <i class="bi bi-info-circle me-2"></i>
-        Deleting a user removes that account and related profile, posts, support requests, registrations, notifications, and events created by that user. Admin accounts cannot be deleted here.
+        Admin can remove organizer and volunteer accounts when required. Deleting a user removes the account and related profile, posts, support requests, registrations, notifications, and events created by that user. Admin accounts are protected for system safety.
     </div>
 
     <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
@@ -31,6 +31,8 @@
             @foreach (var item in Model)
             {
                 var isAdmin = string.Equals(item.RoleName, "Admin", StringComparison.OrdinalIgnoreCase);
+                var displayVerified = isAdmin || item.IsVerified;
+
                 <tr>
                     <td>
                         <div class="d-flex align-items-center gap-3">
@@ -57,7 +59,7 @@
                     </td>
                     <td>@(string.IsNullOrWhiteSpace(item.OrganizationName) ? "-" : item.OrganizationName)</td>
                     <td>
-                        @if (item.IsVerified)
+                        @if (displayVerified)
                         {
                             <span class="badge bg-success bg-opacity-10 text-success rounded-pill">
                                 <i class="bi bi-patch-check-fill me-1"></i> Verified
@@ -72,26 +74,41 @@
                     </td>
                     <td class="text-end">
                         <div class="d-inline-flex gap-2">
-                            <form asp-action="Verify" method="post" class="d-inline">
-                                @Html.AntiForgeryToken()
-                                <input type="hidden" name="id" value="@item.Id" />
-                                <input type="hidden" name="isVerified" value="@(!item.IsVerified)" />
-                                <button type="submit" class="btn btn-sm @(item.IsVerified ? "btn-outline-warning" : "btn-success") rounded-pill px-3">
-                                    @(item.IsVerified ? "Mark Pending" : "Verify")
-                                </button>
-                            </form>
-
                             @if (!isAdmin)
                             {
+                                @if (!item.IsVerified)
+                                {
+                                    <form asp-action="Verify" method="post" class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@item.Id" />
+                                        <input type="hidden" name="isVerified" value="true" />
+                                        <button type="submit" class="btn btn-sm btn-success rounded-pill px-3">
+                                            Verify
+                                        </button>
+                                    </form>
+                                }
+                                else
+                                {
+                                    <button type="button" class="btn btn-sm btn-outline-success rounded-pill px-3" disabled>
+                                        Verified
+                                    </button>
+                                }
+
                                 <form asp-action="DeleteUser" method="post" class="d-inline">
                                     @Html.AntiForgeryToken()
                                     <input type="hidden" name="id" value="@item.Id" />
                                     <button type="submit"
                                             class="btn btn-sm btn-outline-danger rounded-pill px-3"
-                                            onclick="return confirm('Are you sure you want to permanently delete this user account and related data?');">
+                                            onclick="return confirm('Are you sure you want to permanently delete this user account and all related data?');">
                                         <i class="bi bi-trash me-1"></i> Delete
                                     </button>
                                 </form>
+                            }
+                            else
+                            {
+                                <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3" disabled>
+                                    Protected
+                                </button>
                             }
                         </div>
                     </td>

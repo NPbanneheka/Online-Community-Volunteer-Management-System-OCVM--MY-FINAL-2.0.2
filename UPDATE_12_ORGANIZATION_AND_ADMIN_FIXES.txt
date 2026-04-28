@@ -1,0 +1,16 @@
+UPDATE 12 - Organization Event Management, Ratings, and Admin User Management Fixes
+
+Applied only the requested fixes:
+1. Organizers can manage events created by other organizers in the same organization.
+2. Dashboard average rating now shows organization-level ratings for organizers.
+3. Admin dashboard rating shows system-wide ratings.
+4. User Management no longer shows the confusing Mark Pending action. Pending users show Verify; verified users show a disabled Verified button.
+5. Admin accounts display as Verified/Protected for clarity.
+6. Admin can delete Organizer/Volunteer accounts and related data such as profiles, posts, support requests, registrations, notifications, ratings, and events created by that user.
+7. Event Date was kept because it is required to identify the actual event date; Registration Open/Closing dates only control registration availability.
+
+Recommended quick tests:
+- Admin verifies a pending organizer/volunteer.
+- Admin deletes an organizer with created events.
+- Organizer A and Organizer B use the same OrganizationName and confirm both can manage the same organization events.
+- Volunteer registers for an event and submits a rating; organizer dashboard should show Organization Rating.
