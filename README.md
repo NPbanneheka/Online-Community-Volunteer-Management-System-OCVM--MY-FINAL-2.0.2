@@ -12,8 +12,8 @@ OCVMS is an ASP.NET Core MVC web application developed as a community volunteer 
 
 ## Main User Roles
 
-- **Admin**: can manage events and review system activity.
-- **Organizer**: can create/manage volunteer events and participate in community help discussions.
+- **Admin**: can manage all users, events, community posts, support requests, verification, and system activity.
+- **Organizer**: can create and manage only their own volunteer events, and participate in community help discussions.
 - **Volunteer**: can browse events, register/unregister, maintain a profile, post in the community hub, ask for community help and submit support requests.
 
 ## Implemented Features
@@ -30,6 +30,9 @@ OCVMS is an ASP.NET Core MVC web application developed as a community volunteer 
 10. User notifications
 11. Dashboard with event, registration, post, and rating summary
 12. Default admin seeding
+13. Admin user verification and Organizer/Volunteer account deletion
+14. Change password feature
+15. Strict ownership authorization for events, community posts, comments, and support requests
 
 ## Default Admin Account
 
@@ -70,3 +73,31 @@ This final version keeps the main SRS scope aligned with the implemented applica
 - Community engagement is implemented through posts, comments, and help-request support.
 - Notifications are implemented for important actions such as event creation, event registration, support requests, and comments.
 - Extended features can still be improved further in future work, such as advanced reports, email/SMS notifications, and a complete rating workflow.
+
+
+## Final Polished Security Rules
+
+- Admin can manage all records.
+- Organizer can edit/delete only events created by their own profile.
+- Volunteer and Organizer can edit/delete only their own community posts and support requests.
+- Community post owners can remove comments on their own posts.
+- Controller checks protect direct URL access, not only UI buttons.
+- Verified/latest profile lookup is used to avoid older duplicate-profile rows showing Pending incorrectly.
+
+## Final Testing Checklist
+
+Before final submission, test these flows:
+
+1. Login using `admin@ocvms.local` / `Admin123`.
+2. Register one Organizer and one Volunteer.
+3. Admin verifies the Organizer from Profile > User Management.
+4. Organizer profile shows `Verified` instead of `Pending Verification`.
+5. Organizer creates an event.
+6. Volunteer registers for the event and sees it under My Events.
+7. Organizer can view Joined Volunteers and send notification.
+8. Another Organizer cannot edit/delete the first Organizer's event.
+9. Volunteer cannot edit/delete any event.
+10. Users can change password from Profile or navbar.
+11. Admin can delete a Volunteer/Organizer account, but cannot delete Admin accounts.
+12. Community post/comment ownership buttons appear only for allowed users.
+13. Support request status update is Admin-only.

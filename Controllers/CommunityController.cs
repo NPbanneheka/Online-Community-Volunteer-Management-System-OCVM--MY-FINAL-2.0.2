@@ -270,7 +270,16 @@ public class CommunityController : Controller
     {
         var userId = _userManager.GetUserId(User);
         if (string.IsNullOrWhiteSpace(userId)) return null;
-        return await _context.UserProfiles.FirstOrDefaultAsync(x => x.UserId == userId);
+        return await GetPrimaryProfileForUserAsync(userId);
+    }
+
+    private async Task<UserProfile?> GetPrimaryProfileForUserAsync(string userId)
+    {
+        return await _context.UserProfiles
+            .Where(x => x.UserId == userId)
+            .OrderByDescending(x => x.IsVerified)
+            .ThenByDescending(x => x.CreatedAt)
+            .FirstOrDefaultAsync();
     }
 
     private async Task<bool> CanManagePostAsync(CommunityPost post)
@@ -314,28 +323,18 @@ public class CommunityController : Controller
     {
         if (isAdmin) return true;
         if (currentProfile == null) return false;
-        if (post.UserProfileId == currentProfile.Id) return true;
 
-        return IsOrganizerInSameOrganization(currentProfile, post.User);
+        // Final ownership rule: users can edit/delete only their own posts. Admin can manage all.
+        return post.UserProfileId == currentProfile.Id;
     }
 
     private static bool CanManageComment(PostComment comment, UserProfile? currentProfile, bool isAdmin)
     {
         if (isAdmin) return true;
         if (currentProfile == null) return false;
+
+        // Comment owner can delete their own comment. The post owner can also remove comments from their own post.
         if (comment.UserProfileId == currentProfile.Id) return true;
         return comment.Post != null && CanManagePost(comment.Post, currentProfile, false);
-    }
-
-    private static bool IsOrganizerInSameOrganization(UserProfile currentProfile, UserProfile? ownerProfile)
-    {
-        if (ownerProfile == null) return false;
-        if (currentProfile.RoleName != "Organizer" || ownerProfile.RoleName != "Organizer") return false;
-        if (string.IsNullOrWhiteSpace(currentProfile.OrganizationName) || string.IsNullOrWhiteSpace(ownerProfile.OrganizationName)) return false;
-
-        return string.Equals(
-            currentProfile.OrganizationName.Trim(),
-            ownerProfile.OrganizationName.Trim(),
-            StringComparison.OrdinalIgnoreCase);
     }
 }

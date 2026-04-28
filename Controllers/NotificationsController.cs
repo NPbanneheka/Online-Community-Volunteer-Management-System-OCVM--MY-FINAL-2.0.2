@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using OCVMS.Data;
+using OCVMS.Models;
 
 namespace OCVMS.Controllers;
 
@@ -21,7 +22,7 @@ public class NotificationsController : Controller
     public async Task<IActionResult> Index()
     {
         var userId = _userManager.GetUserId(User);
-        var profile = await _context.UserProfiles.FirstOrDefaultAsync(x => x.UserId == userId);
+        var profile = string.IsNullOrWhiteSpace(userId) ? null : await GetPrimaryProfileForUserAsync(userId);
 
         if (profile == null)
         {
@@ -42,7 +43,7 @@ public class NotificationsController : Controller
     public async Task<IActionResult> MarkAsRead(int id)
     {
         var userId = _userManager.GetUserId(User);
-        var profile = await _context.UserProfiles.FirstOrDefaultAsync(x => x.UserId == userId);
+        var profile = string.IsNullOrWhiteSpace(userId) ? null : await GetPrimaryProfileForUserAsync(userId);
 
         var notification = await _context.Notifications.FirstOrDefaultAsync(n =>
             n.Id == id && profile != null && n.UserProfileId == profile.Id);
@@ -61,7 +62,7 @@ public class NotificationsController : Controller
     public async Task<IActionResult> MarkAllAsRead()
     {
         var userId = _userManager.GetUserId(User);
-        var profile = await _context.UserProfiles.FirstOrDefaultAsync(x => x.UserId == userId);
+        var profile = string.IsNullOrWhiteSpace(userId) ? null : await GetPrimaryProfileForUserAsync(userId);
 
         if (profile != null)
         {
@@ -78,5 +79,14 @@ public class NotificationsController : Controller
         }
 
         return RedirectToAction(nameof(Index));
+    }
+
+    private async Task<UserProfile?> GetPrimaryProfileForUserAsync(string userId)
+    {
+        return await _context.UserProfiles
+            .Where(x => x.UserId == userId)
+            .OrderByDescending(x => x.IsVerified)
+            .ThenByDescending(x => x.CreatedAt)
+            .FirstOrDefaultAsync();
     }
 }

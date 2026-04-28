@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using OCVMS.Data;
+using OCVMS.Models;
 using OCVMS.ViewModels;
 
 namespace OCVMS.Controllers;
@@ -24,7 +25,7 @@ public class DashboardController : Controller
         var user = await _userManager.GetUserAsync(User);
         if (user == null) return RedirectToAction("Login", "Account");
 
-        var profile = await _context.UserProfiles.FirstOrDefaultAsync(x => x.UserId == user.Id);
+        var profile = await GetPrimaryProfileForUserAsync(user.Id);
         var ratingsQuery = _context.UserRatings.Where(x => x.ToUserId == user.Id);
 
         var vm = new DashboardViewModel
@@ -53,5 +54,14 @@ public class DashboardController : Controller
             .ToListAsync();
 
         return View(vm);
+    }
+
+    private async Task<UserProfile?> GetPrimaryProfileForUserAsync(string userId)
+    {
+        return await _context.UserProfiles
+            .Where(x => x.UserId == userId)
+            .OrderByDescending(x => x.IsVerified)
+            .ThenByDescending(x => x.CreatedAt)
+            .FirstOrDefaultAsync();
     }
 }

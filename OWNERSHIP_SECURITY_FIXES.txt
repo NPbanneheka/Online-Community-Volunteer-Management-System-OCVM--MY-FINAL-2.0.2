@@ -1,49 +1,34 @@
-OCVMS Ownership / Organization Security Fix Summary
-===================================================
+OCVMS Final Ownership / Security Fix Summary
+=============================================
 
-This version fixes the ownership authorization issue reported during final testing.
+This polished version applies strict final-submission ownership authorization rules.
 
 Security rules applied:
-1. Admin can manage all events, community posts, comments, and support requests.
-2. Organizer can manage records created by organizers from the same organization.
-3. Organizer cannot edit/delete records created by a different organization.
-4. Volunteer can only manage their own community posts, own comments, and own support requests.
-5. Volunteer cannot edit/delete events.
-6. UI buttons are hidden when the logged-in user is not allowed to manage that record.
-7. Controller-level checks are also applied, so direct URL access is blocked.
-
-Organization handling:
-- Organizer registration now asks for Organization Name.
-- Organizer profile editing requires Organization Name.
-- Organization Name is used to decide same-organization access.
-- Organizers in the same organization should use the same spelling of the organization name.
+1. Admin can manage all events, community posts, comments, support requests, and user verification/deletion.
+2. Organizer can create events and manage only the events created by their own profile.
+3. Organizer cannot edit/delete events, posts, comments, or support requests created by another organizer/user.
+4. Volunteer can manage only their own community posts, own comments, and own support requests.
+5. The owner of a community post can remove comments on that own post; Admin can remove any comment.
+6. Volunteer cannot edit/delete events.
+7. UI buttons are hidden when the logged-in user is not allowed to manage that record.
+8. Controller-level checks are also applied, so direct URL access is blocked.
+9. Profile lookup now consistently uses the verified/latest profile row to fix duplicate-profile data issues.
+10. Profile and event image deletion paths are hardened to avoid unsafe hidden-field/path tampering.
 
 Important files updated:
-- Controllers/AccountController.cs
-- Controllers/ProfileController.cs
 - Controllers/EventsController.cs
 - Controllers/CommunityController.cs
 - Controllers/HelpRequestsController.cs
-- ViewModels/RegisterViewModel.cs
-- Views/Account/Register.cshtml
-- Views/Profile/Edit.cshtml
-- Views/Events/Index.cshtml
-- Views/Events/Details.cshtml
-- Views/Events/MyCreatedEvents.cshtml
-- Views/Community/Feed.cshtml
-- Views/Community/EditPost.cshtml
-- Views/HelpRequests/Index.cshtml
-- Views/HelpRequests/Details.cshtml
-- Views/HelpRequests/Edit.cshtml
+- Controllers/DashboardController.cs
+- Controllers/NotificationsController.cs
+- Controllers/ProfileController.cs
+- README.md
 
-Run steps:
-1. Restore database backup to your SQL Server instance.
-2. Confirm appsettings.json DefaultConnection matches your SQL Server instance.
-3. Run:
-   dotnet clean .\OCVMS.csproj
-   dotnet restore .\OCVMS.csproj
-   dotnet build .\OCVMS.csproj
-   dotnet run --project .\OCVMS.csproj
+Recommended local test commands:
+  dotnet clean .\OCVMS.csproj
+  dotnet restore .\OCVMS.csproj
+  dotnet build .\OCVMS.csproj
+  dotnet run --project .\OCVMS.csproj
 
-Current default connection string is configured for:
+Current connection string is configured for:
 Server=.\SQLEXPRESS;Database=OCVMSDb;Trusted_Connection=True;MultipleActiveResultSets=true;TrustServerCertificate=True

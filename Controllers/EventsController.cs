@@ -173,7 +173,7 @@ public class EventsController : Controller
             RegistrationDate = DateTime.Now
         });
 
-        var profile = await _context.UserProfiles.FirstOrDefaultAsync(x => x.UserId == userId);
+        var profile = await GetPrimaryProfileForUserAsync(userId);
         if (profile != null)
         {
             _context.Notifications.Add(new Notification
@@ -203,7 +203,7 @@ public class EventsController : Controller
         {
             _context.EventRegistrations.Remove(registration);
 
-            var profile = await _context.UserProfiles.FirstOrDefaultAsync(x => x.UserId == userId);
+            var profile = await GetPrimaryProfileForUserAsync(userId);
             var volunteerEvent = await _context.VolunteerEvents.FindAsync(eventId);
             if (profile != null && volunteerEvent != null)
             {
@@ -556,7 +556,16 @@ public class EventsController : Controller
     {
         var userId = _userManager.GetUserId(User);
         if (string.IsNullOrWhiteSpace(userId)) return null;
-        return await _context.UserProfiles.FirstOrDefaultAsync(x => x.UserId == userId);
+        return await GetPrimaryProfileForUserAsync(userId);
+    }
+
+    private async Task<UserProfile?> GetPrimaryProfileForUserAsync(string userId)
+    {
+        return await _context.UserProfiles
+            .Where(x => x.UserId == userId)
+            .OrderByDescending(x => x.IsVerified)
+            .ThenByDescending(x => x.CreatedAt)
+            .FirstOrDefaultAsync();
     }
 
     private async Task<bool> CanManageEventAsync(VolunteerEvent volunteerEvent)
@@ -579,21 +588,10 @@ public class EventsController : Controller
     {
         if (isAdmin) return true;
         if (currentProfile == null) return false;
-        if (volunteerEvent.OrganizerProfileId == currentProfile.Id) return true;
 
-        return IsOrganizerInSameOrganization(currentProfile, volunteerEvent.OrganizerProfile);
-    }
-
-    private static bool IsOrganizerInSameOrganization(UserProfile currentProfile, UserProfile? ownerProfile)
-    {
-        if (ownerProfile == null) return false;
-        if (currentProfile.RoleName != "Organizer" || ownerProfile.RoleName != "Organizer") return false;
-        if (string.IsNullOrWhiteSpace(currentProfile.OrganizationName) || string.IsNullOrWhiteSpace(ownerProfile.OrganizationName)) return false;
-
-        return string.Equals(
-            currentProfile.OrganizationName.Trim(),
-            ownerProfile.OrganizationName.Trim(),
-            StringComparison.OrdinalIgnoreCase);
+        // Final ownership rule: an Organizer can edit/delete only the event created by their own profile.
+        // Organization-name matching is not used for authorization, because another user could type the same organization name.
+        return volunteerEvent.OrganizerProfileId == currentProfile.Id;
     }
 
     private async Task<string?> SaveEventImageAsync(IFormFile? file, string? oldImageUrl)
@@ -635,10 +633,10 @@ public class EventsController : Controller
         if (string.IsNullOrWhiteSpace(relativeUrl)) return;
 
         var relativePath = relativeUrl.TrimStart('/').Replace("/", Path.DirectorySeparatorChar.ToString());
-        var fullPath = Path.Combine(_environment.WebRootPath, relativePath);
-        var uploadRoot = Path.Combine(_environment.WebRootPath, "uploads", folderName);
+        var fullPath = Path.GetFullPath(Path.Combine(_environment.WebRootPath, relativePath));
+        var uploadRoot = Path.GetFullPath(Path.Combine(_environment.WebRootPath, "uploads", folderName));
 
-        if (fullPath.StartsWith(uploadRoot) && System.IO.File.Exists(fullPath))
+        if (fullPath.StartsWith(uploadRoot + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase) && System.IO.File.Exists(fullPath))
         {
             System.IO.File.Delete(fullPath);
         }

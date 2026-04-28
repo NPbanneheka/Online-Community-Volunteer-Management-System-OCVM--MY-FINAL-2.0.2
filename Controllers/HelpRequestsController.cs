@@ -232,7 +232,16 @@ public class HelpRequestsController : Controller
     {
         var userId = _userManager.GetUserId(User);
         if (string.IsNullOrWhiteSpace(userId)) return null;
-        return await _context.UserProfiles.FirstOrDefaultAsync(x => x.UserId == userId);
+        return await GetPrimaryProfileForUserAsync(userId);
+    }
+
+    private async Task<UserProfile?> GetPrimaryProfileForUserAsync(string userId)
+    {
+        return await _context.UserProfiles
+            .Where(x => x.UserId == userId)
+            .OrderByDescending(x => x.IsVerified)
+            .ThenByDescending(x => x.CreatedAt)
+            .FirstOrDefaultAsync();
     }
 
     private async Task<bool> CanViewHelpRequestAsync(HelpRequest helpRequest)

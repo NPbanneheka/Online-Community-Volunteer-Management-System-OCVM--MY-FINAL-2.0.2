@@ -160,9 +160,9 @@ public class ProfileController : Controller
             if (!string.IsNullOrEmpty(profile.ProfileImageUrl))
             {
                 var oldRelativePath = profile.ProfileImageUrl.TrimStart('/').Replace("/", Path.DirectorySeparatorChar.ToString());
-                var oldFullPath = Path.Combine(_environment.WebRootPath, oldRelativePath);
-                var profileUploadRoot = Path.Combine(_environment.WebRootPath, "uploads", "profiles");
-                if (oldFullPath.StartsWith(profileUploadRoot, StringComparison.OrdinalIgnoreCase) && System.IO.File.Exists(oldFullPath))
+                var oldFullPath = Path.GetFullPath(Path.Combine(_environment.WebRootPath, oldRelativePath));
+                var profileUploadRoot = Path.GetFullPath(Path.Combine(_environment.WebRootPath, "uploads", "profiles"));
+                if (oldFullPath.StartsWith(profileUploadRoot + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase) && System.IO.File.Exists(oldFullPath))
                 {
                     System.IO.File.Delete(oldFullPath);
                 }
@@ -170,10 +170,8 @@ public class ProfileController : Controller
 
             profile.ProfileImageUrl = "/uploads/profiles/" + uniqueFileName;
         }
-        else
-        {
-            profile.ProfileImageUrl = model.ProfileImageUrl;
-        }
+        // If no new image is uploaded, keep the existing saved image path.
+        // Do not trust the hidden ProfileImageUrl field because it can be changed from the browser.
 
         await _context.SaveChangesAsync();
         TempData["Message"] = "Profile updated successfully!";
