@@ -36,8 +36,8 @@ OCVMS is an ASP.NET Core MVC web application developed as a community volunteer 
 
 ## Default Admin Account
 
-- Email: `admin@ocvms.local`
-- Password: `Admin123`
+- Email: `admin@gmail.com`
+- Password: `123456`
 
 ## Database Setup
 
