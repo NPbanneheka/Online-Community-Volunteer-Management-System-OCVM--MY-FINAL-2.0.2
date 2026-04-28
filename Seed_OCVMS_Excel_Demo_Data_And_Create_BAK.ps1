@@ -1,6 +1,6 @@
 $ErrorActionPreference = "Stop"
 
-$server = ".\SQLEXPRESS"
+$server = "."
 $database = "OCVMSDb"
 $backupPath = "C:\Temp\OCVMS_EXCEL_DEMO_DATA.bak"
 $sqlFile = ".\OCVMS_Demo_Data_From_Excel.sql"
