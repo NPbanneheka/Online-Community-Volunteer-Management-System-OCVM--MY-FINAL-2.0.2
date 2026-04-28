@@ -80,15 +80,18 @@ public class ProfileController : Controller
         if (user == null) return RedirectToAction("Login", "Account");
 
         var profile = await GetPrimaryProfileForUserAsync(user.Id);
+
         if (profile == null)
         {
             var roleName = (await _userManager.GetRolesAsync(user)).FirstOrDefault() ?? "Volunteer";
+
             profile = new UserProfile
             {
                 UserId = user.Id,
                 RoleName = roleName,
                 IsVerified = roleName != "Organizer"
             };
+
             _context.UserProfiles.Add(profile);
         }
 
@@ -159,7 +162,10 @@ public class ProfileController : Controller
 
             if (!string.IsNullOrEmpty(profile.ProfileImageUrl))
             {
-                var oldRelativePath = profile.ProfileImageUrl.TrimStart('/').Replace("/", Path.DirectorySeparatorChar.ToString());
+                var oldRelativePath = profile.ProfileImageUrl
+                    .TrimStart('/')
+                    .Replace("/", Path.DirectorySeparatorChar.ToString());
+
                 var oldFullPath = Path.GetFullPath(Path.Combine(_environment.WebRootPath, oldRelativePath));
                 var profileUploadRoot = Path.GetFullPath(Path.Combine(_environment.WebRootPath, "uploads", "profiles"));
 
@@ -177,6 +183,7 @@ public class ProfileController : Controller
         // Do not trust the hidden ProfileImageUrl field because it can be changed from the browser.
 
         await _context.SaveChangesAsync();
+
         TempData["Message"] = "Profile updated successfully!";
         return RedirectToAction(nameof(MyProfile));
     }
@@ -220,6 +227,22 @@ public class ProfileController : Controller
             .ThenBy(p => p.FullName)
             .ToList();
 
+        var userIds = profiles
+            .Select(p => p.UserId)
+            .Distinct()
+            .ToList();
+
+        var users = await _context.Users
+            .Where(u => userIds.Contains(u.Id))
+            .ToListAsync();
+
+        var bannedStatus = users.ToDictionary(
+            u => u.Id,
+            u => u.LockoutEnd.HasValue && u.LockoutEnd.Value > DateTimeOffset.UtcNow
+        );
+
+        ViewBag.BannedStatus = bannedStatus;
+
         return View(profiles);
     }
 
@@ -231,7 +254,8 @@ public class ProfileController : Controller
         var profile = await _context.UserProfiles.FirstOrDefaultAsync(p => p.Id == id);
         if (profile == null) return NotFound();
 
-        // Update all profile rows for the same Identity user. This also fixes older duplicate-profile data.
+        // Update all profile rows for the same Identity user.
+        // This also fixes older duplicate-profile data.
         var relatedProfiles = await _context.UserProfiles
             .Where(p => p.UserId == profile.UserId)
             .ToListAsync();
@@ -253,6 +277,85 @@ public class ProfileController : Controller
     [HttpPost]
     [Authorize(Roles = "Admin")]
     [ValidateAntiForgeryToken]
+    public async Task<IActionResult> BanUser(int id)
+    {
+        var profile = await _context.UserProfiles.FirstOrDefaultAsync(p => p.Id == id);
+
+        if (profile == null)
+        {
+            TempData["Message"] = "User profile was not found.";
+            return RedirectToAction(nameof(ManageUsers));
+        }
+
+        var user = await _userManager.FindByIdAsync(profile.UserId);
+
+        if (user == null)
+        {
+            TempData["Message"] = "Identity user account was not found.";
+            return RedirectToAction(nameof(ManageUsers));
+        }
+
+        var currentUserId = _userManager.GetUserId(User);
+
+        if (user.Id == currentUserId)
+        {
+            TempData["Message"] = "You cannot ban your own admin account while logged in.";
+            return RedirectToAction(nameof(ManageUsers));
+        }
+
+        if (await _userManager.IsInRoleAsync(user, "Admin"))
+        {
+            TempData["Message"] = "Admin accounts are protected and cannot be banned from this page.";
+            return RedirectToAction(nameof(ManageUsers));
+        }
+
+        await _userManager.SetLockoutEnabledAsync(user, true);
+        await _userManager.SetLockoutEndDateAsync(user, DateTimeOffset.UtcNow.AddYears(10));
+        await _userManager.UpdateSecurityStampAsync(user);
+
+        TempData["Message"] = $"{profile.FullName}'s account has been banned successfully.";
+        return RedirectToAction(nameof(ManageUsers));
+    }
+
+    [HttpPost]
+    [Authorize(Roles = "Admin")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> UnbanUser(int id)
+    {
+        var profile = await _context.UserProfiles.FirstOrDefaultAsync(p => p.Id == id);
+
+        if (profile == null)
+        {
+            TempData["Message"] = "User profile was not found.";
+            return RedirectToAction(nameof(ManageUsers));
+        }
+
+        var user = await _userManager.FindByIdAsync(profile.UserId);
+
+        if (user == null)
+        {
+            TempData["Message"] = "Identity user account was not found.";
+            return RedirectToAction(nameof(ManageUsers));
+        }
+
+        if (await _userManager.IsInRoleAsync(user, "Admin"))
+        {
+            TempData["Message"] = "Admin accounts are protected.";
+            return RedirectToAction(nameof(ManageUsers));
+        }
+
+        await _userManager.SetLockoutEnabledAsync(user, true);
+        await _userManager.SetLockoutEndDateAsync(user, null);
+        await _userManager.ResetAccessFailedCountAsync(user);
+        await _userManager.UpdateSecurityStampAsync(user);
+
+        TempData["Message"] = $"{profile.FullName}'s account has been unbanned successfully.";
+        return RedirectToAction(nameof(ManageUsers));
+    }
+
+    [HttpPost]
+    [Authorize(Roles = "Admin")]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteUser(int id)
     {
         var strategy = _context.Database.CreateExecutionStrategy();
@@ -260,6 +363,7 @@ public class ProfileController : Controller
         return await strategy.ExecuteAsync(async () =>
         {
             var profile = await _context.UserProfiles.FirstOrDefaultAsync(p => p.Id == id);
+
             if (profile == null)
             {
                 TempData["Message"] = "User profile was not found.";
@@ -267,6 +371,7 @@ public class ProfileController : Controller
             }
 
             var user = await _userManager.FindByIdAsync(profile.UserId);
+
             if (user == null)
             {
                 TempData["Message"] = "Identity account was not found. Please check this user manually.";
@@ -274,6 +379,7 @@ public class ProfileController : Controller
             }
 
             var currentUserId = _userManager.GetUserId(User);
+
             if (user.Id == currentUserId)
             {
                 TempData["Message"] = "You cannot delete your own admin account while logged in.";
@@ -306,11 +412,14 @@ public class ProfileController : Controller
                     .ToListAsync();
 
                 _context.UserRatings.RemoveRange(await _context.UserRatings
-                    .Where(r => r.FromUserId == user.Id || r.ToUserId == user.Id || organizedEventIds.Contains(r.EventId))
+                    .Where(r => r.FromUserId == user.Id
+                             || r.ToUserId == user.Id
+                             || organizedEventIds.Contains(r.EventId))
                     .ToListAsync());
 
                 _context.EventRegistrations.RemoveRange(await _context.EventRegistrations
-                    .Where(r => r.UserId == user.Id || organizedEventIds.Contains(r.VolunteerEventId))
+                    .Where(r => r.UserId == user.Id
+                             || organizedEventIds.Contains(r.VolunteerEventId))
                     .ToListAsync());
 
                 _context.Notifications.RemoveRange(await _context.Notifications
@@ -318,7 +427,8 @@ public class ProfileController : Controller
                     .ToListAsync());
 
                 _context.PostComments.RemoveRange(await _context.PostComments
-                    .Where(c => profileIds.Contains(c.UserProfileId) || postIds.Contains(c.CommunityPostId))
+                    .Where(c => profileIds.Contains(c.UserProfileId)
+                             || postIds.Contains(c.CommunityPostId))
                     .ToListAsync());
 
                 _context.CommunityPosts.RemoveRange(await _context.CommunityPosts
@@ -340,6 +450,7 @@ public class ProfileController : Controller
                 await _context.SaveChangesAsync();
 
                 var roles = await _userManager.GetRolesAsync(user);
+
                 if (roles.Any())
                 {
                     var removeRolesResult = await _userManager.RemoveFromRolesAsync(user, roles);
