@@ -55,7 +55,8 @@ public class AccountController : Controller
         {
             UserName = model.Email,
             Email = model.Email,
-            EmailConfirmed = true
+            EmailConfirmed = true,
+            LockoutEnabled = true
         };
 
         var result = await _userManager.CreateAsync(user, model.Password);
@@ -123,6 +124,12 @@ public class AccountController : Controller
         if (result.Succeeded)
         {
             return RedirectToAction("Index", "Home");
+        }
+
+        if (result.IsLockedOut)
+        {
+            ModelState.AddModelError(string.Empty, "This account is temporarily banned. Please contact the admin.");
+            return View(model);
         }
 
         ModelState.AddModelError(string.Empty, "Email address or password is incorrect.");

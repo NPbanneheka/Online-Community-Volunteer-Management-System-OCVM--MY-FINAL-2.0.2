@@ -205,8 +205,6 @@ public class ProfileController : Controller
             .ThenBy(p => p.FullName)
             .ToListAsync();
 
-        // If older test runs created duplicate profiles for the same Identity user,
-        // show only the most reliable profile row in the admin list.
         var profiles = allProfiles
             .GroupBy(p => p.UserId)
             .Select(g => g
@@ -216,6 +214,16 @@ public class ProfileController : Controller
             .OrderBy(p => p.RoleName)
             .ThenBy(p => p.FullName)
             .ToList();
+
+        var userIds = profiles.Select(p => p.UserId).Distinct().ToList();
+        var users = await _userManager.Users
+            .Where(u => userIds.Contains(u.Id))
+            .ToListAsync();
+
+        ViewBag.BannedUserIds = users
+            .Where(u => u.LockoutEnd.HasValue && u.LockoutEnd.Value > DateTimeOffset.UtcNow)
+            .Select(u => u.Id)
+            .ToHashSet();
 
         return View(profiles);
     }
@@ -243,6 +251,52 @@ public class ProfileController : Controller
         TempData["Message"] = isVerified
             ? $"{profile.FullName} has been marked as verified."
             : $"{profile.FullName} has been marked as pending verification.";
+
+        return RedirectToAction(nameof(ManageUsers));
+    }
+
+    [HttpPost]
+    [Authorize(Roles = "Admin")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ToggleBan(int id, bool ban)
+    {
+        var profile = await _context.UserProfiles.FirstOrDefaultAsync(p => p.Id == id);
+        if (profile == null) return NotFound();
+
+        var user = await _userManager.FindByIdAsync(profile.UserId);
+        if (user == null)
+        {
+            TempData["Message"] = "Identity account was not found.";
+            return RedirectToAction(nameof(ManageUsers));
+        }
+
+        var currentUserId = _userManager.GetUserId(User);
+        if (user.Id == currentUserId)
+        {
+            TempData["Message"] = "You cannot ban or unban your own admin account while logged in.";
+            return RedirectToAction(nameof(ManageUsers));
+        }
+
+        if (await _userManager.IsInRoleAsync(user, "Admin"))
+        {
+            TempData["Message"] = "Admin accounts cannot be banned from this page.";
+            return RedirectToAction(nameof(ManageUsers));
+        }
+
+        user.LockoutEnabled = true;
+        user.LockoutEnd = ban ? DateTimeOffset.UtcNow.AddYears(100) : null;
+
+        var result = await _userManager.UpdateAsync(user);
+        if (!result.Succeeded)
+        {
+            TempData["Message"] = "User access could not be updated: " +
+                                  string.Join(", ", result.Errors.Select(e => e.Description));
+            return RedirectToAction(nameof(ManageUsers));
+        }
+
+        TempData["Message"] = ban
+            ? $"{profile.FullName} has been temporarily banned."
+            : $"{profile.FullName} has been unbanned.";
 
         return RedirectToAction(nameof(ManageUsers));
     }
@@ -308,21 +362,32 @@ public class ProfileController : Controller
             .Where(c => profileIds.Contains(c.UserProfileId) || postIds.Contains(c.CommunityPostId))
             .ToListAsync());
 
-        _context.CommunityPosts.RemoveRange(await _context.CommunityPosts
+        var communityPosts = await _context.CommunityPosts
             .Where(p => profileIds.Contains(p.UserProfileId))
-            .ToListAsync());
+            .ToListAsync();
+        _context.CommunityPosts.RemoveRange(communityPosts);
 
         _context.HelpRequests.RemoveRange(await _context.HelpRequests
             .Where(h => profileIds.Contains(h.UserProfileId))
             .ToListAsync());
 
-        _context.VolunteerEvents.RemoveRange(await _context.VolunteerEvents
+        var organizedEvents = await _context.VolunteerEvents
             .Where(e => organizedEventIds.Contains(e.Id))
-            .ToListAsync());
+            .ToListAsync();
+        foreach (var organizedEvent in organizedEvents)
+        {
+            DeleteLocalFile(organizedEvent.ImageUrl, "events");
+        }
+        _context.VolunteerEvents.RemoveRange(organizedEvents);
 
-        _context.UserProfiles.RemoveRange(await _context.UserProfiles
+        var userProfiles = await _context.UserProfiles
             .Where(p => profileIds.Contains(p.Id))
-            .ToListAsync());
+            .ToListAsync();
+        foreach (var userProfile in userProfiles)
+        {
+            DeleteLocalFile(userProfile.ProfileImageUrl, "profiles");
+        }
+        _context.UserProfiles.RemoveRange(userProfiles);
 
         await _context.SaveChangesAsync();
 
@@ -348,5 +413,19 @@ public class ProfileController : Controller
             .OrderByDescending(x => x.IsVerified)
             .ThenByDescending(x => x.CreatedAt)
             .FirstOrDefaultAsync();
+    }
+
+    private void DeleteLocalFile(string? relativeUrl, string folderName)
+    {
+        if (string.IsNullOrWhiteSpace(relativeUrl)) return;
+
+        var relativePath = relativeUrl.TrimStart('/').Replace("/", Path.DirectorySeparatorChar.ToString());
+        var fullPath = Path.GetFullPath(Path.Combine(_environment.WebRootPath, relativePath));
+        var uploadRoot = Path.GetFullPath(Path.Combine(_environment.WebRootPath, "uploads", folderName));
+
+        if (fullPath.StartsWith(uploadRoot + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase) && System.IO.File.Exists(fullPath))
+        {
+            System.IO.File.Delete(fullPath);
+        }
     }
 }

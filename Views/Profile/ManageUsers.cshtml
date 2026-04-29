@@ -1,6 +1,7 @@
 @model IEnumerable<OCVMS.Models.UserProfile>
 @{
     ViewData["Title"] = "User Management";
+    var bannedUserIds = ViewBag.BannedUserIds as HashSet<string> ?? new HashSet<string>();
 }
 
 <div class="container py-4">
@@ -23,7 +24,8 @@
                     <th>User</th>
                     <th>Role</th>
                     <th>Organization</th>
-                    <th>Status</th>
+                    <th>Verification</th>
+                    <th>Access</th>
                     <th class="text-end">Actions</th>
                 </tr>
             </thead>
@@ -31,6 +33,7 @@
             @foreach (var item in Model)
             {
                 var isAdmin = string.Equals(item.RoleName, "Admin", StringComparison.OrdinalIgnoreCase);
+                var isBanned = bannedUserIds.Contains(item.UserId);
                 <tr>
                     <td>
                         <div class="d-flex align-items-center gap-3">
@@ -70,6 +73,20 @@
                             </span>
                         }
                     </td>
+                    <td>
+                        @if (isBanned)
+                        {
+                            <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill">
+                                <i class="bi bi-slash-circle me-1"></i> Temporarily Banned
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill">
+                                <i class="bi bi-check-circle me-1"></i> Active
+                            </span>
+                        }
+                    </td>
                     <td class="text-end">
                         <div class="d-inline-flex gap-2">
                             <form asp-action="Verify" method="post" class="d-inline">
@@ -83,6 +100,15 @@
 
                             @if (!isAdmin)
                             {
+                                <form asp-action="ToggleBan" method="post" class="d-inline">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@item.Id" />
+                                    <input type="hidden" name="ban" value="@(!isBanned)" />
+                                    <button type="submit" class="btn btn-sm @(isBanned ? "btn-outline-primary" : "btn-outline-dark") rounded-pill px-3">
+                                        @(isBanned ? "Unban" : "Temp Ban")
+                                    </button>
+                                </form>
+
                                 <form asp-action="DeleteUser" method="post" class="d-inline">
                                     @Html.AntiForgeryToken()
                                     <input type="hidden" name="id" value="@item.Id" />
