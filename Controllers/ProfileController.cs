@@ -194,6 +194,20 @@ public class ProfileController : Controller
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> ManageUsers()
     {
+        var adminProfilesToFix = await _context.UserProfiles
+            .Where(p => p.RoleName == "Admin" && !p.IsVerified)
+            .ToListAsync();
+
+        if (adminProfilesToFix.Any())
+        {
+            foreach (var adminProfile in adminProfilesToFix)
+            {
+                adminProfile.IsVerified = true;
+            }
+
+            await _context.SaveChangesAsync();
+        }
+
         var allProfiles = await _context.UserProfiles
             .OrderBy(p => p.RoleName)
             .ThenBy(p => p.FullName)
@@ -228,7 +242,12 @@ public class ProfileController : Controller
         var profile = await _context.UserProfiles.FirstOrDefaultAsync(p => p.Id == id);
         if (profile == null) return NotFound();
 
-        // Update all profile rows for the same Identity user. This also fixes older duplicate-profile data.
+        if (string.Equals(profile.RoleName, "Admin", StringComparison.OrdinalIgnoreCase))
+        {
+            TempData["Message"] = "Admin accounts are protected system accounts. Their verification status cannot be changed from User Management.";
+            return RedirectToAction(nameof(ManageUsers));
+        }
+
         var relatedProfiles = await _context.UserProfiles
             .Where(p => p.UserId == profile.UserId)
             .ToListAsync();
@@ -266,6 +285,12 @@ public class ProfileController : Controller
         if (user.Id == currentUserId)
         {
             TempData["Message"] = "You cannot temporarily ban or unban your own currently logged-in admin account.";
+            return RedirectToAction(nameof(ManageUsers));
+        }
+
+        if (await _userManager.IsInRoleAsync(user, "Admin"))
+        {
+            TempData["Message"] = "Admin accounts are protected and cannot be temporarily banned or unbanned from this page.";
             return RedirectToAction(nameof(ManageUsers));
         }
 
@@ -311,84 +336,117 @@ public class ProfileController : Controller
             return RedirectToAction(nameof(ManageUsers));
         }
 
-        await using var transaction = await _context.Database.BeginTransactionAsync();
-
-        var relatedProfiles = await _context.UserProfiles
-            .Where(p => p.UserId == user.Id)
-            .ToListAsync();
-        var profileIds = relatedProfiles.Select(p => p.Id).ToList();
-        var profileImages = relatedProfiles
-            .Select(p => p.ProfileImageUrl)
-            .Where(p => !string.IsNullOrWhiteSpace(p))
-            .Cast<string>()
-            .ToList();
-
-        var organizedEvents = await _context.VolunteerEvents
-            .Where(e => profileIds.Contains(e.OrganizerProfileId))
-            .ToListAsync();
-        var organizedEventIds = organizedEvents.Select(e => e.Id).ToList();
-        var eventImages = organizedEvents
-            .Select(e => e.ImageUrl)
-            .Where(i => !string.IsNullOrWhiteSpace(i))
-            .Cast<string>()
-            .ToList();
-
-        var postIds = await _context.CommunityPosts
-            .Where(p => profileIds.Contains(p.UserProfileId))
-            .Select(p => p.Id)
-            .ToListAsync();
-
-        _context.UserRatings.RemoveRange(await _context.UserRatings
-            .Where(r => r.FromUserId == user.Id || r.ToUserId == user.Id || organizedEventIds.Contains(r.EventId))
-            .ToListAsync());
-
-        _context.EventRegistrations.RemoveRange(await _context.EventRegistrations
-            .Where(r => r.UserId == user.Id || organizedEventIds.Contains(r.VolunteerEventId))
-            .ToListAsync());
-
-        _context.Notifications.RemoveRange(await _context.Notifications
-            .Where(n => profileIds.Contains(n.UserProfileId))
-            .ToListAsync());
-
-        _context.PostComments.RemoveRange(await _context.PostComments
-            .Where(c => profileIds.Contains(c.UserProfileId) || postIds.Contains(c.CommunityPostId))
-            .ToListAsync());
-
-        _context.CommunityPosts.RemoveRange(await _context.CommunityPosts
-            .Where(p => profileIds.Contains(p.UserProfileId))
-            .ToListAsync());
-
-        _context.HelpRequests.RemoveRange(await _context.HelpRequests
-            .Where(h => profileIds.Contains(h.UserProfileId))
-            .ToListAsync());
-
-        _context.VolunteerEvents.RemoveRange(organizedEvents);
-        _context.UserProfiles.RemoveRange(relatedProfiles);
-
-        await _context.SaveChangesAsync();
-
-        var deleteResult = await _userManager.DeleteAsync(user);
-        if (!deleteResult.Succeeded)
+        if (await _userManager.IsInRoleAsync(user, "Admin"))
         {
-            await transaction.RollbackAsync();
-            TempData["Message"] = "User account could not be deleted: " +
-                                  string.Join(", ", deleteResult.Errors.Select(e => e.Description));
+            TempData["Message"] = "Admin accounts are protected and cannot be deleted from this page.";
             return RedirectToAction(nameof(ManageUsers));
         }
 
-        await transaction.CommitAsync();
+        var deletedFullName = profile.FullName;
+        var strategy = _context.Database.CreateExecutionStrategy();
 
-        foreach (var profileImage in profileImages)
+        try
         {
-            DeleteLocalFile(profileImage, "profiles");
+            await strategy.ExecuteAsync(async () =>
+            {
+                await using var transaction = await _context.Database.BeginTransactionAsync();
+
+                try
+                {
+                    var relatedProfiles = await _context.UserProfiles
+                        .Where(p => p.UserId == user.Id)
+                        .ToListAsync();
+                    var profileIds = relatedProfiles.Select(p => p.Id).ToList();
+                    var profileImages = relatedProfiles
+                        .Select(p => p.ProfileImageUrl)
+                        .Where(p => !string.IsNullOrWhiteSpace(p))
+                        .Cast<string>()
+                        .ToList();
+
+                    var organizedEvents = await _context.VolunteerEvents
+                        .Where(e => profileIds.Contains(e.OrganizerProfileId))
+                        .ToListAsync();
+                    var organizedEventIds = organizedEvents.Select(e => e.Id).ToList();
+                    var eventImages = organizedEvents
+                        .Select(e => e.ImageUrl)
+                        .Where(i => !string.IsNullOrWhiteSpace(i))
+                        .Cast<string>()
+                        .ToList();
+
+                    var postIds = await _context.CommunityPosts
+                        .Where(p => profileIds.Contains(p.UserProfileId))
+                        .Select(p => p.Id)
+                        .ToListAsync();
+
+                    var ratings = await _context.UserRatings
+                        .Where(r => r.FromUserId == user.Id || r.ToUserId == user.Id || organizedEventIds.Contains(r.EventId))
+                        .ToListAsync();
+                    _context.UserRatings.RemoveRange(ratings);
+
+                    var registrations = await _context.EventRegistrations
+                        .Where(r => r.UserId == user.Id || organizedEventIds.Contains(r.VolunteerEventId))
+                        .ToListAsync();
+                    _context.EventRegistrations.RemoveRange(registrations);
+
+                    var notifications = await _context.Notifications
+                        .Where(n => profileIds.Contains(n.UserProfileId))
+                        .ToListAsync();
+                    _context.Notifications.RemoveRange(notifications);
+
+                    var comments = await _context.PostComments
+                        .Where(c => profileIds.Contains(c.UserProfileId) || postIds.Contains(c.CommunityPostId))
+                        .ToListAsync();
+                    _context.PostComments.RemoveRange(comments);
+
+                    var posts = await _context.CommunityPosts
+                        .Where(p => profileIds.Contains(p.UserProfileId))
+                        .ToListAsync();
+                    _context.CommunityPosts.RemoveRange(posts);
+
+                    var helpRequests = await _context.HelpRequests
+                        .Where(h => profileIds.Contains(h.UserProfileId))
+                        .ToListAsync();
+                    _context.HelpRequests.RemoveRange(helpRequests);
+
+                    _context.VolunteerEvents.RemoveRange(organizedEvents);
+                    _context.UserProfiles.RemoveRange(relatedProfiles);
+
+                    await _context.SaveChangesAsync();
+
+                    var deleteResult = await _userManager.DeleteAsync(user);
+                    if (!deleteResult.Succeeded)
+                    {
+                        throw new InvalidOperationException(
+                            "User account could not be deleted: " +
+                            string.Join(", ", deleteResult.Errors.Select(e => e.Description)));
+                    }
+
+                    await transaction.CommitAsync();
+
+                    foreach (var profileImage in profileImages)
+                    {
+                        DeleteLocalFile(profileImage, "profiles");
+                    }
+
+                    foreach (var eventImage in eventImages)
+                    {
+                        DeleteLocalFile(eventImage, "events");
+                    }
+                }
+                catch
+                {
+                    await transaction.RollbackAsync();
+                    throw;
+                }
+            });
+
+            TempData["Message"] = $"{deletedFullName}'s account and all related data were deleted successfully.";
+        }
+        catch (Exception ex)
+        {
+            TempData["Message"] = ex.Message;
         }
 
-        foreach (var eventImage in eventImages)
-        {
-            DeleteLocalFile(eventImage, "events");
-        }
-
-        TempData["Message"] = $"{profile.FullName}'s account and all related data were deleted successfully.";
         return RedirectToAction(nameof(ManageUsers));
     }
 
