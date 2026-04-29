@@ -1,0 +1,3 @@
+BACKUP DATABASE OCVMSDb
+TO DISK = 'C:\Temp\new\OCVMSDb.bak'
+WITH INIT, FORMAT, NAME = 'OCVMS Full Backup';
