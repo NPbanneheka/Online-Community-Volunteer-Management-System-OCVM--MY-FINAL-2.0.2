@@ -55,7 +55,8 @@ public class AccountController : Controller
         {
             UserName = model.Email,
             Email = model.Email,
-            EmailConfirmed = true
+            EmailConfirmed = true,
+            LockoutEnabled = true
         };
 
         var result = await _userManager.CreateAsync(user, model.Password);
@@ -86,7 +87,7 @@ public class AccountController : Controller
             PublicEmail = model.Email,
             RoleName = model.RoleName,
             OrganizationName = organizationName,
-            IsVerified = model.RoleName == "Organizer" ? false : true
+            IsVerified = false
         });
 
         await _context.SaveChangesAsync();

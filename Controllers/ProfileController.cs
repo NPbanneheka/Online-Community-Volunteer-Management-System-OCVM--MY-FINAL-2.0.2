@@ -53,7 +53,7 @@ public class ProfileController : Controller
                          FullName = user.Email ?? "User",
                          PublicEmail = user.Email,
                          RoleName = roleName,
-                         IsVerified = roleName != "Organizer"
+                         IsVerified = roleName == "Admin"
                      };
 
         return View(new ProfileEditViewModel
@@ -87,7 +87,7 @@ public class ProfileController : Controller
             {
                 UserId = user.Id,
                 RoleName = roleName,
-                IsVerified = roleName != "Organizer"
+                IsVerified = roleName == "Admin"
             };
             _context.UserProfiles.Add(profile);
         }
@@ -164,6 +164,8 @@ public class ProfileController : Controller
 
             profile.ProfileImageUrl = "/uploads/profiles/" + uniqueFileName;
         }
+        // If no new image is uploaded, keep the existing saved image path.
+        // Do not trust the hidden ProfileImageUrl field because it can be changed from the browser.
 
         await _context.SaveChangesAsync();
         TempData["Message"] = "Profile updated successfully!";
@@ -226,6 +228,7 @@ public class ProfileController : Controller
         var profile = await _context.UserProfiles.FirstOrDefaultAsync(p => p.Id == id);
         if (profile == null) return NotFound();
 
+        // Update all profile rows for the same Identity user. This also fixes older duplicate-profile data.
         var relatedProfiles = await _context.UserProfiles
             .Where(p => p.UserId == profile.UserId)
             .ToListAsync();
