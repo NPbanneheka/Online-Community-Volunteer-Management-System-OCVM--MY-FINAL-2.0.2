@@ -10,15 +10,6 @@
     double averageRating = ViewBag.AverageRating ?? 0.0;
     int ratingCount = ViewBag.RatingCount ?? 0;
     var isRegistrationOpen = Model.IsRegistrationOpen;
-    var publicStatus = (string?)(ViewBag.PublicStatus ?? Model.PublicStatus) ?? Model.Status;
-    var statusBadgeClass = publicStatus switch
-    {
-        "Open" => "bg-success bg-opacity-10 text-success",
-        "Upcoming" => "bg-info bg-opacity-10 text-info",
-        "Cancelled" => "bg-danger bg-opacity-10 text-danger",
-        "Completed" => "bg-dark bg-opacity-10 text-dark",
-        _ => "bg-secondary bg-opacity-10 text-secondary"
-    };
 }
 
 <div class="container py-5">
@@ -36,15 +27,8 @@
         <div class="bg-white p-4 text-center border-bottom">
             <h2 class="fw-bold text-dark mt-2">@Model.Title</h2>
             <div class="d-flex justify-content-center gap-2 flex-wrap">
-                <span class="badge @statusBadgeClass rounded-pill px-3 py-2">@publicStatus</span>
-                @if (publicStatus == "Upcoming")
-                {
-                    <span class="badge bg-info bg-opacity-10 text-info rounded-pill px-3 py-2">Registration Opens Soon</span>
-                }
-                else
-                {
-                    <span class="badge @(isRegistrationOpen ? "bg-success" : "bg-secondary") bg-opacity-10 @(isRegistrationOpen ? "text-success" : "text-secondary") rounded-pill px-3 py-2">@(isRegistrationOpen ? "Registration Open" : "Registration Closed")</span>
-                }
+                <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3 py-2">@Model.Status</span>
+                <span class="badge @(isRegistrationOpen ? "bg-success" : "bg-secondary") bg-opacity-10 @(isRegistrationOpen ? "text-success" : "text-secondary") rounded-pill px-3 py-2">@(isRegistrationOpen ? "Registration Open" : "Registration Closed")</span>
                 @if (ratingCount > 0)
                 {
                     <span class="badge bg-warning bg-opacity-10 text-warning rounded-pill px-3 py-2"><i class="bi bi-star-fill"></i> @averageRating.ToString("0.0") (@ratingCount)</span>
@@ -95,7 +79,7 @@
                     <div class="bg-light p-4 rounded-4 shadow-sm">
                         <div class="d-flex justify-content-between align-items-center mb-4">
                             <h5 class="fw-bold mb-0">Event Info</h5>
-                            <span class="badge @statusBadgeClass rounded-pill px-3 py-2">@publicStatus</span>
+                            <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3 py-2">@Model.Status</span>
                         </div>
                         
                         <div class="d-flex align-items-center mb-3">
@@ -158,10 +142,6 @@
                                     <input type="hidden" name="eventId" value="@Model.Id" />
                                     <button type="submit" class="btn btn-outline-danger w-100 rounded-pill fw-bold">Cancel Registration</button>
                                 </form>
-                            }
-                            else if (publicStatus == "Upcoming")
-                            {
-                                <button class="btn btn-info text-white w-100 rounded-pill fw-bold" disabled>Registration Opens Soon</button>
                             }
                             else if (!isRegistrationOpen)
                             {

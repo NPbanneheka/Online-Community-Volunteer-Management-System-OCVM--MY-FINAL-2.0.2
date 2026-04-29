@@ -23,22 +23,15 @@ public class HomeController : Controller
         {
             var today = DateTime.Today;
             var featuredEvents = await _context.VolunteerEvents
-                .Where(e => e.EventDate >= today && e.Status != "Closed" && e.Status != "Completed" && e.Status != "Cancelled")
+                .Where(e => e.EventDate >= today)
                 .OrderBy(e => e.EventDate)
                 .ThenBy(e => e.EventTime)
                 .Take(3)
                 .ToListAsync();
 
-            ViewBag.UserCount = await _context.UserProfiles
-                .Select(u => u.UserId)
-                .Distinct()
-                .CountAsync();
+            ViewBag.UserCount = await _context.UserProfiles.CountAsync();
             ViewBag.TotalEvents = await _context.VolunteerEvents.CountAsync();
-            ViewBag.ActiveEvents = await _context.VolunteerEvents.CountAsync(e =>
-                e.EventDate >= today &&
-                e.RegistrationOpenDate <= today &&
-                (!e.RegistrationClosingDate.HasValue || e.RegistrationClosingDate.Value.Date >= today) &&
-                e.Status != "Closed" && e.Status != "Completed" && e.Status != "Cancelled");
+            ViewBag.ActiveEvents = await _context.VolunteerEvents.CountAsync(e => e.EventDate >= today && e.Status != "Closed");
 
             return View(featuredEvents);
         }

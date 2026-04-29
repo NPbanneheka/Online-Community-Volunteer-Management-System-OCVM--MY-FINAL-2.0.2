@@ -1,20 +1,22 @@
+@using System
 @model IEnumerable<OCVMS.Models.UserProfile>
 @{
     ViewData["Title"] = "User Management";
-    var bannedUserIds = ViewBag.BannedUserIds as HashSet<string> ?? new HashSet<string>();
+    var lockoutMap = ViewBag.LockoutMap as Dictionary<string, DateTimeOffset?> ?? new Dictionary<string, DateTimeOffset?>();
+    var currentAdminUserId = ViewBag.CurrentAdminUserId as string;
 }
 
 <div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h2 class="fw-bold mb-1">User Management</h2>
-            <p class="text-muted mb-0">Admin can verify users and remove problematic organizer or volunteer accounts.</p>
+            <p class="text-muted mb-0">Admin can verify, unverify, temporarily ban, unban, or delete any user account.</p>
         </div>
     </div>
 
     <div class="alert alert-info rounded-4 border-0">
         <i class="bi bi-info-circle me-2"></i>
-        Deleting a user removes that account and related profile, posts, support requests, registrations, notifications, and events created by that user. Admin accounts cannot be deleted here.
+        Verify changes the profile status between <strong>Pending</strong> and <strong>Verified</strong>. Temporary ban stops the selected user from logging in until the account is unbanned. Delete removes the account and the related posts, comments, support requests, registrations, notifications, and events created by that user.
     </div>
 
     <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
@@ -24,8 +26,7 @@
                     <th>User</th>
                     <th>Role</th>
                     <th>Organization</th>
-                    <th>Verification</th>
-                    <th>Access</th>
+                    <th>Status</th>
                     <th class="text-end">Actions</th>
                 </tr>
             </thead>
@@ -33,7 +34,8 @@
             @foreach (var item in Model)
             {
                 var isAdmin = string.Equals(item.RoleName, "Admin", StringComparison.OrdinalIgnoreCase);
-                var isBanned = bannedUserIds.Contains(item.UserId);
+                var isCurrentAdmin = string.Equals(item.UserId, currentAdminUserId, StringComparison.OrdinalIgnoreCase);
+                var isTempBanned = lockoutMap.TryGetValue(item.UserId, out var lockoutEnd) && lockoutEnd.HasValue && lockoutEnd.Value > DateTimeOffset.UtcNow;
                 <tr>
                     <td>
                         <div class="d-flex align-items-center gap-3">
@@ -60,65 +62,61 @@
                     </td>
                     <td>@(string.IsNullOrWhiteSpace(item.OrganizationName) ? "-" : item.OrganizationName)</td>
                     <td>
-                        @if (item.IsVerified)
-                        {
-                            <span class="badge bg-success bg-opacity-10 text-success rounded-pill">
-                                <i class="bi bi-patch-check-fill me-1"></i> Verified
-                            </span>
-                        }
-                        else
-                        {
-                            <span class="badge bg-warning bg-opacity-10 text-warning rounded-pill">
-                                <i class="bi bi-hourglass-split me-1"></i> Pending
-                            </span>
-                        }
-                    </td>
-                    <td>
-                        @if (isBanned)
-                        {
-                            <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill">
-                                <i class="bi bi-slash-circle me-1"></i> Temporarily Banned
-                            </span>
-                        }
-                        else
-                        {
-                            <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill">
-                                <i class="bi bi-check-circle me-1"></i> Active
-                            </span>
-                        }
+                        <div class="d-flex flex-column gap-2">
+                            @if (item.IsVerified)
+                            {
+                                <span class="badge bg-success bg-opacity-10 text-success rounded-pill w-auto">
+                                    <i class="bi bi-patch-check-fill me-1"></i> Verified
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-warning bg-opacity-10 text-warning rounded-pill w-auto">
+                                    <i class="bi bi-hourglass-split me-1"></i> Pending Verification
+                                </span>
+                            }
+
+                            @if (isTempBanned)
+                            {
+                                <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill w-auto">
+                                    <i class="bi bi-slash-circle me-1"></i> Temporarily Banned
+                                </span>
+                            }
+                        </div>
                     </td>
                     <td class="text-end">
-                        <div class="d-inline-flex gap-2">
+                        <div class="d-inline-flex flex-wrap gap-2 justify-content-end">
                             <form asp-action="Verify" method="post" class="d-inline">
                                 @Html.AntiForgeryToken()
                                 <input type="hidden" name="id" value="@item.Id" />
                                 <input type="hidden" name="isVerified" value="@(!item.IsVerified)" />
                                 <button type="submit" class="btn btn-sm @(item.IsVerified ? "btn-outline-warning" : "btn-success") rounded-pill px-3">
-                                    @(item.IsVerified ? "Mark Pending" : "Verify")
+                                    @(item.IsVerified ? "Unverify" : "Verify")
                                 </button>
                             </form>
 
-                            @if (!isAdmin)
-                            {
-                                <form asp-action="ToggleBan" method="post" class="d-inline">
-                                    @Html.AntiForgeryToken()
-                                    <input type="hidden" name="id" value="@item.Id" />
-                                    <input type="hidden" name="ban" value="@(!isBanned)" />
-                                    <button type="submit" class="btn btn-sm @(isBanned ? "btn-outline-primary" : "btn-outline-dark") rounded-pill px-3">
-                                        @(isBanned ? "Unban" : "Temp Ban")
-                                    </button>
-                                </form>
+                            <form asp-action="ToggleTempBan" method="post" class="d-inline">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@item.Id" />
+                                <input type="hidden" name="ban" value="@(!isTempBanned)" />
+                                <button type="submit"
+                                        class="btn btn-sm @(isTempBanned ? "btn-outline-success" : "btn-outline-danger") rounded-pill px-3"
+                                        @(isCurrentAdmin ? "disabled" : null)
+                                        onclick="return confirm('@(isTempBanned ? "Unban this account so the user can log in again?" : "Temporarily ban this account from logging in?")');">
+                                    @(isTempBanned ? "Unban" : "Temp Ban")
+                                </button>
+                            </form>
 
-                                <form asp-action="DeleteUser" method="post" class="d-inline">
-                                    @Html.AntiForgeryToken()
-                                    <input type="hidden" name="id" value="@item.Id" />
-                                    <button type="submit"
-                                            class="btn btn-sm btn-outline-danger rounded-pill px-3"
-                                            onclick="return confirm('Are you sure you want to permanently delete this user account and related data?');">
-                                        <i class="bi bi-trash me-1"></i> Delete
-                                    </button>
-                                </form>
-                            }
+                            <form asp-action="DeleteUser" method="post" class="d-inline">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@item.Id" />
+                                <button type="submit"
+                                        class="btn btn-sm btn-outline-danger rounded-pill px-3"
+                                        @(isCurrentAdmin ? "disabled" : null)
+                                        onclick="return confirm('Are you sure you want to permanently delete this user account and all related data?');">
+                                    <i class="bi bi-trash me-1"></i> Delete
+                                </button>
+                            </form>
                         </div>
                     </td>
                 </tr>

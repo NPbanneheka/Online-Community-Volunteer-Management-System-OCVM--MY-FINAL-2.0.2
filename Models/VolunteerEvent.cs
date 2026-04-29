@@ -52,52 +52,9 @@ public class VolunteerEvent : BaseEntity
     public virtual ICollection<EventRegistration> Registrations { get; set; } = new List<EventRegistration>();
 
     [NotMapped]
-    public bool IsStatusClosedLike =>
-        string.Equals(Status, "Closed", StringComparison.OrdinalIgnoreCase) ||
-        string.Equals(Status, "Completed", StringComparison.OrdinalIgnoreCase) ||
-        string.Equals(Status, "Cancelled", StringComparison.OrdinalIgnoreCase);
-
-    [NotMapped]
-    public string PublicStatus
-    {
-        get
-        {
-            var today = DateTime.Today;
-
-            if (string.Equals(Status, "Cancelled", StringComparison.OrdinalIgnoreCase))
-            {
-                return "Cancelled";
-            }
-
-            if (string.Equals(Status, "Completed", StringComparison.OrdinalIgnoreCase))
-            {
-                return "Completed";
-            }
-
-            if (string.Equals(Status, "Closed", StringComparison.OrdinalIgnoreCase))
-            {
-                return "Closed";
-            }
-
-            if (EventDate.Date < today)
-            {
-                return "Closed";
-            }
-
-            if (RegistrationOpenDate.Date > today)
-            {
-                return "Upcoming";
-            }
-
-            if (RegistrationClosingDate.HasValue && RegistrationClosingDate.Value.Date < today)
-            {
-                return "Closed";
-            }
-
-            return "Open";
-        }
-    }
-
-    [NotMapped]
-    public bool IsRegistrationOpen => string.Equals(PublicStatus, "Open", StringComparison.OrdinalIgnoreCase);
+    public bool IsRegistrationOpen => DateTime.Today >= RegistrationOpenDate.Date
+        && (!RegistrationClosingDate.HasValue || DateTime.Today <= RegistrationClosingDate.Value.Date)
+        && !string.Equals(Status, "Closed", StringComparison.OrdinalIgnoreCase)
+        && !string.Equals(Status, "Completed", StringComparison.OrdinalIgnoreCase)
+        && !string.Equals(Status, "Cancelled", StringComparison.OrdinalIgnoreCase);
 }

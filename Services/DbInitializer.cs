@@ -23,7 +23,7 @@ public static class DbInitializer
             }
         }
 
-        var adminEmail = "admin@gmail.com";
+        var adminEmail = "admin@ocvms.local";
         var adminUser = await userManager.FindByEmailAsync(adminEmail);
 
         if (adminUser == null)
@@ -32,20 +32,16 @@ public static class DbInitializer
             {
                 UserName = adminEmail,
                 Email = adminEmail,
-                EmailConfirmed = true,
-                LockoutEnabled = true
+                EmailConfirmed = true
             };
 
-            var result = await userManager.CreateAsync(adminUser, "123456");
+            var result = await userManager.CreateAsync(adminUser, "Admin123");
             if (!result.Succeeded)
             {
                 throw new InvalidOperationException("Default admin account could not be created: " +
                     string.Join(", ", result.Errors.Select(e => e.Description)));
             }
         }
-
-        adminUser.LockoutEnabled = true;
-        await userManager.UpdateAsync(adminUser);
 
         if (!await userManager.IsInRoleAsync(adminUser, "Admin"))
         {

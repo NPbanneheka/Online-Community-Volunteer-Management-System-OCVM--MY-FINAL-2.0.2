@@ -159,19 +159,11 @@ public class ProfileController : Controller
 
             if (!string.IsNullOrEmpty(profile.ProfileImageUrl))
             {
-                var oldRelativePath = profile.ProfileImageUrl.TrimStart('/').Replace("/", Path.DirectorySeparatorChar.ToString());
-                var oldFullPath = Path.GetFullPath(Path.Combine(_environment.WebRootPath, oldRelativePath));
-                var profileUploadRoot = Path.GetFullPath(Path.Combine(_environment.WebRootPath, "uploads", "profiles"));
-                if (oldFullPath.StartsWith(profileUploadRoot + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase) && System.IO.File.Exists(oldFullPath))
-                {
-                    System.IO.File.Delete(oldFullPath);
-                }
+                DeleteLocalFile(profile.ProfileImageUrl, "profiles");
             }
 
             profile.ProfileImageUrl = "/uploads/profiles/" + uniqueFileName;
         }
-        // If no new image is uploaded, keep the existing saved image path.
-        // Do not trust the hidden ProfileImageUrl field because it can be changed from the browser.
 
         await _context.SaveChangesAsync();
         TempData["Message"] = "Profile updated successfully!";
@@ -216,14 +208,12 @@ public class ProfileController : Controller
             .ToList();
 
         var userIds = profiles.Select(p => p.UserId).Distinct().ToList();
-        var users = await _userManager.Users
+        var lockoutMap = await _context.Users
             .Where(u => userIds.Contains(u.Id))
-            .ToListAsync();
+            .ToDictionaryAsync(u => u.Id, u => u.LockoutEnd);
 
-        ViewBag.BannedUserIds = users
-            .Where(u => u.LockoutEnd.HasValue && u.LockoutEnd.Value > DateTimeOffset.UtcNow)
-            .Select(u => u.Id)
-            .ToHashSet();
+        ViewBag.LockoutMap = lockoutMap;
+        ViewBag.CurrentAdminUserId = _userManager.GetUserId(User);
 
         return View(profiles);
     }
@@ -236,7 +226,6 @@ public class ProfileController : Controller
         var profile = await _context.UserProfiles.FirstOrDefaultAsync(p => p.Id == id);
         if (profile == null) return NotFound();
 
-        // Update all profile rows for the same Identity user. This also fixes older duplicate-profile data.
         var relatedProfiles = await _context.UserProfiles
             .Where(p => p.UserId == profile.UserId)
             .ToListAsync();
@@ -249,8 +238,8 @@ public class ProfileController : Controller
         await _context.SaveChangesAsync();
 
         TempData["Message"] = isVerified
-            ? $"{profile.FullName} has been marked as verified."
-            : $"{profile.FullName} has been marked as pending verification.";
+            ? $"{profile.FullName} has been verified successfully."
+            : $"{profile.FullName} has been marked as unverified / pending verification.";
 
         return RedirectToAction(nameof(ManageUsers));
     }
@@ -258,7 +247,7 @@ public class ProfileController : Controller
     [HttpPost]
     [Authorize(Roles = "Admin")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> ToggleBan(int id, bool ban)
+    public async Task<IActionResult> ToggleTempBan(int id, bool ban)
     {
         var profile = await _context.UserProfiles.FirstOrDefaultAsync(p => p.Id == id);
         if (profile == null) return NotFound();
@@ -266,37 +255,33 @@ public class ProfileController : Controller
         var user = await _userManager.FindByIdAsync(profile.UserId);
         if (user == null)
         {
-            TempData["Message"] = "Identity account was not found.";
+            TempData["Message"] = "Identity account was not found for the selected user.";
             return RedirectToAction(nameof(ManageUsers));
         }
 
         var currentUserId = _userManager.GetUserId(User);
         if (user.Id == currentUserId)
         {
-            TempData["Message"] = "You cannot ban or unban your own admin account while logged in.";
-            return RedirectToAction(nameof(ManageUsers));
-        }
-
-        if (await _userManager.IsInRoleAsync(user, "Admin"))
-        {
-            TempData["Message"] = "Admin accounts cannot be banned from this page.";
+            TempData["Message"] = "You cannot temporarily ban or unban your own currently logged-in admin account.";
             return RedirectToAction(nameof(ManageUsers));
         }
 
         user.LockoutEnabled = true;
-        user.LockoutEnd = ban ? DateTimeOffset.UtcNow.AddYears(100) : null;
+        user.LockoutEnd = ban
+            ? DateTimeOffset.UtcNow.AddDays(30)
+            : null;
 
         var result = await _userManager.UpdateAsync(user);
         if (!result.Succeeded)
         {
-            TempData["Message"] = "User access could not be updated: " +
+            TempData["Message"] = "Could not update the temporary ban status: " +
                                   string.Join(", ", result.Errors.Select(e => e.Description));
             return RedirectToAction(nameof(ManageUsers));
         }
 
         TempData["Message"] = ban
-            ? $"{profile.FullName} has been temporarily banned."
-            : $"{profile.FullName} has been unbanned.";
+            ? $"{profile.FullName} has been temporarily banned from logging in."
+            : $"{profile.FullName} has been unbanned and can log in again.";
 
         return RedirectToAction(nameof(ManageUsers));
     }
@@ -323,23 +308,27 @@ public class ProfileController : Controller
             return RedirectToAction(nameof(ManageUsers));
         }
 
-        if (await _userManager.IsInRoleAsync(user, "Admin"))
-        {
-            TempData["Message"] = "Admin accounts cannot be deleted from this page.";
-            return RedirectToAction(nameof(ManageUsers));
-        }
-
         await using var transaction = await _context.Database.BeginTransactionAsync();
 
-        var profileIds = await _context.UserProfiles
+        var relatedProfiles = await _context.UserProfiles
             .Where(p => p.UserId == user.Id)
-            .Select(p => p.Id)
             .ToListAsync();
+        var profileIds = relatedProfiles.Select(p => p.Id).ToList();
+        var profileImages = relatedProfiles
+            .Select(p => p.ProfileImageUrl)
+            .Where(p => !string.IsNullOrWhiteSpace(p))
+            .Cast<string>()
+            .ToList();
 
-        var organizedEventIds = await _context.VolunteerEvents
+        var organizedEvents = await _context.VolunteerEvents
             .Where(e => profileIds.Contains(e.OrganizerProfileId))
-            .Select(e => e.Id)
             .ToListAsync();
+        var organizedEventIds = organizedEvents.Select(e => e.Id).ToList();
+        var eventImages = organizedEvents
+            .Select(e => e.ImageUrl)
+            .Where(i => !string.IsNullOrWhiteSpace(i))
+            .Cast<string>()
+            .ToList();
 
         var postIds = await _context.CommunityPosts
             .Where(p => profileIds.Contains(p.UserProfileId))
@@ -362,32 +351,16 @@ public class ProfileController : Controller
             .Where(c => profileIds.Contains(c.UserProfileId) || postIds.Contains(c.CommunityPostId))
             .ToListAsync());
 
-        var communityPosts = await _context.CommunityPosts
+        _context.CommunityPosts.RemoveRange(await _context.CommunityPosts
             .Where(p => profileIds.Contains(p.UserProfileId))
-            .ToListAsync();
-        _context.CommunityPosts.RemoveRange(communityPosts);
+            .ToListAsync());
 
         _context.HelpRequests.RemoveRange(await _context.HelpRequests
             .Where(h => profileIds.Contains(h.UserProfileId))
             .ToListAsync());
 
-        var organizedEvents = await _context.VolunteerEvents
-            .Where(e => organizedEventIds.Contains(e.Id))
-            .ToListAsync();
-        foreach (var organizedEvent in organizedEvents)
-        {
-            DeleteLocalFile(organizedEvent.ImageUrl, "events");
-        }
         _context.VolunteerEvents.RemoveRange(organizedEvents);
-
-        var userProfiles = await _context.UserProfiles
-            .Where(p => profileIds.Contains(p.Id))
-            .ToListAsync();
-        foreach (var userProfile in userProfiles)
-        {
-            DeleteLocalFile(userProfile.ProfileImageUrl, "profiles");
-        }
-        _context.UserProfiles.RemoveRange(userProfiles);
+        _context.UserProfiles.RemoveRange(relatedProfiles);
 
         await _context.SaveChangesAsync();
 
@@ -402,7 +375,17 @@ public class ProfileController : Controller
 
         await transaction.CommitAsync();
 
-        TempData["Message"] = $"{profile.FullName}'s account and related data were deleted successfully.";
+        foreach (var profileImage in profileImages)
+        {
+            DeleteLocalFile(profileImage, "profiles");
+        }
+
+        foreach (var eventImage in eventImages)
+        {
+            DeleteLocalFile(eventImage, "events");
+        }
+
+        TempData["Message"] = $"{profile.FullName}'s account and all related data were deleted successfully.";
         return RedirectToAction(nameof(ManageUsers));
     }
 
@@ -417,13 +400,17 @@ public class ProfileController : Controller
 
     private void DeleteLocalFile(string? relativeUrl, string folderName)
     {
-        if (string.IsNullOrWhiteSpace(relativeUrl)) return;
+        if (string.IsNullOrWhiteSpace(relativeUrl))
+        {
+            return;
+        }
 
-        var relativePath = relativeUrl.TrimStart('/').Replace("/", Path.DirectorySeparatorChar.ToString());
-        var fullPath = Path.GetFullPath(Path.Combine(_environment.WebRootPath, relativePath));
-        var uploadRoot = Path.GetFullPath(Path.Combine(_environment.WebRootPath, "uploads", folderName));
+        var cleanedPath = relativeUrl.TrimStart('/').Replace("/", Path.DirectorySeparatorChar.ToString());
+        var fullPath = Path.GetFullPath(Path.Combine(_environment.WebRootPath, cleanedPath));
+        var allowedRoot = Path.GetFullPath(Path.Combine(_environment.WebRootPath, "uploads", folderName));
 
-        if (fullPath.StartsWith(uploadRoot + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase) && System.IO.File.Exists(fullPath))
+        if (fullPath.StartsWith(allowedRoot + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)
+            && System.IO.File.Exists(fullPath))
         {
             System.IO.File.Delete(fullPath);
         }

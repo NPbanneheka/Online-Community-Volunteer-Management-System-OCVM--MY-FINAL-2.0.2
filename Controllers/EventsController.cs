@@ -24,7 +24,7 @@ public class EventsController : Controller
     }
 
     [AllowAnonymous]
-    public async Task<IActionResult> Index(string? searchTerm, string? statusFilter, DateTime? eventDate)
+    public async Task<IActionResult> Index(string? searchTerm, string? statusFilter)
     {
         await AutoCloseExpiredEventsAsync();
 
@@ -39,41 +39,17 @@ public class EventsController : Controller
             eventsQuery = eventsQuery.Where(e =>
                 e.Title.Contains(term) ||
                 e.Location.Contains(term) ||
-                (e.OrganizerProfile != null && e.OrganizerProfile.FullName.Contains(term)) ||
-                (e.OrganizerProfile != null && e.OrganizerProfile.OrganizationName != null && e.OrganizerProfile.OrganizationName.Contains(term)));
+                e.Description.Contains(term));
         }
 
-        if (eventDate.HasValue)
-        {
-            var selectedDate = eventDate.Value.Date;
-            eventsQuery = eventsQuery.Where(e => e.EventDate.Date == selectedDate);
-        }
-
-        var today = DateTime.Today;
         statusFilter = string.IsNullOrWhiteSpace(statusFilter) ? "Active" : statusFilter;
         if (statusFilter == "Active")
         {
-            eventsQuery = eventsQuery.Where(e =>
-                e.EventDate >= today &&
-                e.RegistrationOpenDate <= today &&
-                (!e.RegistrationClosingDate.HasValue || e.RegistrationClosingDate.Value.Date >= today) &&
-                e.Status != "Closed" && e.Status != "Completed" && e.Status != "Cancelled");
-        }
-        else if (statusFilter == "Upcoming")
-        {
-            eventsQuery = eventsQuery.Where(e =>
-                e.EventDate >= today &&
-                e.RegistrationOpenDate > today &&
-                e.Status != "Closed" && e.Status != "Completed" && e.Status != "Cancelled");
+            eventsQuery = eventsQuery.Where(e => e.Status != "Closed" && e.Status != "Completed" && e.Status != "Cancelled");
         }
         else if (statusFilter == "Closed")
         {
-            eventsQuery = eventsQuery.Where(e =>
-                e.Status == "Closed" ||
-                e.Status == "Completed" ||
-                e.Status == "Cancelled" ||
-                e.EventDate < today ||
-                (e.RegistrationClosingDate.HasValue && e.RegistrationClosingDate.Value.Date < today));
+            eventsQuery = eventsQuery.Where(e => e.Status == "Closed" || e.Status == "Completed" || e.Status == "Cancelled");
         }
 
         var eventsList = await eventsQuery
@@ -102,7 +78,6 @@ public class EventsController : Controller
 
         ViewBag.SearchTerm = searchTerm;
         ViewBag.StatusFilter = statusFilter;
-        ViewBag.EventDate = eventDate?.ToString("yyyy-MM-dd");
         return View(eventsList);
     }
 
@@ -270,7 +245,6 @@ public class EventsController : Controller
         ViewBag.CurrentProfileId = profile?.Id;
         ViewBag.IsAdmin = isAdmin;
         ViewBag.CanManageEvent = CanManageEvent(volunteerEvent, profile, isAdmin);
-        ViewBag.PublicStatus = volunteerEvent.PublicStatus;
         ViewBag.CanRate = userId != null && (ViewBag.IsRegistered == true);
         ViewBag.MyRating = userId == null ? null : await _context.UserRatings
             .FirstOrDefaultAsync(r => r.EventId == volunteerEvent.Id && r.FromUserId == userId);

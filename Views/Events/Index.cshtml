@@ -4,7 +4,6 @@
     var registeredEventIds = ViewBag.UserRegisteredEvents as List<int> ?? new List<int>();
     var manageableEventIds = ViewBag.ManageableEventIds as List<int> ?? new List<int>();
     var statusFilter = (string)(ViewBag.StatusFilter ?? "Active");
-    var selectedEventDate = (string?)(ViewBag.EventDate ?? string.Empty);
 }
 
 <div class="container py-4">
@@ -23,24 +22,19 @@
 
     <form asp-action="Index" method="get" class="mb-5 card border-0 shadow-sm rounded-4 p-3">
         <div class="row g-2 align-items-end">
-            <div class="col-lg-5 col-md-12">
+            <div class="col-md-7">
                 <label class="form-label small fw-bold text-muted">Search</label>
-                <input type="text" name="searchTerm" class="form-control rounded-pill px-4" placeholder="Search by title, organizer, or organization..." value="@ViewBag.SearchTerm">
+                <input type="text" name="searchTerm" class="form-control rounded-pill px-4" placeholder="Search events by title, location, or description..." value="@ViewBag.SearchTerm">
             </div>
-            <div class="col-lg-3 col-md-4">
-                <label class="form-label small fw-bold text-muted">Event Date</label>
-                <input type="date" name="eventDate" value="@selectedEventDate" class="form-control rounded-pill px-4" />
-            </div>
-            <div class="col-lg-2 col-md-4">
+            <div class="col-md-3">
                 <label class="form-label small fw-bold text-muted">Status</label>
                 <select name="statusFilter" class="form-select rounded-pill">
                     @if (statusFilter == "Active") { <option value="Active" selected>Active Events</option> } else { <option value="Active">Active Events</option> }
-                    @if (statusFilter == "Upcoming") { <option value="Upcoming" selected>Upcoming Events</option> } else { <option value="Upcoming">Upcoming Events</option> }
                     @if (statusFilter == "Closed") { <option value="Closed" selected>Closed/Completed</option> } else { <option value="Closed">Closed/Completed</option> }
                     @if (statusFilter == "All") { <option value="All" selected>All Events</option> } else { <option value="All">All Events</option> }
                 </select>
             </div>
-            <div class="col-lg-2 col-md-4 d-grid">
+            <div class="col-md-2 d-grid">
                 <button class="btn btn-dark rounded-pill" type="submit">Apply</button>
             </div>
         </div>
@@ -60,18 +54,7 @@
             @foreach (var item in Model)
             {
                 var canManage = manageableEventIds.Contains(item.Id);
-                var publicStatus = item.PublicStatus;
-                var isOpen = publicStatus == "Open";
-                var isUpcoming = publicStatus == "Upcoming";
-                var isClosed = publicStatus == "Closed" || publicStatus == "Completed" || publicStatus == "Cancelled";
-                var badgeCss = publicStatus switch
-                {
-                    "Open" => "bg-success bg-opacity-10 text-success",
-                    "Upcoming" => "bg-info bg-opacity-10 text-info",
-                    "Cancelled" => "bg-danger bg-opacity-10 text-danger",
-                    "Completed" => "bg-dark bg-opacity-10 text-dark",
-                    _ => "bg-secondary bg-opacity-10 text-secondary"
-                };
+                var isClosed = !item.IsRegistrationOpen;
                 <div class="col">
                     <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden">
                         @if (!string.IsNullOrWhiteSpace(item.ImageUrl))
@@ -87,7 +70,7 @@
                         <div class="card-body p-4 d-flex flex-column">
                             <div class="d-flex justify-content-between align-items-start mb-2 gap-2">
                                 <h5 class="fw-bold text-dark mb-1">@item.Title</h5>
-                                <span class="badge @badgeCss rounded-pill">@publicStatus</span>
+                                <span class="badge @(isClosed ? "bg-secondary" : "bg-success") bg-opacity-10 @(isClosed ? "text-secondary" : "text-success") rounded-pill">@(isClosed ? "Closed" : "Open")</span>
                             </div>
                             <p class="text-muted small mb-3">
                                 <i class="bi bi-geo-alt-fill text-danger"></i> @item.Location<br/>
@@ -131,10 +114,6 @@
                                     else if (isClosed)
                                     {
                                         <div class="btn btn-secondary w-100 rounded-pill fw-bold disabled mb-2">Registration Closed</div>
-                                    }
-                                    else if (isUpcoming)
-                                    {
-                                        <div class="btn btn-info text-white w-100 rounded-pill fw-bold disabled mb-2">Opens Soon</div>
                                     }
                                     else
                                     {

@@ -55,8 +55,7 @@ public class AccountController : Controller
         {
             UserName = model.Email,
             Email = model.Email,
-            EmailConfirmed = true,
-            LockoutEnabled = true
+            EmailConfirmed = true
         };
 
         var result = await _userManager.CreateAsync(user, model.Password);
@@ -114,6 +113,13 @@ public class AccountController : Controller
             return View(model);
         }
 
+        var user = await _userManager.FindByEmailAsync(model.Email);
+        if (user != null && user.LockoutEnd.HasValue && user.LockoutEnd.Value > DateTimeOffset.UtcNow)
+        {
+            ModelState.AddModelError(string.Empty, $"This account is temporarily banned from logging in until {user.LockoutEnd.Value.LocalDateTime:yyyy-MM-dd HH:mm}. Please contact the administrator.");
+            return View(model);
+        }
+
         // For better privacy on shared/lab computers, do not keep users signed in after the browser session ends.
         var result = await _signInManager.PasswordSignInAsync(
             model.Email,
@@ -128,7 +134,7 @@ public class AccountController : Controller
 
         if (result.IsLockedOut)
         {
-            ModelState.AddModelError(string.Empty, "This account is temporarily banned. Please contact the admin.");
+            ModelState.AddModelError(string.Empty, "This account is temporarily banned from logging in. Please contact the administrator.");
             return View(model);
         }
 

@@ -35,7 +35,7 @@
                      </div>
                      <div class="col-4 border-start border-white-50">
                          <h2 class="fw-bold mb-0">@(ViewBag.ActiveEvents ?? Model.Count())</h2>
-                         <small class="text-white-50">Active Events</small>
+                         <small class="text-white-50">Active</small>
                      </div>
                 </div>
              </div>
@@ -63,16 +63,9 @@
             {
                 <div class="col">
                     <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden transition-hover">
-                        @if (!string.IsNullOrWhiteSpace(item.ImageUrl))
-                        {
-                            <img src="@item.ImageUrl" alt="@item.Title" style="height: 150px; width: 100%; object-fit: cover; object-position: center;" />
-                        }
-                        else
-                        {
-                            <div class="bg-primary bg-opacity-10 d-flex align-items-center justify-content-center" style="height: 150px;">
-                                <i class="bi bi-calendar-event text-primary opacity-50" style="font-size: 3rem;"></i>
-                            </div>
-                        }
+                        <div class="bg-primary bg-opacity-10 d-flex align-items-center justify-content-center" style="height: 150px;">
+                            <i class="bi bi-calendar-event text-primary opacity-50" style="font-size: 3rem;"></i>
+                        </div>
                         <div class="card-body p-4">
                             <h5 class="fw-bold text-dark">@item.Title</h5>
                             <p class="text-muted small mb-2">
