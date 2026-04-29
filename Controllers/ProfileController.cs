@@ -209,6 +209,7 @@ public class ProfileController : Controller
         }
 
         var allProfiles = await _context.UserProfiles
+            .AsNoTracking()
             .OrderBy(p => p.RoleName)
             .ThenBy(p => p.FullName)
             .ToListAsync();
@@ -216,8 +217,8 @@ public class ProfileController : Controller
         var profiles = allProfiles
             .GroupBy(p => p.UserId)
             .Select(g => g
-                .OrderByDescending(p => p.IsVerified)
-                .ThenByDescending(p => p.CreatedAt)
+                .OrderByDescending(p => p.CreatedAt)
+                .ThenByDescending(p => p.Id)
                 .First())
             .OrderBy(p => p.RoleName)
             .ThenBy(p => p.FullName)
@@ -237,12 +238,48 @@ public class ProfileController : Controller
     [HttpPost]
     [Authorize(Roles = "Admin")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Verify(int id, bool isVerified)
+    public async Task<IActionResult> VerifyUser(int id)
+    {
+        return await SetVerificationStatusAsync(id, true);
+    }
+
+    [HttpPost]
+    [Authorize(Roles = "Admin")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> UnverifyUser(int id)
+    {
+        return await SetVerificationStatusAsync(id, false);
+    }
+
+    [HttpPost]
+    [Authorize(Roles = "Admin")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> TempBanUser(int id)
+    {
+        return await SetTemporaryBanStatusAsync(id, true);
+    }
+
+    [HttpPost]
+    [Authorize(Roles = "Admin")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> UnbanUser(int id)
+    {
+        return await SetTemporaryBanStatusAsync(id, false);
+    }
+
+    private async Task<IActionResult> SetVerificationStatusAsync(int id, bool verified)
     {
         var profile = await _context.UserProfiles.FirstOrDefaultAsync(p => p.Id == id);
         if (profile == null) return NotFound();
 
-        if (string.Equals(profile.RoleName, "Admin", StringComparison.OrdinalIgnoreCase))
+        var user = await _userManager.FindByIdAsync(profile.UserId);
+        if (user == null)
+        {
+            TempData["Message"] = "Identity account was not found for the selected user.";
+            return RedirectToAction(nameof(ManageUsers));
+        }
+
+        if (string.Equals(profile.RoleName, "Admin", StringComparison.OrdinalIgnoreCase) || await _userManager.IsInRoleAsync(user, "Admin"))
         {
             TempData["Message"] = "Admin accounts are protected system accounts. Their verification status cannot be changed from User Management.";
             return RedirectToAction(nameof(ManageUsers));
@@ -254,22 +291,19 @@ public class ProfileController : Controller
 
         foreach (var relatedProfile in relatedProfiles)
         {
-            relatedProfile.IsVerified = isVerified;
+            relatedProfile.IsVerified = verified;
         }
 
         await _context.SaveChangesAsync();
 
-        TempData["Message"] = isVerified
-            ? $"{profile.FullName} has been verified successfully."
-            : $"{profile.FullName} has been marked as unverified / pending verification.";
+        TempData["Message"] = verified
+            ? $"{profile.FullName} is now verified."
+            : $"{profile.FullName} is now pending verification.";
 
         return RedirectToAction(nameof(ManageUsers));
     }
 
-    [HttpPost]
-    [Authorize(Roles = "Admin")]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> ToggleTempBan(int id, bool ban)
+    private async Task<IActionResult> SetTemporaryBanStatusAsync(int id, bool ban)
     {
         var profile = await _context.UserProfiles.FirstOrDefaultAsync(p => p.Id == id);
         if (profile == null) return NotFound();
@@ -288,16 +322,14 @@ public class ProfileController : Controller
             return RedirectToAction(nameof(ManageUsers));
         }
 
-        if (await _userManager.IsInRoleAsync(user, "Admin"))
+        if (string.Equals(profile.RoleName, "Admin", StringComparison.OrdinalIgnoreCase) || await _userManager.IsInRoleAsync(user, "Admin"))
         {
             TempData["Message"] = "Admin accounts are protected and cannot be temporarily banned or unbanned from this page.";
             return RedirectToAction(nameof(ManageUsers));
         }
 
         user.LockoutEnabled = true;
-        user.LockoutEnd = ban
-            ? DateTimeOffset.UtcNow.AddDays(30)
-            : null;
+        user.LockoutEnd = ban ? DateTimeOffset.UtcNow.AddYears(100) : null;
 
         var result = await _userManager.UpdateAsync(user);
         if (!result.Succeeded)
@@ -454,8 +486,8 @@ public class ProfileController : Controller
     {
         return await _context.UserProfiles
             .Where(x => x.UserId == userId)
-            .OrderByDescending(x => x.IsVerified)
-            .ThenByDescending(x => x.CreatedAt)
+            .OrderByDescending(x => x.CreatedAt)
+            .ThenByDescending(x => x.Id)
             .FirstOrDefaultAsync();
     }
 
