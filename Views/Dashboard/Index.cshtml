@@ -6,242 +6,113 @@
     var posts = ViewBag.RecentPosts as List<CommunityPost> ?? new();
     string ratingTitle = ViewBag.RatingTitle as string ?? "Average Rating";
     string ratingEmptyText = ViewBag.RatingEmptyText as string ?? "No ratings yet";
-    bool isAdmin = User.IsInRole("Admin");
 }
 
-<div class="dashboard-page @(isAdmin ? "admin-dashboard-page" : "")">
-    <div class="row g-4 mb-4">
-        <div class="col-12 col-xl-8">
-            <div class="card border-0 shadow-lg admin-hero-card h-100">
-                <div class="admin-hero-overlay"></div>
-                <div class="card-body p-4 p-lg-5 position-relative">
-                    <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+<div class="row g-4 mb-4">
+    <div class="col-lg-8">
+        <div class="card card-modern p-4 dashboard-banner">
+            <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+                <div>
+                    <h2 class="fw-bold mb-1">Hello @(myProfile?.FullName ?? User.Identity?.Name)</h2>
+                    <p class="text-muted mb-0">Welcome to your modern volunteer dashboard.</p>
+                </div>
+                <a class="btn btn-gradient rounded-pill px-4" asp-controller="Events" asp-action="Index">Explore Events</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card card-modern p-4 h-100">
+            <div class="d-flex align-items-center gap-3">
+                @if (!string.IsNullOrWhiteSpace(myProfile?.ProfileImageUrl))
+                {
+                    <img src="@myProfile.ProfileImageUrl" class="rounded-circle shadow-sm" style="width:70px;height:70px;object-fit:cover;object-position:center;" alt="Profile" />
+                }
+                else
+                {
+                    <div class="avatar-lg">@((myProfile?.FullName ?? "U").Substring(0,1).ToUpper())</div>
+                }
+                <div>
+                    <div class="fw-semibold">@(myProfile?.RoleName ?? "User")</div>
+                    <small class="text-muted d-block">@(myProfile?.PublicEmail ?? User.Identity?.Name)</small>
+                    @if (myProfile?.IsVerified == true)
+                    {
+                        <span class="badge bg-success bg-opacity-10 text-success rounded-pill"><i class="bi bi-patch-check-fill me-1"></i> Verified</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-warning bg-opacity-10 text-warning rounded-pill"><i class="bi bi-hourglass-split me-1"></i> Pending Verification</span>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-3"><div class="card stat-card p-4"><div class="stat-number text-primary">@Model.ActiveEvents</div><div class="text-muted">Active Events</div><small class="text-muted">Total: @Model.TotalEvents</small></div></div>
+    <div class="col-md-3"><div class="card stat-card p-4"><div class="stat-number text-success">@Model.MyRegistrations</div><div class="text-muted">My Registrations</div></div></div>
+    <div class="col-md-3"><div class="card stat-card p-4"><div class="stat-number text-info">@Model.CommunityPosts</div><div class="text-muted">Community Posts</div><small class="text-muted">Help: @Model.CommunityHelpPosts</small></div></div>
+    <div class="col-md-3">
+        <div class="card stat-card p-4">
+            @if (Model.RatingCount > 0)
+            {
+                <div class="stat-number text-warning">@Model.AverageRating.ToString("0.0")</div>
+                <div class="text-muted">@ratingTitle</div>
+                <small class="text-muted">Based on @Model.RatingCount rating(s)</small>
+            }
+            else
+            {
+                <div class="stat-number text-muted">N/A</div>
+                <div class="text-muted">@ratingTitle</div>
+                <small class="text-muted">@ratingEmptyText</small>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="card card-modern p-4 h-100">
+            <h5 class="fw-bold mb-3">Upcoming Events</h5>
+            @if (!upcoming.Any())
+            {
+                <p class="text-muted mb-0">No upcoming active events available.</p>
+            }
+            @foreach (var item in upcoming)
+            {
+                <div class="d-flex justify-content-between align-items-center border-bottom py-2 gap-3">
+                    <div class="d-flex align-items-center gap-2">
+                        @if (!string.IsNullOrWhiteSpace(item.ImageUrl))
+                        {
+                            <img src="@item.ImageUrl" class="rounded-3" style="width:54px;height:42px;object-fit:cover;" alt="Event" />
+                        }
                         <div>
-                            <span class="admin-section-tag mb-3 d-inline-flex">
-                                <i class="bi bi-speedometer2 me-2"></i>
-                                @(isAdmin ? "Admin Control Center" : "Dashboard Overview")
-                            </span>
-                            <h2 class="fw-bold mb-2 text-white">
-                                Hello @(myProfile?.FullName ?? User.Identity?.Name)
-                            </h2>
-                            <p class="admin-hero-text mb-0">
-                                @(isAdmin
-                                    ? "Monitor users, system activity, ratings, community updates, and event operations from one place."
-                                    : "Welcome to your modern volunteer dashboard. Stay updated with your events, posts, and ratings.")
-                            </p>
-                        </div>
-
-                        <div class="d-flex flex-wrap gap-2 action-buttons">
-                            <a class="btn btn-light rounded-pill px-4 fw-bold" asp-controller="Events" asp-action="Index">
-                                <i class="bi bi-calendar-event me-1"></i> Explore Events
-                            </a>
-                            @if (isAdmin)
-                            {
-                                <a class="btn btn-outline-light rounded-pill px-4 fw-bold" asp-controller="Profile" asp-action="ManageUsers">
-                                    <i class="bi bi-people me-1"></i> Manage Users
-                                </a>
-                            }
+                            <div class="fw-semibold">@item.Title</div>
+                            <small class="text-muted">@item.EventDate.ToString("dd MMM yyyy") · @item.Location</small>
                         </div>
                     </div>
+                    <a class="btn btn-sm btn-outline-primary rounded-pill" asp-controller="Events" asp-action="Details" asp-route-id="@item.Id">Open</a>
                 </div>
-            </div>
-        </div>
-
-        <div class="col-12 col-xl-4">
-            <div class="card border-0 shadow-lg admin-profile-card h-100">
-                <div class="card-body p-4">
-                    <div class="d-flex align-items-center gap-3 mb-3">
-                        @if (!string.IsNullOrWhiteSpace(myProfile?.ProfileImageUrl))
-                        {
-                            <img src="@myProfile.ProfileImageUrl" class="admin-avatar-ring" alt="Profile" />
-                        }
-                        else
-                        {
-                            <div class="admin-avatar-ring admin-avatar-fallback">
-                                @((myProfile?.FullName ?? "U").Substring(0,1).ToUpper())
-                            </div>
-                        }
-
-                        <div class="word-break">
-                            <div class="fw-bold text-dark fs-5 mb-1">@(myProfile?.FullName ?? User.Identity?.Name)</div>
-                            <div class="text-muted small mb-2">@(myProfile?.PublicEmail ?? User.Identity?.Name)</div>
-
-                            @if (myProfile?.IsVerified == true)
-                            {
-                                <span class="badge admin-badge-success rounded-pill">
-                                    <i class="bi bi-patch-check-fill me-1"></i> Verified
-                                </span>
-                            }
-                            else
-                            {
-                                <span class="badge admin-badge-warning rounded-pill">
-                                    <i class="bi bi-hourglass-split me-1"></i> Pending Verification
-                                </span>
-                            }
-                        </div>
-                    </div>
-
-                    <div class="admin-profile-meta">
-                        <div class="admin-meta-item">
-                            <span class="admin-meta-label">Role</span>
-                            <span class="admin-meta-value">@(myProfile?.RoleName ?? "User")</span>
-                        </div>
-                        <div class="admin-meta-item">
-                            <span class="admin-meta-label">Organization</span>
-                            <span class="admin-meta-value">@(string.IsNullOrWhiteSpace(myProfile?.OrganizationName) ? "Not specified" : myProfile.OrganizationName)</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            }
         </div>
     </div>
-
-    <div class="row g-4 mb-4">
-        <div class="col-sm-6 col-xl-3">
-            <div class="card border-0 shadow-sm admin-stat-card h-100">
-                <div class="card-body p-4">
-                    <div class="admin-stat-icon bg-primary-subtle text-primary">
-                        <i class="bi bi-calendar2-check"></i>
+    <div class="col-lg-6">
+        <div class="card card-modern p-4 h-100">
+            <h5 class="fw-bold mb-3">Recent Community Posts</h5>
+            @if (!posts.Any())
+            {
+                <p class="text-muted mb-0">No community posts yet.</p>
+            }
+            @foreach (var item in posts)
+            {
+                <div class="border-bottom py-2">
+                    <div class="d-flex justify-content-between">
+                        <div class="fw-semibold">@item.Title</div>
+                        <span class="badge @(item.PostType == "Help" ? "bg-danger" : "bg-primary") bg-opacity-10 @(item.PostType == "Help" ? "text-danger" : "text-primary") rounded-pill">@(item.PostType == "Help" ? "Community Help" : "Post")</span>
                     </div>
-                    <div class="stat-number text-primary mt-3">@Model.ActiveEvents</div>
-                    <div class="admin-stat-title">Active Events</div>
-                    <small class="text-muted">Total events in system: @Model.TotalEvents</small>
+                    <small class="text-muted">@item.Content</small>
                 </div>
-            </div>
-        </div>
-
-        <div class="col-sm-6 col-xl-3">
-            <div class="card border-0 shadow-sm admin-stat-card h-100">
-                <div class="card-body p-4">
-                    <div class="admin-stat-icon bg-success-subtle text-success">
-                        <i class="bi bi-journal-check"></i>
-                    </div>
-                    <div class="stat-number text-success mt-3">@Model.MyRegistrations</div>
-                    <div class="admin-stat-title">My Registrations</div>
-                    <small class="text-muted">Registered volunteer activities</small>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-sm-6 col-xl-3">
-            <div class="card border-0 shadow-sm admin-stat-card h-100">
-                <div class="card-body p-4">
-                    <div class="admin-stat-icon bg-info-subtle text-info">
-                        <i class="bi bi-chat-left-text"></i>
-                    </div>
-                    <div class="stat-number text-info mt-3">@Model.CommunityPosts</div>
-                    <div class="admin-stat-title">Community Posts</div>
-                    <small class="text-muted">Community help posts: @Model.CommunityHelpPosts</small>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-sm-6 col-xl-3">
-            <div class="card border-0 shadow-sm admin-stat-card h-100">
-                <div class="card-body p-4">
-                    <div class="admin-stat-icon bg-warning-subtle text-warning">
-                        <i class="bi bi-star-fill"></i>
-                    </div>
-                    @if (Model.RatingCount > 0)
-                    {
-                        <div class="stat-number text-warning mt-3">@Model.AverageRating.ToString("0.0")</div>
-                        <div class="admin-stat-title">@ratingTitle</div>
-                        <small class="text-muted">Based on @Model.RatingCount rating(s)</small>
-                    }
-                    else
-                    {
-                        <div class="stat-number text-muted mt-3">N/A</div>
-                        <div class="admin-stat-title">@ratingTitle</div>
-                        <small class="text-muted">@ratingEmptyText</small>
-                    }
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="row g-4">
-        <div class="col-12 col-xl-6">
-            <div class="card border-0 shadow-sm admin-content-card h-100">
-                <div class="card-body p-4">
-                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
-                        <h5 class="fw-bold mb-0 text-dark">
-                            <i class="bi bi-calendar-event me-2 text-primary"></i>Upcoming Events
-                        </h5>
-                        <a asp-controller="Events" asp-action="Index" class="btn btn-sm btn-outline-primary rounded-pill px-3">View All</a>
-                    </div>
-
-                    @if (!upcoming.Any())
-                    {
-                        <div class="admin-empty-state">
-                            <i class="bi bi-calendar-x"></i>
-                            <p class="mb-0">No upcoming active events available.</p>
-                        </div>
-                    }
-                    else
-                    {
-                        foreach (var item in upcoming)
-                        {
-                            <div class="admin-list-item">
-                                <div class="d-flex align-items-center gap-3 flex-grow-1">
-                                    @if (!string.IsNullOrWhiteSpace(item.ImageUrl))
-                                    {
-                                        <img src="@item.ImageUrl" class="admin-list-thumb" alt="Event" />
-                                    }
-                                    else
-                                    {
-                                        <div class="admin-list-thumb admin-list-thumb-fallback">
-                                            <i class="bi bi-calendar2-week"></i>
-                                        </div>
-                                    }
-
-                                    <div class="word-break">
-                                        <div class="fw-semibold text-dark">@item.Title</div>
-                                        <small class="text-muted d-block">@item.EventDate.ToString("dd MMM yyyy") · @item.Location</small>
-                                    </div>
-                                </div>
-
-                                <a class="btn btn-sm btn-outline-primary rounded-pill px-3" asp-controller="Events" asp-action="Details" asp-route-id="@item.Id">Open</a>
-                            </div>
-                        }
-                    }
-                </div>
-            </div>
-        </div>
-
-        <div class="col-12 col-xl-6">
-            <div class="card border-0 shadow-sm admin-content-card h-100">
-                <div class="card-body p-4">
-                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
-                        <h5 class="fw-bold mb-0 text-dark">
-                            <i class="bi bi-megaphone me-2 text-info"></i>Recent Community Posts
-                        </h5>
-                        <a asp-controller="Community" asp-action="Feed" class="btn btn-sm btn-outline-info rounded-pill px-3">Open Feed</a>
-                    </div>
-
-                    @if (!posts.Any())
-                    {
-                        <div class="admin-empty-state">
-                            <i class="bi bi-chat-square-dots"></i>
-                            <p class="mb-0">No community posts yet.</p>
-                        </div>
-                    }
-                    else
-                    {
-                        foreach (var item in posts)
-                        {
-                            <div class="admin-post-item">
-                                <div class="d-flex justify-content-between align-items-start gap-2 mb-1">
-                                    <div class="fw-semibold text-dark word-break">@item.Title</div>
-                                    <span class="badge @(item.PostType == "Help" ? "admin-badge-danger" : "admin-badge-info") rounded-pill">
-                                        @(item.PostType == "Help" ? "Community Help" : "Post")
-                                    </span>
-                                </div>
-                                <small class="text-muted d-block word-break">@item.Content</small>
-                            </div>
-                        }
-                    }
-                </div>
-            </div>
+            }
         </div>
     </div>
 </div>
