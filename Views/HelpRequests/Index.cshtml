@@ -1,7 +1,26 @@
 @model IEnumerable<OCVMS.Models.HelpRequest>
+@using System.Runtime.InteropServices
 @{
     ViewData["Title"] = "Support Requests";
     var manageableHelpRequestIds = ViewBag.ManageableHelpRequestIds as List<int> ?? new List<int>();
+}
+
+@functions {
+    private DateTime ToSriLankaTime(DateTime value)
+    {
+        if (value == DateTime.MinValue) return value;
+
+        var utcValue = value.Kind == DateTimeKind.Utc
+            ? value
+            : DateTime.SpecifyKind(value, DateTimeKind.Utc);
+
+        var timeZoneId = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+            ? "Sri Lanka Standard Time"
+            : "Asia/Colombo";
+
+        var sriLankaTimeZone = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
+        return TimeZoneInfo.ConvertTimeFromUtc(utcValue, sriLankaTimeZone);
+    }
 }
 
 <div class="container py-4">
@@ -52,7 +71,7 @@
                                     <span class="mx-2">·</span><i class="bi bi-building me-1"></i> @item.SubmittedBy.OrganizationName
                                 }
                                 <span class="mx-2">·</span>
-                                <i class="bi bi-calendar3 me-1"></i> @item.CreatedAt.ToString("MMM dd, yyyy")
+                                <i class="bi bi-calendar3 me-1"></i> @ToSriLankaTime(item.CreatedAt).ToString("MMM dd, yyyy hh:mm tt")
                             </div>
                             <div class="d-flex flex-wrap gap-2">
                                 <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-outline-primary rounded-pill px-4 fw-bold">Open</a>

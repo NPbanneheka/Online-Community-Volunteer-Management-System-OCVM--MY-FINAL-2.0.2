@@ -329,7 +329,7 @@ public class ProfileController : Controller
         }
 
         user.LockoutEnabled = true;
-        user.LockoutEnd = ban ? DateTimeOffset.UtcNow.AddYears(100) : null;
+        user.LockoutEnd = ban ? DateTimeOffset.UtcNow.AddDays(90) : null;
 
         var result = await _userManager.UpdateAsync(user);
         if (!result.Succeeded)

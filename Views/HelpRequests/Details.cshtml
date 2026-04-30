@@ -1,9 +1,28 @@
 @model OCVMS.Models.HelpRequest
+@using System.Runtime.InteropServices
 @{
     ViewData["Title"] = "Support Request Details";
     var statuses = new[] { "Pending", "In Progress", "Resolved", "Closed" };
     bool canManageHelpRequest = ViewBag.CanManageHelpRequest ?? false;
     bool canUpdateHelpRequestStatus = ViewBag.CanUpdateHelpRequestStatus ?? false;
+}
+
+@functions {
+    private DateTime ToSriLankaTime(DateTime value)
+    {
+        if (value == DateTime.MinValue) return value;
+
+        var utcValue = value.Kind == DateTimeKind.Utc
+            ? value
+            : DateTime.SpecifyKind(value, DateTimeKind.Utc);
+
+        var timeZoneId = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+            ? "Sri Lanka Standard Time"
+            : "Asia/Colombo";
+
+        var sriLankaTimeZone = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
+        return TimeZoneInfo.ConvertTimeFromUtc(utcValue, sriLankaTimeZone);
+    }
 }
 
 <div class="container py-4">
@@ -12,7 +31,7 @@
             <div>
                 <h2 class="fw-bold mb-1">@Model.Title</h2>
                 <p class="text-muted mb-0">
-                    Submitted by @(Model.SubmittedBy?.FullName ?? "User") on @Model.CreatedAt.ToString("MMM dd, yyyy")
+                    Submitted by @(Model.SubmittedBy?.FullName ?? "User") on @ToSriLankaTime(Model.CreatedAt).ToString("MMM dd, yyyy hh:mm tt")
                     @if (!string.IsNullOrWhiteSpace(Model.SubmittedBy?.OrganizationName))
                     {
                         <span> · @Model.SubmittedBy.OrganizationName</span>
