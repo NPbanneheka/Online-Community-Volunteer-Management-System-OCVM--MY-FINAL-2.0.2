@@ -2,6 +2,9 @@
 @{
     ViewData["Title"] = "Joined Volunteers";
     var profiles = ViewBag.VolunteerProfiles as List<UserProfile> ?? new List<UserProfile>();
+    var organizerRatings = ViewBag.OrganizerRatings as Dictionary<string, UserRating> ?? new Dictionary<string, UserRating>();
+    var volunteerAverageRatings = ViewBag.VolunteerAverageRatings as Dictionary<string, double> ?? new Dictionary<string, double>();
+    var volunteerRatingCounts = ViewBag.VolunteerRatingCounts as Dictionary<string, int> ?? new Dictionary<string, int>();
 }
 
 <div class="container py-4">
@@ -27,7 +30,7 @@
                 <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
                     <table class="table align-middle mb-0">
                         <thead class="table-light">
-                            <tr><th>Volunteer</th><th>Email</th><th>Contact</th><th>Verified</th></tr>
+                            <tr><th>Volunteer</th><th>Email</th><th>Contact</th><th>Verified</th><th style="width: 320px;">Organizer Rating</th></tr>
                         </thead>
                         <tbody>
                         @foreach (var profile in profiles)
@@ -60,6 +63,49 @@
                                     {
                                         <span class="badge bg-warning bg-opacity-10 text-warning rounded-pill">Pending</span>
                                     }
+                                </td>
+                                <td>
+                                    @{
+                                        organizerRatings.TryGetValue(profile.UserId, out var myVolunteerRating);
+                                        volunteerAverageRatings.TryGetValue(profile.UserId, out var volunteerAverageRating);
+                                        volunteerRatingCounts.TryGetValue(profile.UserId, out var volunteerRatingCount);
+                                    }
+                                    <div class="small text-muted mb-2">
+                                        @if (volunteerRatingCount > 0)
+                                        {
+                                            <span><i class="bi bi-star-fill text-warning me-1"></i>Volunteer average: @volunteerAverageRating.ToString("0.0") (@volunteerRatingCount)</span>
+                                        }
+                                        else
+                                        {
+                                            <span>No ratings for this volunteer yet.</span>
+                                        }
+                                    </div>
+                                    <form asp-action="RateVolunteer" method="post" class="row g-2">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@Model.Id" />
+                                        <input type="hidden" name="volunteerUserId" value="@profile.UserId" />
+                                        <div class="col-4">
+                                            <select name="score" class="form-select form-select-sm rounded-pill" required>
+                                                @for (int i = 5; i >= 1; i--)
+                                                {
+                                                    if (myVolunteerRating?.Score == i)
+                                                    {
+                                                        <option value="@i" selected>@i Stars</option>
+                                                    }
+                                                    else
+                                                    {
+                                                        <option value="@i">@i Stars</option>
+                                                    }
+                                                }
+                                            </select>
+                                        </div>
+                                        <div class="col-8">
+                                            <input name="reviewText" class="form-control form-control-sm rounded-pill" placeholder="Optional note" value="@myVolunteerRating?.ReviewText" />
+                                        </div>
+                                        <div class="col-12 d-grid">
+                                            <button type="submit" class="btn btn-sm btn-warning rounded-pill fw-bold">@(myVolunteerRating == null ? "Save Rating" : "Update Rating")</button>
+                                        </div>
+                                    </form>
                                 </td>
                             </tr>
                         }

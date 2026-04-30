@@ -11,6 +11,9 @@ namespace OCVMS.Controllers;
 [Authorize]
 public class DashboardController : Controller
 {
+    private const string ApplicationRatingTargetId = "__APPLICATION__";
+    private const int ApplicationRatingEventId = 0;
+
     private readonly ApplicationDbContext _context;
     private readonly UserManager<IdentityUser> _userManager;
 
@@ -26,7 +29,23 @@ public class DashboardController : Controller
         if (user == null) return RedirectToAction("Login", "Account");
 
         var profile = await GetPrimaryProfileForUserAsync(user.Id);
-        var ratingsQuery = _context.UserRatings.Where(x => x.ToUserId == user.Id);
+
+        IQueryable<UserRating> ratingsQuery;
+        string ratingTitle;
+        string ratingEmptyText;
+
+        if (User.IsInRole("Admin"))
+        {
+            ratingsQuery = _context.UserRatings.Where(x => x.EventId == ApplicationRatingEventId && x.ToUserId == ApplicationRatingTargetId);
+            ratingTitle = "Platform Rating";
+            ratingEmptyText = "No platform ratings yet";
+        }
+        else
+        {
+            ratingsQuery = _context.UserRatings.Where(x => x.ToUserId == user.Id);
+            ratingTitle = "Average Rating";
+            ratingEmptyText = "No ratings yet";
+        }
 
         var vm = new DashboardViewModel
         {
@@ -40,6 +59,8 @@ public class DashboardController : Controller
         };
 
         ViewBag.MyProfile = profile;
+        ViewBag.RatingTitle = ratingTitle;
+        ViewBag.RatingEmptyText = ratingEmptyText;
 
         ViewBag.UpcomingEvents = await _context.VolunteerEvents
             .Where(x => x.EventDate >= DateTime.Today && x.Status != "Closed" && x.Status != "Completed" && x.Status != "Cancelled")
