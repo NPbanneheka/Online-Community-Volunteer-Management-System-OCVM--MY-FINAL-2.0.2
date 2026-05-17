@@ -56,7 +56,8 @@ public class AccountController : Controller
         {
             UserName = model.Email,
             Email = model.Email,
-            EmailConfirmed = true
+            EmailConfirmed = true,
+            LockoutEnabled = true
         };
 
         var result = await _userManager.CreateAsync(user, model.Password);
@@ -89,7 +90,7 @@ public class AccountController : Controller
             PublicEmail = model.Email,
             RoleName = model.RoleName,
             OrganizationName = organizationName,
-            IsVerified = model.RoleName == "Organizer" ? false : true
+            IsVerified = false
         });
 
         await _context.SaveChangesAsync();
@@ -118,6 +119,7 @@ public class AccountController : Controller
         }
 
         var user = await _userManager.FindByEmailAsync(model.Email);
+<<<<<<< HEAD
 
         if (user != null)
         {
@@ -131,6 +133,12 @@ public class AccountController : Controller
 
                 return View(model);
             }
+=======
+        if (user != null && user.LockoutEnd.HasValue && user.LockoutEnd.Value > DateTimeOffset.UtcNow)
+        {
+            ModelState.AddModelError(string.Empty, $"This account is temporarily banned from logging in until {user.LockoutEnd.Value.LocalDateTime:yyyy-MM-dd HH:mm}. Please contact the administrator.");
+            return View(model);
+>>>>>>> d6771abc44ca293a34d2889517c254d6fd455ff6
         }
 
         // For better privacy on shared/lab computers, do not keep users signed in after the browser session ends.
@@ -147,10 +155,14 @@ public class AccountController : Controller
 
         if (result.IsLockedOut)
         {
+<<<<<<< HEAD
             ModelState.AddModelError(
                 string.Empty,
                 "Your account has been suspended by the administrator. Please contact the system admin for more information.");
 
+=======
+            ModelState.AddModelError(string.Empty, "This account is temporarily banned from logging in. Please contact the administrator.");
+>>>>>>> d6771abc44ca293a34d2889517c254d6fd455ff6
             return View(model);
         }
 

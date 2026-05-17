@@ -11,6 +11,9 @@ namespace OCVMS.Controllers;
 [Authorize]
 public class DashboardController : Controller
 {
+    private const string ApplicationRatingTargetId = "__APPLICATION__";
+    private const int ApplicationRatingEventId = 0;
+
     private readonly ApplicationDbContext _context;
     private readonly UserManager<IdentityUser> _userManager;
 
@@ -27,6 +30,7 @@ public class DashboardController : Controller
 
         var profile = await GetPrimaryProfileForUserAsync(user.Id);
 
+<<<<<<< HEAD
         IQueryable<UserRating> ratingsQuery = _context.UserRatings.Where(x => x.ToUserId == user.Id);
         string ratingLabel = "Average Rating";
         string ratingSubText = "Based on your received rating(s)";
@@ -56,6 +60,23 @@ public class DashboardController : Controller
 
             ratingLabel = "Organization Rating";
             ratingSubText = $"Based on {profile.OrganizationName.Trim()} event rating(s)";
+=======
+        IQueryable<UserRating> ratingsQuery;
+        string ratingTitle;
+        string ratingEmptyText;
+
+        if (User.IsInRole("Admin"))
+        {
+            ratingsQuery = _context.UserRatings.Where(x => x.EventId == ApplicationRatingEventId && x.ToUserId == ApplicationRatingTargetId);
+            ratingTitle = "Platform Rating";
+            ratingEmptyText = "No platform ratings yet";
+        }
+        else
+        {
+            ratingsQuery = _context.UserRatings.Where(x => x.ToUserId == user.Id);
+            ratingTitle = "Average Rating";
+            ratingEmptyText = "No ratings yet";
+>>>>>>> d6771abc44ca293a34d2889517c254d6fd455ff6
         }
 
         var vm = new DashboardViewModel
@@ -70,8 +91,13 @@ public class DashboardController : Controller
         };
 
         ViewBag.MyProfile = profile;
+<<<<<<< HEAD
         ViewBag.RatingLabel = ratingLabel;
         ViewBag.RatingSubText = ratingSubText;
+=======
+        ViewBag.RatingTitle = ratingTitle;
+        ViewBag.RatingEmptyText = ratingEmptyText;
+>>>>>>> d6771abc44ca293a34d2889517c254d6fd455ff6
 
         ViewBag.UpcomingEvents = await _context.VolunteerEvents
             .Where(x => x.EventDate >= DateTime.Today && x.Status != "Closed" && x.Status != "Completed" && x.Status != "Cancelled")

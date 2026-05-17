@@ -4,8 +4,13 @@
     var myProfile = ViewBag.MyProfile as UserProfile;
     var upcoming = ViewBag.UpcomingEvents as List<VolunteerEvent> ?? new();
     var posts = ViewBag.RecentPosts as List<CommunityPost> ?? new();
+<<<<<<< HEAD
     var ratingLabel = ViewBag.RatingLabel as string ?? "Average Rating";
     var ratingSubText = ViewBag.RatingSubText as string ?? "Based on rating(s)";
+=======
+    string ratingTitle = ViewBag.RatingTitle as string ?? "Average Rating";
+    string ratingEmptyText = ViewBag.RatingEmptyText as string ?? "No ratings yet";
+>>>>>>> d6771abc44ca293a34d2889517c254d6fd455ff6
 }
 
 <div class="row g-4 mb-4">
@@ -57,14 +62,24 @@
             @if (Model.RatingCount > 0)
             {
                 <div class="stat-number text-warning">@Model.AverageRating.ToString("0.0")</div>
+<<<<<<< HEAD
                 <div class="text-muted">@ratingLabel</div>
                 <small class="text-muted">@ratingSubText · @Model.RatingCount rating(s)</small>
+=======
+                <div class="text-muted">@ratingTitle</div>
+                <small class="text-muted">Based on @Model.RatingCount rating(s)</small>
+>>>>>>> d6771abc44ca293a34d2889517c254d6fd455ff6
             }
             else
             {
                 <div class="stat-number text-muted">N/A</div>
+<<<<<<< HEAD
                 <div class="text-muted">@ratingLabel</div>
                 <small class="text-muted">No ratings yet for this account/organization</small>
+=======
+                <div class="text-muted">@ratingTitle</div>
+                <small class="text-muted">@ratingEmptyText</small>
+>>>>>>> d6771abc44ca293a34d2889517c254d6fd455ff6
             }
         </div>
     </div>

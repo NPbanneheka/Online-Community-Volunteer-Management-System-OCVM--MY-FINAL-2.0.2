@@ -12,6 +12,9 @@ namespace OCVMS.Controllers;
 [Authorize]
 public class EventsController : Controller
 {
+    private const string ApplicationRatingTargetId = "__APPLICATION__";
+    private const int ApplicationRatingEventId = 0;
+
     private readonly ApplicationDbContext _context;
     private readonly UserManager<IdentityUser> _userManager;
     private readonly IWebHostEnvironment _environment;
@@ -24,7 +27,7 @@ public class EventsController : Controller
     }
 
     [AllowAnonymous]
-    public async Task<IActionResult> Index(string? searchTerm, string? statusFilter)
+    public async Task<IActionResult> Index(string? searchTerm, string? statusFilter, DateTime? eventDate)
     {
         await AutoCloseExpiredEventsAsync();
 
@@ -39,17 +42,41 @@ public class EventsController : Controller
             eventsQuery = eventsQuery.Where(e =>
                 e.Title.Contains(term) ||
                 e.Location.Contains(term) ||
-                e.Description.Contains(term));
+                (e.OrganizerProfile != null && e.OrganizerProfile.FullName.Contains(term)) ||
+                (e.OrganizerProfile != null && e.OrganizerProfile.OrganizationName != null && e.OrganizerProfile.OrganizationName.Contains(term)));
         }
 
+        if (eventDate.HasValue)
+        {
+            var selectedDate = eventDate.Value.Date;
+            eventsQuery = eventsQuery.Where(e => e.EventDate.Date == selectedDate);
+        }
+
+        var today = DateTime.Today;
         statusFilter = string.IsNullOrWhiteSpace(statusFilter) ? "Active" : statusFilter;
         if (statusFilter == "Active")
         {
-            eventsQuery = eventsQuery.Where(e => e.Status != "Closed" && e.Status != "Completed" && e.Status != "Cancelled");
+            eventsQuery = eventsQuery.Where(e =>
+                e.EventDate >= today &&
+                e.RegistrationOpenDate <= today &&
+                (!e.RegistrationClosingDate.HasValue || e.RegistrationClosingDate.Value.Date >= today) &&
+                e.Status != "Closed" && e.Status != "Completed" && e.Status != "Cancelled");
+        }
+        else if (statusFilter == "Upcoming")
+        {
+            eventsQuery = eventsQuery.Where(e =>
+                e.EventDate >= today &&
+                e.RegistrationOpenDate > today &&
+                e.Status != "Closed" && e.Status != "Completed" && e.Status != "Cancelled");
         }
         else if (statusFilter == "Closed")
         {
-            eventsQuery = eventsQuery.Where(e => e.Status == "Closed" || e.Status == "Completed" || e.Status == "Cancelled");
+            eventsQuery = eventsQuery.Where(e =>
+                e.Status == "Closed" ||
+                e.Status == "Completed" ||
+                e.Status == "Cancelled" ||
+                e.EventDate < today ||
+                (e.RegistrationClosingDate.HasValue && e.RegistrationClosingDate.Value.Date < today));
         }
 
         var eventsList = await eventsQuery
@@ -78,6 +105,7 @@ public class EventsController : Controller
 
         ViewBag.SearchTerm = searchTerm;
         ViewBag.StatusFilter = statusFilter;
+        ViewBag.EventDate = eventDate?.ToString("yyyy-MM-dd");
         return View(eventsList);
     }
 
@@ -245,14 +273,20 @@ public class EventsController : Controller
         ViewBag.CurrentProfileId = profile?.Id;
         ViewBag.IsAdmin = isAdmin;
         ViewBag.CanManageEvent = CanManageEvent(volunteerEvent, profile, isAdmin);
-        ViewBag.CanRate = userId != null && (ViewBag.IsRegistered == true);
-        ViewBag.MyRating = userId == null ? null : await _context.UserRatings
-            .FirstOrDefaultAsync(r => r.EventId == volunteerEvent.Id && r.FromUserId == userId);
-        ViewBag.AverageRating = await _context.UserRatings
-            .Where(r => r.EventId == volunteerEvent.Id)
-            .Select(r => (double?)r.Score)
-            .AverageAsync() ?? 0;
-        ViewBag.RatingCount = await _context.UserRatings.CountAsync(r => r.EventId == volunteerEvent.Id);
+        ViewBag.PublicStatus = volunteerEvent.PublicStatus;
+        var organizerUserId = volunteerEvent.OrganizerProfile?.UserId;
+        ViewBag.CanRate = userId != null && (ViewBag.IsRegistered == true) && !string.IsNullOrWhiteSpace(organizerUserId);
+        ViewBag.MyRating = userId == null || string.IsNullOrWhiteSpace(organizerUserId) ? null : await _context.UserRatings
+            .FirstOrDefaultAsync(r => r.EventId == volunteerEvent.Id && r.FromUserId == userId && r.ToUserId == organizerUserId);
+        ViewBag.AverageRating = string.IsNullOrWhiteSpace(organizerUserId)
+            ? 0
+            : await _context.UserRatings
+                .Where(r => r.EventId == volunteerEvent.Id && r.ToUserId == organizerUserId)
+                .Select(r => (double?)r.Score)
+                .AverageAsync() ?? 0;
+        ViewBag.RatingCount = string.IsNullOrWhiteSpace(organizerUserId)
+            ? 0
+            : await _context.UserRatings.CountAsync(r => r.EventId == volunteerEvent.Id && r.ToUserId == organizerUserId);
 
         return View(volunteerEvent);
     }
@@ -471,9 +505,27 @@ public class EventsController : Controller
         var registeredUserIds = volunteerEvent.Registrations.Select(r => r.UserId).ToList();
         var profiles = await _context.UserProfiles
             .Where(p => registeredUserIds.Contains(p.UserId))
+            .OrderBy(p => p.FullName)
+            .ToListAsync();
+
+        var organizerUserId = _userManager.GetUserId(User) ?? string.Empty;
+        var volunteerUserIds = profiles.Select(p => p.UserId).Where(x => !string.IsNullOrWhiteSpace(x)).Distinct().ToList();
+
+        var existingRatings = await _context.UserRatings
+            .Where(r => r.EventId == id && r.FromUserId == organizerUserId && volunteerUserIds.Contains(r.ToUserId))
+            .ToListAsync();
+
+        var ratingLookup = existingRatings.ToDictionary(r => r.ToUserId, r => r);
+        var averageLookup = await _context.UserRatings
+            .Where(r => volunteerUserIds.Contains(r.ToUserId))
+            .GroupBy(r => r.ToUserId)
+            .Select(g => new { UserId = g.Key, Average = g.Average(x => x.Score), Count = g.Count() })
             .ToListAsync();
 
         ViewBag.VolunteerProfiles = profiles;
+        ViewBag.OrganizerRatings = ratingLookup;
+        ViewBag.VolunteerAverageRatings = averageLookup.ToDictionary(x => x.UserId, x => x.Average);
+        ViewBag.VolunteerRatingCounts = averageLookup.ToDictionary(x => x.UserId, x => x.Count);
         return View(volunteerEvent);
     }
 
@@ -550,6 +602,63 @@ public class EventsController : Controller
 
         TempData["Message"] = "Thank you. Your rating was saved.";
         return RedirectToAction(nameof(Details), new { id });
+    }
+
+    [HttpPost]
+    [Authorize(Roles = "Organizer,Admin")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> RateVolunteer(int id, string volunteerUserId, int score, string? reviewText)
+    {
+        var volunteerEvent = await _context.VolunteerEvents
+            .Include(e => e.OrganizerProfile)
+            .Include(e => e.Registrations)
+            .FirstOrDefaultAsync(e => e.Id == id);
+
+        if (volunteerEvent == null) return NotFound();
+        if (!await CanManageEventAsync(volunteerEvent)) return Forbid();
+
+        if (string.IsNullOrWhiteSpace(volunteerUserId))
+        {
+            TempData["Message"] = "Volunteer account was not found.";
+            return RedirectToAction(nameof(JoinedVolunteers), new { id });
+        }
+
+        if (score < 1 || score > 5)
+        {
+            TempData["Message"] = "Please select a rating between 1 and 5.";
+            return RedirectToAction(nameof(JoinedVolunteers), new { id });
+        }
+
+        var isRegisteredVolunteer = volunteerEvent.Registrations.Any(r => r.UserId == volunteerUserId);
+        if (!isRegisteredVolunteer)
+        {
+            TempData["Message"] = "Only registered volunteers can be rated for this event.";
+            return RedirectToAction(nameof(JoinedVolunteers), new { id });
+        }
+
+        var fromUserId = _userManager.GetUserId(User);
+        if (string.IsNullOrWhiteSpace(fromUserId)) return RedirectToAction("Login", "Account");
+
+        var rating = await _context.UserRatings.FirstOrDefaultAsync(r =>
+            r.EventId == id && r.FromUserId == fromUserId && r.ToUserId == volunteerUserId);
+
+        if (rating == null)
+        {
+            rating = new UserRating
+            {
+                EventId = id,
+                FromUserId = fromUserId,
+                ToUserId = volunteerUserId
+            };
+            _context.UserRatings.Add(rating);
+        }
+
+        rating.Score = score;
+        rating.ReviewText = reviewText;
+
+        await _context.SaveChangesAsync();
+        TempData["Message"] = "Volunteer rating saved successfully.";
+        return RedirectToAction(nameof(JoinedVolunteers), new { id });
     }
 
     private async Task<UserProfile?> GetCurrentProfileAsync()

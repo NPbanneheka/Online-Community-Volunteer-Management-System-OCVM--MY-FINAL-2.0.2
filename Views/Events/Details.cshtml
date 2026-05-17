@@ -1,10 +1,71 @@
 @model OCVMS.Models.VolunteerEvent
+<<<<<<< HEAD
 @{ ViewData["Title"] = "Create Event"; }
 
 <div class="container py-4">
     <div class="card shadow-sm border-0 rounded-4 p-4 p-lg-5">
         <h2 class="fw-bold mb-2">Create New Event</h2>
         <p class="text-muted mb-4">Add event details, registration open/closing dates, capacity, and a suitable event photo.</p>
+=======
+@{
+    ViewData["Title"] = "Event Details";
+    bool isRegistered = ViewBag.IsRegistered ?? false;
+    int registeredCount = ViewBag.RegisteredCount ?? 0;
+    int remainingSlots = ViewBag.RemainingSlots ?? 0;
+    bool canManageEvent = ViewBag.CanManageEvent ?? false;
+    bool canRate = ViewBag.CanRate ?? false;
+    var myRating = ViewBag.MyRating as UserRating;
+    double averageRating = ViewBag.AverageRating ?? 0.0;
+    int ratingCount = ViewBag.RatingCount ?? 0;
+    var isRegistrationOpen = Model.IsRegistrationOpen;
+    var publicStatus = (string?)(ViewBag.PublicStatus ?? Model.PublicStatus) ?? Model.Status;
+    var statusBadgeClass = publicStatus switch
+    {
+        "Open" => "bg-success bg-opacity-10 text-success",
+        "Upcoming" => "bg-info bg-opacity-10 text-info",
+        "Cancelled" => "bg-danger bg-opacity-10 text-danger",
+        "Completed" => "bg-dark bg-opacity-10 text-dark",
+        _ => "bg-secondary bg-opacity-10 text-secondary"
+    };
+}
+
+<div class="container py-5">
+    <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+        @if (!string.IsNullOrWhiteSpace(Model.ImageUrl))
+        {
+            <img src="@Model.ImageUrl" class="w-100" style="height: 320px; object-fit: cover; object-position: center;" alt="@Model.Title" />
+        }
+        else
+        {
+            <div class="bg-primary bg-opacity-10 p-5 text-center">
+                <i class="bi bi-calendar-star text-primary opacity-50" style="font-size: 5rem;"></i>
+            </div>
+        }
+        <div class="bg-white p-4 text-center border-bottom">
+            <h2 class="fw-bold text-dark mt-2">@Model.Title</h2>
+            <div class="d-flex justify-content-center gap-2 flex-wrap">
+                <span class="badge @statusBadgeClass rounded-pill px-3 py-2">@publicStatus</span>
+                @if (publicStatus == "Upcoming")
+                {
+                    <span class="badge bg-info bg-opacity-10 text-info rounded-pill px-3 py-2">Registration Opens Soon</span>
+                }
+                else
+                {
+                    <span class="badge @(isRegistrationOpen ? "bg-success" : "bg-secondary") bg-opacity-10 @(isRegistrationOpen ? "text-success" : "text-secondary") rounded-pill px-3 py-2">@(isRegistrationOpen ? "Registration Open" : "Registration Closed")</span>
+                }
+                @if (ratingCount > 0)
+                {
+                    <span class="badge bg-warning bg-opacity-10 text-warning rounded-pill px-3 py-2"><i class="bi bi-star-fill"></i> @averageRating.ToString("0.0") (@ratingCount)</span>
+                }
+            </div>
+        </div>
+        
+        <div class="card-body p-4 p-md-5">
+            <div class="row g-5">
+                <div class="col-lg-7">
+                    <h4 class="fw-bold border-bottom pb-2 mb-4">About the Event</h4>
+                    <p class="text-secondary" style="white-space: pre-line; line-height: 1.8;">@Model.Description</p>
+>>>>>>> d6771abc44ca293a34d2889517c254d6fd455ff6
 
         <form asp-action="Create" method="post" enctype="multipart/form-data" novalidate>
             <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
@@ -37,6 +98,7 @@
                     <span asp-validation-for="EventDate" class="text-danger small"></span>
                 </div>
                 
+<<<<<<< HEAD
                 <div class="col-md-4">
                     <label asp-for="EventTime" class="form-label fw-bold">Event Time</label>
                     <input asp-for="EventTime" type="time" class="form-control" />
@@ -69,6 +131,98 @@
                     <label asp-for="Description" class="form-label fw-bold">Description</label>
                     <textarea asp-for="Description" class="form-control" rows="4" placeholder="Explain the event details, what volunteers should bring, etc..."></textarea>
                     <span asp-validation-for="Description" class="text-danger small"></span>
+=======
+                <div class="col-lg-5">
+                    <div class="bg-light p-4 rounded-4 shadow-sm">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h5 class="fw-bold mb-0">Event Info</h5>
+                            <span class="badge @statusBadgeClass rounded-pill px-3 py-2">@publicStatus</span>
+                        </div>
+                        
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="bg-white p-2 rounded shadow-sm me-3"><i class="bi bi-calendar-event text-primary fs-5"></i></div>
+                            <div><small class="text-muted d-block">Event Date</small><span class="fw-bold text-dark">@Model.EventDate.ToString("MMMM dd, yyyy")</span></div>
+                        </div>
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="bg-white p-2 rounded shadow-sm me-3"><i class="bi bi-clock text-warning fs-5"></i></div>
+                            <div><small class="text-muted d-block">Time</small><span class="fw-bold text-dark">@Model.EventTime.ToString(@"hh\:mm")</span></div>
+                        </div>
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="bg-white p-2 rounded shadow-sm me-3"><i class="bi bi-door-open text-success fs-5"></i></div>
+                            <div><small class="text-muted d-block">Open Date</small><span class="fw-bold text-dark">@Model.RegistrationOpenDate.ToString("MMMM dd, yyyy")</span></div>
+                        </div>
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="bg-white p-2 rounded shadow-sm me-3"><i class="bi bi-hourglass-split text-danger fs-5"></i></div>
+                            <div><small class="text-muted d-block">Closing Date</small><span class="fw-bold text-dark">@(Model.RegistrationClosingDate?.ToString("MMMM dd, yyyy") ?? "Not set")</span></div>
+                        </div>
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="bg-white p-2 rounded shadow-sm me-3"><i class="bi bi-geo-alt text-danger fs-5"></i></div>
+                            <div><small class="text-muted d-block">Location</small><span class="fw-bold text-dark">@Model.Location</span></div>
+                        </div>
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="bg-white p-2 rounded shadow-sm me-3"><i class="bi bi-person-badge text-info fs-5"></i></div>
+                            <div>
+                                <small class="text-muted d-block">Organizer</small>
+                                <span class="fw-bold text-dark">@(Model.OrganizerProfile?.FullName ?? "Organizer")</span>
+                                @if (Model.OrganizerProfile?.IsVerified == true)
+                                {
+                                    <i class="bi bi-patch-check-fill text-success ms-1"></i>
+                                }
+                                @if (!string.IsNullOrWhiteSpace(Model.OrganizerProfile?.OrganizationName))
+                                {
+                                    <small class="d-block text-primary">@Model.OrganizerProfile.OrganizationName</small>
+                                }
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center mb-4">
+                            <div class="bg-white p-2 rounded shadow-sm me-3"><i class="bi bi-people text-success fs-5"></i></div>
+                            <div>
+                                <small class="text-muted d-block">Capacity</small>
+                                @if (canManageEvent)
+                                {
+                                    <a asp-action="JoinedVolunteers" asp-route-id="@Model.Id" class="fw-bold text-dark text-decoration-none">@registeredCount / @Model.Capacity registered (@remainingSlots left)</a>
+                                    <small class="d-block text-muted">Click to view volunteers and send event notices.</small>
+                                }
+                                else
+                                {
+                                    <span class="fw-bold text-dark">@registeredCount / @Model.Capacity registered (@remainingSlots left)</span>
+                                }
+                            </div>
+                        </div>
+                        
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            if (isRegistered)
+                            {
+                                <form asp-action="Unregister" method="post">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="eventId" value="@Model.Id" />
+                                    <button type="submit" class="btn btn-outline-danger w-100 rounded-pill fw-bold">Cancel Registration</button>
+                                </form>
+                            }
+                            else if (publicStatus == "Upcoming")
+                            {
+                                <button class="btn btn-info text-white w-100 rounded-pill fw-bold" disabled>Registration Opens Soon</button>
+                            }
+                            else if (!isRegistrationOpen)
+                            {
+                                <button class="btn btn-secondary w-100 rounded-pill fw-bold" disabled>Registration Closed</button>
+                            }
+                            else
+                            {
+                                <form asp-action="Register" method="post">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="eventId" value="@Model.Id" />
+                                    <button type="submit" class="btn btn-primary w-100 rounded-pill fw-bold py-2">Register Now</button>
+                                </form>
+                            }
+                        }
+                        else
+                        {
+                            <a asp-controller="Account" asp-action="Login" class="btn btn-primary w-100 rounded-pill fw-bold">Login to Register</a>
+                        }
+                    </div>
+>>>>>>> d6771abc44ca293a34d2889517c254d6fd455ff6
                 </div>
             </div>
 

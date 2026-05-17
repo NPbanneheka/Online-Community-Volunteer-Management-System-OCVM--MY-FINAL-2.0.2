@@ -1,4 +1,5 @@
 @model IEnumerable<OCVMS.Models.CommunityPost>
+@using System.Runtime.InteropServices
 @{
     ViewData["Title"] = "Community Hub";
     var currentProfile = ViewBag.CurrentProfile as UserProfile;
@@ -11,6 +12,25 @@
     var manageablePostIds = ViewBag.ManageablePostIds as List<int> ?? new List<int>();
     var manageableCommentIds = ViewBag.ManageableCommentIds as List<int> ?? new List<int>();
 }
+
+@functions {
+    private DateTime ToSriLankaTime(DateTime value)
+    {
+        if (value == DateTime.MinValue) return value;
+
+        var utcValue = value.Kind == DateTimeKind.Utc
+            ? value
+            : DateTime.SpecifyKind(value, DateTimeKind.Utc);
+
+        var timeZoneId = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+            ? "Sri Lanka Standard Time"
+            : "Asia/Colombo";
+
+        var sriLankaTimeZone = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
+        return TimeZoneInfo.ConvertTimeFromUtc(utcValue, sriLankaTimeZone);
+    }
+}
+
 <div class="container py-4">
     @if (TempData["Error"] != null) { <div class="alert alert-danger border-0 shadow-sm rounded-pill"><i class="bi bi-x-circle-fill me-2"></i>@TempData["Error"]</div> }
 
@@ -37,8 +57,8 @@
                 {
                     <span class="badge bg-warning bg-opacity-10 text-warning rounded-pill mb-2"><i class="bi bi-hourglass-split me-1"></i> Pending Verification</span>
                 }
-                <p class="text-muted small mt-2">Community Hub<br/>Share updates or request urgent event/community support.</p>
-                <hr/>
+                <p class="text-muted small mt-2">Community Hub<br />Share updates or request urgent event/community support.</p>
+                <hr />
                 <div class="text-start small">
                     <div class="d-flex justify-content-between mb-2"><span><i class="bi bi-person-lines-fill text-primary"></i> My Posts</span><strong>@postCount</strong></div>
                     <div class="d-flex justify-content-between mb-2"><span><i class="bi bi-life-preserver text-danger"></i> My Help</span><strong>@myHelpPostCount</strong></div>
@@ -119,13 +139,13 @@
                                 else
                                 {
                                     <div class="bg-light rounded-circle d-flex align-items-center justify-content-center me-3 shadow-sm" style="width: 55px; height: 55px; border: 2px solid #fff;">
-                                        <span class="fw-bold text-primary">@(post.User?.FullName?.Substring(0,1).ToUpper() ?? "V")</span>
+                                        <span class="fw-bold text-primary">@(post.User?.FullName?.Substring(0, 1).ToUpper() ?? "V")</span>
                                     </div>
                                 }
                                 <div>
                                     <h6 class="mb-0 fw-bold text-dark">@(post.User?.FullName ?? "Volunteer")</h6>
                                     <small class="text-muted d-block">@(post.User?.PublicEmail ?? "No public email")</small>
-                                    <small class="text-muted d-block">@post.CreatedAt.ToString("MMM dd, yyyy 'at' hh:mm tt")</small>
+                                    <small class="text-muted d-block">@ToSriLankaTime(post.CreatedAt).ToString("MMM dd, yyyy 'at' hh:mm tt")</small>
                                     @if (!string.IsNullOrWhiteSpace(post.User?.OrganizationName))
                                     {
                                         <small class="text-primary d-block"><i class="bi bi-building"></i> @post.User.OrganizationName</small>
@@ -186,7 +206,7 @@
                                             <div class="d-flex justify-content-between align-items-center mb-1">
                                                 <span class="fw-bold small text-dark">@(comment.User?.FullName ?? "User")</span>
                                                 <div class="d-flex gap-2 align-items-center">
-                                                    <span class="text-muted" style="font-size: 0.7rem;">@comment.CreatedAt.ToString("MMM dd, hh:mm tt")</span>
+                                                    <span class="text-muted" style="font-size: 0.7rem;">@ToSriLankaTime(comment.CreatedAt).ToString("MMM dd, hh:mm tt")</span>
                                                     @if (canManageComment)
                                                     {
                                                         <form asp-action="DeleteComment" method="post" onsubmit="return confirm('Delete this comment?');">
