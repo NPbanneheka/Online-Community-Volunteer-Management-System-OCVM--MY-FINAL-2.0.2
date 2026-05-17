@@ -1,3 +1,9 @@
+@* ================================================================
+   VIVA COMMENTED VERSION - Views/Home/About.cshtml
+   Purpose: Razor View file: builds the HTML page shown to the user and displays data supplied by the controller.
+   Note: Razor comments do not display to users; they help you explain the page in viva.
+   ================================================================ *@
+
 @using OCVMS.Models
 @{
     ViewData["Title"] = "About";
@@ -11,7 +17,8 @@
         <h1 class="fw-bold mb-3">About OCVMS</h1>
         <p class="text-muted mb-3">OCVMS is a web-based system for volunteer management, event organization, reputation tracking, and community engagement.</p>
         <div class="d-flex flex-wrap gap-3 align-items-center">
-            @if (appRatingCount > 0)
+            @* Conditional UI: shows/hides content based on role, status, or available data. *@
+@if (appRatingCount > 0)
             {
                 <span class="badge bg-warning bg-opacity-10 text-warning rounded-pill px-4 py-3">
                     <i class="bi bi-star-fill me-1"></i> Overall Platform Rating: @appAverageRating.ToString("0.0") / 5
@@ -36,7 +43,8 @@
 
         @if (User.Identity?.IsAuthenticated == true)
         {
-            <form asp-action="RateApplication" method="post" class="row g-3">
+            @* Form area: collects user input and sends it to the controller action. *@
+<form asp-action="RateApplication" method="post" class="row g-3">
                 @Html.AntiForgeryToken()
                 <div class="col-md-3">
                     <label class="form-label fw-semibold">Your Rating</label>
@@ -56,7 +64,8 @@
                 </div>
                 <div class="col-md-9">
                     <label class="form-label fw-semibold">Short Review (Optional)</label>
-                    <input name="reviewText" class="form-control rounded-pill" placeholder="Share a short comment about the platform" value="@myAppRating?.ReviewText" />
+                    @* Input field: binds form data to the model/view model. *@
+<input name="reviewText" class="form-control rounded-pill" placeholder="Share a short comment about the platform" value="@myAppRating?.ReviewText" />
                 </div>
                 <div class="col-12">
                     <button type="submit" class="btn btn-warning rounded-pill px-4 fw-bold">@(myAppRating == null ? "Submit Platform Rating" : "Update Platform Rating")</button>

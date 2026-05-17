@@ -1,3 +1,9 @@
+// ================================================================
+// VIVA COMMENTED VERSION - Controllers/HomeController.cs
+// Purpose: Handles public home, about, privacy, and error pages.
+// Note: Comments were added for learning/viva explanation. Business logic is unchanged.
+// ================================================================
+
 using System.Diagnostics;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -12,6 +18,7 @@ public class HomeController : Controller
 {
     private const string ApplicationRatingTargetId = "__APPLICATION__";
     private const int ApplicationRatingEventId = 0;
+    // Dependencies injected through constructor for database, identity, hosting, or logging work.
 
     private readonly ILogger<HomeController> _logger;
     private readonly ApplicationDbContext _context;
@@ -23,6 +30,8 @@ public class HomeController : Controller
         _context = context;
         _userManager = userManager;
     }
+
+    // Main listing page: loads records, applies filters/search, prepares ViewBag data, then returns the view.
 
     public async Task<IActionResult> Index()
     {
@@ -36,7 +45,8 @@ public class HomeController : Controller
                 .Take(3)
                 .ToListAsync();
 
-            ViewBag.UserCount = await _context.UserProfiles
+            // ViewBag passes small extra values to the Razor view.
+        ViewBag.UserCount = await _context.UserProfiles
                 .Select(u => u.UserId)
                 .Distinct()
                 .CountAsync();
@@ -59,7 +69,11 @@ public class HomeController : Controller
         }
     }
 
+    // Controller action: handles a request, performs validation/business logic, and returns a response/view.
+
     public IActionResult Privacy() => View();
+
+    // Controller action: handles a request, performs validation/business logic, and returns a response/view.
 
     public async Task<IActionResult> About()
     {
@@ -78,6 +92,7 @@ public class HomeController : Controller
     [HttpPost]
     [Authorize]
     [ValidateAntiForgeryToken]
+    // Controller action: handles a request, performs validation/business logic, and returns a response/view.
     public async Task<IActionResult> RateApplication(int score, string? reviewText)
     {
         var userId = _userManager.GetUserId(User);
@@ -85,6 +100,7 @@ public class HomeController : Controller
 
         if (score < 1 || score > 5)
         {
+            // TempData message is shown once after redirect.
             TempData["Message"] = "Please select a rating between 1 and 5.";
             return RedirectToAction(nameof(About));
         }
@@ -105,6 +121,7 @@ public class HomeController : Controller
 
         rating.Score = score;
         rating.ReviewText = reviewText;
+        // Save all pending database changes.
         await _context.SaveChangesAsync();
 
         TempData["Message"] = "Thank you for rating the platform.";
@@ -112,6 +129,7 @@ public class HomeController : Controller
     }
 
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+    // Controller action: handles a request, performs validation/business logic, and returns a response/view.
     public IActionResult Error()
     {
         return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });

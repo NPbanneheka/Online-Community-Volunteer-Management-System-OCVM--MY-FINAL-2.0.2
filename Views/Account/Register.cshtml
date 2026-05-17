@@ -1,3 +1,9 @@
+@* ================================================================
+   VIVA COMMENTED VERSION - Views/Account/Register.cshtml
+   Purpose: Razor View file: builds the HTML page shown to the user and displays data supplied by the controller.
+   Note: Razor comments do not display to users; they help you explain the page in viva.
+   ================================================================ *@
+
 @model RegisterViewModel
 @{ ViewData["Title"] = "Register"; }
 
@@ -10,12 +16,14 @@
                     <p class="text-muted">Join OCVMS to start volunteering today.</p>
                 </div>
 
-                <form method="post">
+                @* Form area: collects user input and sends it to the controller action. *@
+<form method="post">
                     <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2 small mb-3"></div>
 
                     <div class="mb-3">
                         <label asp-for="FullName" class="form-label fw-medium">Full Name</label>
-                        <input asp-for="FullName" class="form-control rounded-pill px-3" placeholder="Enter your full name" />
+                        @* Input field: binds form data to the model/view model. *@
+<input asp-for="FullName" class="form-control rounded-pill px-3" placeholder="Enter your full name" />
                         <span asp-validation-for="FullName" class="text-danger small"></span>
                     </div>
 

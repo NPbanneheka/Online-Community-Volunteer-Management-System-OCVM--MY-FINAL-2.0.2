@@ -1,3 +1,9 @@
+// ================================================================
+// VIVA COMMENTED VERSION - Controllers/ProfileController.cs
+// Purpose: Handles user profiles, profile editing, admin user management, verification, ban/unban, and account deletion.
+// Note: Comments were added for learning/viva explanation. Business logic is unchanged.
+// ================================================================
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -14,6 +20,7 @@ namespace OCVMS.Controllers;
 [Authorize]
 public class ProfileController : Controller
 {
+    // Dependencies injected through constructor for database, identity, hosting, or logging work.
     private readonly ApplicationDbContext _context;
     private readonly UserManager<IdentityUser> _userManager;
     private readonly IWebHostEnvironment _environment;
@@ -28,6 +35,8 @@ public class ProfileController : Controller
         _environment = environment;
     }
 
+    // Shows the current user profile with personal and role-related information.
+
     public async Task<IActionResult> MyProfile()
     {
         var user = await _userManager.GetUserAsync(User);
@@ -38,6 +47,7 @@ public class ProfileController : Controller
     }
 
     [HttpGet]
+    // Edit page/action: GET loads existing data; POST validates ownership/role, updates fields, and saves changes.
     public async Task<IActionResult> Edit()
     {
         var user = await _userManager.GetUserAsync(User);
@@ -74,6 +84,7 @@ public class ProfileController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    // Edit page/action: GET loads existing data; POST validates ownership/role, updates fields, and saves changes.
     public async Task<IActionResult> Edit(ProfileEditViewModel model)
     {
         var user = await _userManager.GetUserAsync(User);
@@ -167,17 +178,21 @@ public class ProfileController : Controller
         // If no new image is uploaded, keep the existing saved image path.
         // Do not trust the hidden ProfileImageUrl field because it can be changed from the browser.
 
+        // Save all pending database changes.
         await _context.SaveChangesAsync();
-        TempData["Message"] = "Profile updated successfully!";
+        // TempData message is shown once after redirect.
+            TempData["Message"] = "Profile updated successfully!";
         return RedirectToAction(nameof(MyProfile));
     }
 
     [AllowAnonymous]
+    // Shows another user profile in read-only mode.
     public async Task<IActionResult> ViewProfile(string id)
     {
         var profile = await GetPrimaryProfileForUserAsync(id);
         if (profile == null) return NotFound();
 
+        // ViewBag passes small extra values to the Razor view.
         ViewBag.AverageRating = await _context.UserRatings
             .Where(x => x.ToUserId == id)
             .Select(x => (double?)x.Score)
@@ -186,12 +201,15 @@ public class ProfileController : Controller
         return View(profile);
     }
 
+    // Main listing page: loads records, applies filters/search, prepares ViewBag data, then returns the view.
+
     public IActionResult Index()
     {
         return RedirectToAction(nameof(MyProfile));
     }
 
     [Authorize(Roles = "Admin")]
+    // Admin user-management page: lists users and supports verification, ban/unban, and delete actions.
     public async Task<IActionResult> ManageUsers()
     {
         var adminProfilesToFix = await _context.UserProfiles
@@ -238,6 +256,7 @@ public class ProfileController : Controller
     [HttpPost]
     [Authorize(Roles = "Admin")]
     [ValidateAntiForgeryToken]
+    // Admin action: marks a selected user profile as verified.
     public async Task<IActionResult> VerifyUser(int id)
     {
         return await SetVerificationStatusAsync(id, true);
@@ -246,6 +265,7 @@ public class ProfileController : Controller
     [HttpPost]
     [Authorize(Roles = "Admin")]
     [ValidateAntiForgeryToken]
+    // Controller action: handles a request, performs validation/business logic, and returns a response/view.
     public async Task<IActionResult> UnverifyUser(int id)
     {
         return await SetVerificationStatusAsync(id, false);
@@ -254,6 +274,7 @@ public class ProfileController : Controller
     [HttpPost]
     [Authorize(Roles = "Admin")]
     [ValidateAntiForgeryToken]
+    // Controller action: handles a request, performs validation/business logic, and returns a response/view.
     public async Task<IActionResult> TempBanUser(int id)
     {
         return await SetTemporaryBanStatusAsync(id, true);
@@ -262,10 +283,13 @@ public class ProfileController : Controller
     [HttpPost]
     [Authorize(Roles = "Admin")]
     [ValidateAntiForgeryToken]
+    // Admin action: re-enables a previously banned user account.
     public async Task<IActionResult> UnbanUser(int id)
     {
         return await SetTemporaryBanStatusAsync(id, false);
     }
+
+    // Helper method: keeps repeated controller logic in one reusable place.
 
     private async Task<IActionResult> SetVerificationStatusAsync(int id, bool verified)
     {
@@ -302,6 +326,8 @@ public class ProfileController : Controller
 
         return RedirectToAction(nameof(ManageUsers));
     }
+
+    // Helper method: keeps repeated controller logic in one reusable place.
 
     private async Task<IActionResult> SetTemporaryBanStatusAsync(int id, bool ban)
     {
@@ -349,6 +375,7 @@ public class ProfileController : Controller
     [HttpPost]
     [Authorize(Roles = "Admin")]
     [ValidateAntiForgeryToken]
+    // Admin action: removes a selected user and related records safely.
     public async Task<IActionResult> DeleteUser(int id)
     {
         var profile = await _context.UserProfiles.FirstOrDefaultAsync(p => p.Id == id);
@@ -482,6 +509,8 @@ public class ProfileController : Controller
         return RedirectToAction(nameof(ManageUsers));
     }
 
+    // Helper method: keeps repeated controller logic in one reusable place.
+
     private async Task<UserProfile?> GetPrimaryProfileForUserAsync(string userId)
     {
         return await _context.UserProfiles
@@ -490,6 +519,8 @@ public class ProfileController : Controller
             .ThenByDescending(x => x.Id)
             .FirstOrDefaultAsync();
     }
+
+    // Helper method: keeps repeated controller logic in one reusable place.
 
     private void DeleteLocalFile(string? relativeUrl, string folderName)
     {

@@ -1,3 +1,9 @@
+// ================================================================
+// VIVA COMMENTED VERSION - Services/TestDataSeeder.cs
+// Purpose: Optional demo-data seeder used to populate sample users, events, posts, and notifications.
+// Note: Comments were added for learning/viva explanation. Business logic is unchanged.
+// ================================================================
+
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using OCVMS.Data;
@@ -8,7 +14,7 @@ namespace OCVMS.Services;
 public static class TestDataSeeder
 {
     private const string TestPassword = "123";
-
+    // Service entry point used by Program.cs or controllers to prepare demo/runtime data.
     public static async Task SeedAsync(IServiceProvider services)
     {
         var context = services.GetRequiredService<ApplicationDbContext>();
@@ -102,7 +108,8 @@ public static class TestDataSeeder
     {
         foreach (var role in new[] { "Admin", "Organizer", "Volunteer" })
         {
-            if (!await roleManager.RoleExistsAsync(role))
+            if (!// Check whether the required role already exists before creating it.
+            await roleManager.RoleExistsAsync(role))
             {
                 await roleManager.CreateAsync(new IdentityRole(role));
             }
@@ -134,7 +141,8 @@ public static class TestDataSeeder
                 PhoneNumberConfirmed = true
             };
 
-            var createResult = await userManager.CreateAsync(user);
+            var createResult = // Create the default/demo Identity user account.
+            await userManager.CreateAsync(user);
             if (!createResult.Succeeded)
             {
                 throw new InvalidOperationException($"Could not create user {email}: " +

@@ -1,44 +1,59 @@
+// ================================================================
+// VIVA COMMENTED VERSION - Models/VolunteerEvent.cs
+// Purpose: Model file: represents one database entity/table and defines its fields plus navigation relationships.
+// Note: Comments were added for learning/viva explanation. Business logic is unchanged.
+// ================================================================
+
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
 namespace OCVMS.Models;
-
+// This class defines structured data used by the application.
 public class VolunteerEvent : BaseEntity
 {
     [Required(ErrorMessage = "Event Title is required.")]
     [StringLength(200)]
+    // Main title shown in the UI.
     public string Title { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "Event Description is required.")]
+    // Detailed explanation shown to users.
     public string Description { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "Location is required.")]
+    // Physical/event location displayed to volunteers.
     public string Location { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "Event Date is required.")]
     [DataType(DataType.Date)]
     [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd}", ApplyFormatInEditMode = true)]
+    // Date of the volunteer event.
     public DateTime EventDate { get; set; }
 
     [Required(ErrorMessage = "Event Time is required.")]
     [DataType(DataType.Time)]
+    // Time of the volunteer event.
     public TimeSpan EventTime { get; set; }
 
     [Display(Name = "Registration Open Date")]
     [DataType(DataType.Date)]
     [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd}", ApplyFormatInEditMode = true)]
+    // Date from which volunteers are allowed to register.
     public DateTime RegistrationOpenDate { get; set; } = DateTime.Today;
 
     [Display(Name = "Registration Closing Date")]
     [DataType(DataType.Date)]
     [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd}", ApplyFormatInEditMode = true)]
+    // Final date for volunteer registration.
     public DateTime? RegistrationClosingDate { get; set; }
 
     [Required(ErrorMessage = "Capacity is required.")]
     [Range(1, 10000, ErrorMessage = "Capacity must be at least 1.")]
+    // Maximum number of volunteers allowed for the event.
     public int Capacity { get; set; }
 
+    // Current workflow state used for filtering and decisions.
     public string Status { get; set; } = "Upcoming";
     public string? ImageUrl { get; set; }
 

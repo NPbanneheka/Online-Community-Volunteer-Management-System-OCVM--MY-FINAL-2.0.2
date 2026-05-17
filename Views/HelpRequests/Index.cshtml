@@ -1,3 +1,9 @@
+@* ================================================================
+   VIVA COMMENTED VERSION - Views/HelpRequests/Index.cshtml
+   Purpose: Razor View file: builds the HTML page shown to the user and displays data supplied by the controller.
+   Note: Razor comments do not display to users; they help you explain the page in viva.
+   ================================================================ *@
+
 @model IEnumerable<OCVMS.Models.HelpRequest>
 @using System.Runtime.InteropServices
 @{
@@ -29,12 +35,14 @@
             <h2 class="fw-bold mb-1">Support Requests</h2>
             <p class="text-muted mb-0">Report system issues, bugs, errors, or difficulties to the admin team.</p>
         </div>
-        <a asp-action="Create" class="btn btn-primary rounded-pill px-4 fw-bold">
+        @* This form/action creates a new record after validation. *@
+<a asp-action="Create" class="btn btn-primary rounded-pill px-4 fw-bold">
             <i class="bi bi-plus-circle me-1"></i> New Support Request
         </a>
     </div>
 
-    @if (Model == null || !Model.Any())
+    @* Conditional UI: shows/hides content based on role, status, or available data. *@
+@if (Model == null || !Model.Any())
     {
         <div class="card border-0 shadow-sm rounded-4 text-center p-5">
             <i class="bi bi-life-preserver text-muted opacity-25" style="font-size:4rem;"></i>
@@ -45,7 +53,8 @@
     else
     {
         <div class="row g-3">
-            @foreach (var item in Model)
+            @* Loop: repeats this UI block for each item sent by the controller. *@
+@foreach (var item in Model)
             {
                 var statusClass = item.Status switch
                 {
@@ -77,10 +86,14 @@
                                 <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-outline-primary rounded-pill px-4 fw-bold">Open</a>
                                 @if (canManage)
                                 {
-                                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-warning rounded-pill px-4 fw-bold">Edit</a>
-                                    <form asp-action="Delete" method="post" onsubmit="return confirm('Delete this support request?');">
+                                    @* This form/action updates an existing record after permission checks. *@
+<a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-warning rounded-pill px-4 fw-bold">Edit</a>
+                                    @* Form area: collects user input and sends it to the controller action. *@
+@* Delete action is protected by controller-side permission checks. *@
+<form asp-action="Delete" method="post" onsubmit="return confirm('Delete this support request?');">
                                         @Html.AntiForgeryToken()
-                                        <input type="hidden" name="id" value="@item.Id" />
+                                        @* Input field: binds form data to the model/view model. *@
+<input type="hidden" name="id" value="@item.Id" />
                                         <button type="submit" class="btn btn-outline-danger rounded-pill px-4 fw-bold">Delete</button>
                                     </form>
                                 }

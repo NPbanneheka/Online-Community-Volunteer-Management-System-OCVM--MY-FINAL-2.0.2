@@ -1,3 +1,9 @@
+@* ================================================================
+   VIVA COMMENTED VERSION - Views/Profile/Edit.cshtml
+   Purpose: Razor View file: builds the HTML page shown to the user and displays data supplied by the controller.
+   Note: Razor comments do not display to users; they help you explain the page in viva.
+   ================================================================ *@
+
 @model OCVMS.ViewModels.ProfileEditViewModel
 @{ ViewData["Title"] = "Edit Profile"; }
 
@@ -8,7 +14,8 @@
                 <div class="text-center mb-4">
                     <h3 class="fw-bold text-dark">Update Your Profile</h3>
                     <p class="text-muted">Fill in your details to connect with the community.</p>
-                    @if (Model.RoleName == "Organizer")
+                    @* Conditional UI: shows/hides content based on role, status, or available data. *@
+@if (Model.RoleName == "Organizer")
                     {
                         <div class="alert alert-info rounded-4 text-start small">
                             <strong>Organizer security note:</strong> Your organization name is used to protect events and community posts from other organizations. Support requests are visible to the request owner and admin team.
@@ -16,8 +23,11 @@
                     }
                 </div>
 
-                <form asp-action="Edit" method="post" enctype="multipart/form-data">
-                    <input type="hidden" asp-for="ProfileImageUrl" />
+                @* Form area: collects user input and sends it to the controller action. *@
+@* This form/action updates an existing record after permission checks. *@
+<form asp-action="Edit" method="post" enctype="multipart/form-data">
+                    @* Input field: binds form data to the model/view model. *@
+<input type="hidden" asp-for="ProfileImageUrl" />
                     <input type="hidden" asp-for="RoleName" />
 
                     <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>

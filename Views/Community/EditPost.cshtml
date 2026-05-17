@@ -1,3 +1,9 @@
+@* ================================================================
+   VIVA COMMENTED VERSION - Views/Community/EditPost.cshtml
+   Purpose: Razor View file: builds the HTML page shown to the user and displays data supplied by the controller.
+   Note: Razor comments do not display to users; they help you explain the page in viva.
+   ================================================================ *@
+
 @model OCVMS.Models.CommunityPost
 @{
     ViewData["Title"] = "Edit Community Post";
@@ -10,14 +16,17 @@
                 <h2 class="fw-bold mb-2">Edit Community Post</h2>
                 <p class="text-muted mb-4">Only the owner, same organization organizer, or admin can edit this post.</p>
 
-                @if (TempData["Error"] != null)
+                @* Conditional UI: shows/hides content based on role, status, or available data. *@
+@if (TempData["Error"] != null)
                 {
                     <div class="alert alert-danger rounded-4">@TempData["Error"]</div>
                 }
 
-                <form asp-action="EditPost" method="post">
+                @* Form area: collects user input and sends it to the controller action. *@
+<form asp-action="EditPost" method="post">
                     @Html.AntiForgeryToken()
-                    <input type="hidden" name="id" value="@Model.Id" />
+                    @* Input field: binds form data to the model/view model. *@
+<input type="hidden" name="id" value="@Model.Id" />
 
                     <div class="mb-3">
                         <label class="form-label fw-bold">Post Type</label>

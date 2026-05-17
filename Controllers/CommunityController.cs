@@ -1,3 +1,9 @@
+// ================================================================
+// VIVA COMMENTED VERSION - Controllers/CommunityController.cs
+// Purpose: Handles community posts and comments so users can share updates and discussions.
+// Note: Comments were added for learning/viva explanation. Business logic is unchanged.
+// ================================================================
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -10,6 +16,7 @@ namespace OCVMS.Controllers;
 [Authorize]
 public class CommunityController : Controller
 {
+    // Dependencies injected through constructor for database, identity, hosting, or logging work.
     private readonly ApplicationDbContext _context;
     private readonly UserManager<IdentityUser> _userManager;
 
@@ -19,12 +26,15 @@ public class CommunityController : Controller
         _userManager = userManager;
     }
 
+    // Controller action: handles a request, performs validation/business logic, and returns a response/view.
+
     public async Task<IActionResult> Feed(string? filter, string? sortOrder)
     {
         filter = string.IsNullOrWhiteSpace(filter) ? "All" : filter;
         sortOrder = string.IsNullOrWhiteSpace(sortOrder) ? "Newest" : sortOrder;
 
         var postsQuery = _context.CommunityPosts
+            // Include loads related table data needed by the view.
             .Include(p => p.User)
             .Include(p => p.PostComments)
                 .ThenInclude(c => c.User)
@@ -49,6 +59,7 @@ public class CommunityController : Controller
         var currentProfile = await GetCurrentProfileAsync();
         var isAdmin = User.IsInRole("Admin");
 
+        // ViewBag passes small extra values to the Razor view.
         ViewBag.CurrentProfile = currentProfile;
         ViewBag.CurrentProfileId = currentProfile?.Id;
         ViewBag.CurrentOrganizationName = currentProfile?.OrganizationName;
@@ -74,6 +85,7 @@ public class CommunityController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    // Controller action: handles a request, performs validation/business logic, and returns a response/view.
     public async Task<IActionResult> CreatePost(string title, string content, string postType)
     {
         if (string.IsNullOrWhiteSpace(title) || string.IsNullOrWhiteSpace(content))
@@ -117,14 +129,17 @@ public class CommunityController : Controller
             }
         }
 
+        // Save all pending database changes.
         await _context.SaveChangesAsync();
 
-        TempData["Message"] = "Post published successfully!";
+        // TempData message is shown once after redirect.
+            TempData["Message"] = "Post published successfully!";
         return RedirectToAction(nameof(Feed));
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    // Controller action: handles a request, performs validation/business logic, and returns a response/view.
     public async Task<IActionResult> AddComment(int postId, string commentContent)
     {
         if (string.IsNullOrWhiteSpace(commentContent))
@@ -169,6 +184,7 @@ public class CommunityController : Controller
     }
 
     [HttpGet]
+    // Controller action: handles a request, performs validation/business logic, and returns a response/view.
     public async Task<IActionResult> EditPost(int id)
     {
         var post = await _context.CommunityPosts
@@ -186,6 +202,7 @@ public class CommunityController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    // Controller action: handles a request, performs validation/business logic, and returns a response/view.
     public async Task<IActionResult> EditPost(int id, string title, string content, string postType)
     {
         var post = await _context.CommunityPosts
@@ -216,6 +233,7 @@ public class CommunityController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    // Controller action: handles a request, performs validation/business logic, and returns a response/view.
     public async Task<IActionResult> DeletePost(int id)
     {
         var post = await _context.CommunityPosts
@@ -244,6 +262,7 @@ public class CommunityController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    // Controller action: handles a request, performs validation/business logic, and returns a response/view.
     public async Task<IActionResult> DeleteComment(int id)
     {
         var comment = await _context.PostComments
@@ -266,12 +285,16 @@ public class CommunityController : Controller
         return RedirectToAction(nameof(Feed));
     }
 
+    // Helper method: keeps repeated controller logic in one reusable place.
+
     private async Task<UserProfile?> GetCurrentProfileAsync()
     {
         var userId = _userManager.GetUserId(User);
         if (string.IsNullOrWhiteSpace(userId)) return null;
         return await GetPrimaryProfileForUserAsync(userId);
     }
+
+    // Helper method: keeps repeated controller logic in one reusable place.
 
     private async Task<UserProfile?> GetPrimaryProfileForUserAsync(string userId)
     {
@@ -281,6 +304,8 @@ public class CommunityController : Controller
             .ThenByDescending(x => x.CreatedAt)
             .FirstOrDefaultAsync();
     }
+
+    // Helper method: keeps repeated controller logic in one reusable place.
 
     private async Task<bool> CanManagePostAsync(CommunityPost post)
     {
@@ -296,6 +321,8 @@ public class CommunityController : Controller
 
         return CanManagePost(post, profile, false);
     }
+
+    // Helper method: keeps repeated controller logic in one reusable place.
 
     private async Task<bool> CanManageCommentAsync(PostComment comment)
     {

@@ -1,3 +1,9 @@
+// ================================================================
+// VIVA COMMENTED VERSION - Controllers/EventsController.cs
+// Purpose: Main event management controller: list events, create/edit/delete events, register volunteers, cancel registration, ratings, and ownership checks.
+// Note: Comments were added for learning/viva explanation. Business logic is unchanged.
+// ================================================================
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -14,6 +20,7 @@ public class EventsController : Controller
 {
     private const string ApplicationRatingTargetId = "__APPLICATION__";
     private const int ApplicationRatingEventId = 0;
+    // Dependencies injected through constructor for database, identity, hosting, or logging work.
 
     private readonly ApplicationDbContext _context;
     private readonly UserManager<IdentityUser> _userManager;
@@ -27,11 +34,13 @@ public class EventsController : Controller
     }
 
     [AllowAnonymous]
+    // Main listing page: loads records, applies filters/search, prepares ViewBag data, then returns the view.
     public async Task<IActionResult> Index(string? searchTerm, string? statusFilter, DateTime? eventDate)
     {
         await AutoCloseExpiredEventsAsync();
 
         var eventsQuery = _context.VolunteerEvents
+            // Include loads related table data needed by the view.
             .Include(e => e.OrganizerProfile)
             .Include(e => e.Registrations)
             .AsQueryable();
@@ -87,6 +96,7 @@ public class EventsController : Controller
         var currentProfile = await GetCurrentProfileAsync();
         var isAdmin = User.IsInRole("Admin");
 
+        // ViewBag passes small extra values to the Razor view.
         ViewBag.CurrentProfileId = currentProfile?.Id;
         ViewBag.CurrentOrganizationName = currentProfile?.OrganizationName;
         ViewBag.IsAdmin = isAdmin;
@@ -109,6 +119,8 @@ public class EventsController : Controller
         return View(eventsList);
     }
 
+    // Loads events joined by the current volunteer user.
+
     public async Task<IActionResult> MyEvents()
     {
         await AutoCloseExpiredEventsAsync();
@@ -129,6 +141,7 @@ public class EventsController : Controller
     }
 
     [Authorize(Roles = "Organizer,Admin")]
+    // Loads events that the current organizer/admin is allowed to manage.
     public async Task<IActionResult> MyCreatedEvents()
     {
         await AutoCloseExpiredEventsAsync();
@@ -136,6 +149,7 @@ public class EventsController : Controller
         var profile = await GetCurrentProfileAsync();
         if (profile == null)
         {
+            // TempData message is shown once after redirect.
             TempData["Message"] = "Please complete your profile before managing events.";
             return RedirectToAction("Edit", "Profile");
         }
@@ -160,6 +174,7 @@ public class EventsController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    // Registration action: creates a new user/account or registers the current user for an event depending on controller context.
     public async Task<IActionResult> Register(int eventId)
     {
         await AutoCloseExpiredEventsAsync();
@@ -211,6 +226,7 @@ public class EventsController : Controller
             });
         }
 
+        // Save all pending database changes.
         await _context.SaveChangesAsync();
 
         TempData["Message"] = "Successfully registered for the event!";
@@ -219,6 +235,7 @@ public class EventsController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    // Controller action: handles a request, performs validation/business logic, and returns a response/view.
     public async Task<IActionResult> Unregister(int eventId)
     {
         var userId = _userManager.GetUserId(User);
@@ -250,6 +267,7 @@ public class EventsController : Controller
     }
 
     [AllowAnonymous]
+    // Details page: loads one selected record with related data and checks permissions for the current user.
     public async Task<IActionResult> Details(int? id)
     {
         if (id == null) return NotFound();
@@ -292,6 +310,7 @@ public class EventsController : Controller
     }
 
     [Authorize(Roles = "Organizer,Admin")]
+    // Create page/action: GET shows the form; POST validates input, saves new data, and redirects after success.
     public async Task<IActionResult> Create()
     {
         var profile = await GetCurrentProfileAsync();
@@ -321,6 +340,7 @@ public class EventsController : Controller
     [HttpPost]
     [Authorize(Roles = "Organizer,Admin")]
     [ValidateAntiForgeryToken]
+    // Create page/action: GET shows the form; POST validates input, saves new data, and redirects after success.
     public async Task<IActionResult> Create(VolunteerEvent volunteerEvent, IFormFile? eventImage)
     {
         var userProfile = await GetCurrentProfileAsync();
@@ -387,6 +407,7 @@ public class EventsController : Controller
     }
 
     [Authorize(Roles = "Organizer,Admin")]
+    // Edit page/action: GET loads existing data; POST validates ownership/role, updates fields, and saves changes.
     public async Task<IActionResult> Edit(int? id)
     {
         if (id == null) return NotFound();
@@ -407,6 +428,7 @@ public class EventsController : Controller
     [HttpPost]
     [Authorize(Roles = "Organizer,Admin")]
     [ValidateAntiForgeryToken]
+    // Edit page/action: GET loads existing data; POST validates ownership/role, updates fields, and saves changes.
     public async Task<IActionResult> Edit(int id, VolunteerEvent volunteerEvent, IFormFile? eventImage)
     {
         if (id != volunteerEvent.Id) return NotFound();
@@ -463,6 +485,7 @@ public class EventsController : Controller
     [HttpPost]
     [Authorize(Roles = "Organizer,Admin")]
     [ValidateAntiForgeryToken]
+    // Delete action: confirms permission, removes the selected record, and saves the database change.
     public async Task<IActionResult> Delete(int id)
     {
         var volunteerEvent = await _context.VolunteerEvents
@@ -491,6 +514,7 @@ public class EventsController : Controller
     }
 
     [Authorize(Roles = "Organizer,Admin")]
+    // Shows the volunteer list registered for a selected event.
     public async Task<IActionResult> JoinedVolunteers(int id)
     {
         var volunteerEvent = await _context.VolunteerEvents
@@ -532,6 +556,7 @@ public class EventsController : Controller
     [HttpPost]
     [Authorize(Roles = "Organizer,Admin")]
     [ValidateAntiForgeryToken]
+    // Controller action: handles a request, performs validation/business logic, and returns a response/view.
     public async Task<IActionResult> SendVolunteerNotification(int id, string message)
     {
         var volunteerEvent = await _context.VolunteerEvents
@@ -569,6 +594,7 @@ public class EventsController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    // Controller action: handles a request, performs validation/business logic, and returns a response/view.
     public async Task<IActionResult> RateEvent(int id, int score, string? reviewText)
     {
         var userId = _userManager.GetUserId(User);
@@ -607,6 +633,7 @@ public class EventsController : Controller
     [HttpPost]
     [Authorize(Roles = "Organizer,Admin")]
     [ValidateAntiForgeryToken]
+    // Controller action: handles a request, performs validation/business logic, and returns a response/view.
     public async Task<IActionResult> RateVolunteer(int id, string volunteerUserId, int score, string? reviewText)
     {
         var volunteerEvent = await _context.VolunteerEvents
@@ -661,12 +688,16 @@ public class EventsController : Controller
         return RedirectToAction(nameof(JoinedVolunteers), new { id });
     }
 
+    // Helper method: keeps repeated controller logic in one reusable place.
+
     private async Task<UserProfile?> GetCurrentProfileAsync()
     {
         var userId = _userManager.GetUserId(User);
         if (string.IsNullOrWhiteSpace(userId)) return null;
         return await GetPrimaryProfileForUserAsync(userId);
     }
+
+    // Helper method: keeps repeated controller logic in one reusable place.
 
     private async Task<UserProfile?> GetPrimaryProfileForUserAsync(string userId)
     {
@@ -676,6 +707,8 @@ public class EventsController : Controller
             .ThenByDescending(x => x.CreatedAt)
             .FirstOrDefaultAsync();
     }
+
+    // Helper method: keeps repeated controller logic in one reusable place.
 
     private async Task<bool> CanManageEventAsync(VolunteerEvent volunteerEvent)
     {
@@ -702,6 +735,8 @@ public class EventsController : Controller
         // Organization-name matching is not used for authorization, because another user could type the same organization name.
         return volunteerEvent.OrganizerProfileId == currentProfile.Id;
     }
+
+    // Helper method: keeps repeated controller logic in one reusable place.
 
     private async Task<string?> SaveEventImageAsync(IFormFile? file, string? oldImageUrl)
     {
@@ -737,6 +772,8 @@ public class EventsController : Controller
         return "/uploads/events/" + uniqueFileName;
     }
 
+    // Helper method: keeps repeated controller logic in one reusable place.
+
     private void DeleteLocalFile(string? relativeUrl, string folderName)
     {
         if (string.IsNullOrWhiteSpace(relativeUrl)) return;
@@ -750,6 +787,8 @@ public class EventsController : Controller
             System.IO.File.Delete(fullPath);
         }
     }
+
+    // Helper method: keeps repeated controller logic in one reusable place.
 
     private async Task AutoCloseExpiredEventsAsync()
     {

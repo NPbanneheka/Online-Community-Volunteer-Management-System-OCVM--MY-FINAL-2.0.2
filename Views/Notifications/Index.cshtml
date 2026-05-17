@@ -1,3 +1,9 @@
+@* ================================================================
+   VIVA COMMENTED VERSION - Views/Notifications/Index.cshtml
+   Purpose: Razor View file: builds the HTML page shown to the user and displays data supplied by the controller.
+   Note: Razor comments do not display to users; they help you explain the page in viva.
+   ================================================================ *@
+
 @model IEnumerable<OCVMS.Models.Notification>
 @{
     ViewData["Title"] = "Notifications";
@@ -9,9 +15,11 @@
             <h2 class="fw-bold mb-1">Notifications</h2>
             <p class="text-muted mb-0">System updates related to your events, registrations, and support requests.</p>
         </div>
-        @if (Model != null && Model.Any(n => !n.IsRead))
+        @* Conditional UI: shows/hides content based on role, status, or available data. *@
+@if (Model != null && Model.Any(n => !n.IsRead))
         {
-            <form asp-action="MarkAllAsRead" method="post">
+            @* Form area: collects user input and sends it to the controller action. *@
+<form asp-action="MarkAllAsRead" method="post">
                 <button type="submit" class="btn btn-outline-primary rounded-pill px-4 fw-bold">Mark All as Read</button>
             </form>
         }
@@ -28,7 +36,8 @@
     else
     {
         <div class="list-group shadow-sm rounded-4 overflow-hidden">
-            @foreach (var item in Model)
+            @* Loop: repeats this UI block for each item sent by the controller. *@
+@foreach (var item in Model)
             {
                 <div class="list-group-item border-0 border-bottom p-4 @(item.IsRead ? "bg-white" : "bg-primary bg-opacity-10")">
                     <div class="d-flex justify-content-between align-items-start gap-3">
@@ -39,7 +48,8 @@
                         @if (!item.IsRead)
                         {
                             <form asp-action="MarkAsRead" method="post">
-                                <input type="hidden" name="id" value="@item.Id" />
+                                @* Input field: binds form data to the model/view model. *@
+<input type="hidden" name="id" value="@item.Id" />
                                 <button type="submit" class="btn btn-sm btn-primary rounded-pill px-3">Read</button>
                             </form>
                         }

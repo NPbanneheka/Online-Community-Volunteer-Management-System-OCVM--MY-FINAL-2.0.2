@@ -1,13 +1,21 @@
+// ================================================================
+// VIVA COMMENTED VERSION - Models/UserProfile.cs
+// Purpose: Model file: represents one database entity/table and defines its fields plus navigation relationships.
+// Note: Comments were added for learning/viva explanation. Business logic is unchanged.
+// ================================================================
+
 using System.ComponentModel.DataAnnotations;
 
 namespace OCVMS.Models;
-
+// This class defines structured data used by the application.
 public class UserProfile : BaseEntity
 {
     [Required]
+    // Links this record to the ASP.NET Identity user account.
     public string UserId { get; set; } = string.Empty;
     
     [Required(ErrorMessage = "Full Name is required.")]
+    // Readable user name shown in profile and admin screens.
     public string FullName { get; set; } = string.Empty;
     
     public string RoleName { get; set; } = string.Empty;
@@ -22,7 +30,9 @@ public class UserProfile : BaseEntity
     public string? Skills { get; set; }
     public string? Availability { get; set; }
     public string? ProfileImageUrl { get; set; }
+    // Organizer organization name used for ownership and grouping.
     public string? OrganizationName { get; set; }
+    // Admin-controlled verification flag.
     public bool IsVerified { get; set; } = false;
 
     // --- NAVIGATION PROPERTIES ---

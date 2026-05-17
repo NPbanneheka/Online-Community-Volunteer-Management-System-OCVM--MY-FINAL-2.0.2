@@ -1,14 +1,22 @@
+@* ================================================================
+   VIVA COMMENTED VERSION - Views/Profile/Index.cshtml
+   Purpose: Razor View file: builds the HTML page shown to the user and displays data supplied by the controller.
+   Note: Razor comments do not display to users; they help you explain the page in viva.
+   ================================================================ *@
+
 @model UserProfile?
 
 @{
     ViewData["Title"] = "My Profile";
 }
 
+@* Conditional UI: shows/hides content based on role, status, or available data. *@
 @if (Model == null)
 {
     <div class="card card-modern p-4">
         <h3 class="fw-bold">Profile not found</h3>
-        <a asp-action="Edit" class="btn btn-gradient rounded-pill mt-3">Create Profile</a>
+        @* This form/action updates an existing record after permission checks. *@
+<a asp-action="Edit" class="btn btn-gradient rounded-pill mt-3">Create Profile</a>
     </div>
 }
 else

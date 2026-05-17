@@ -1,3 +1,9 @@
+@* ================================================================
+   VIVA COMMENTED VERSION - Views/Shared/_Layout.cshtml
+   Purpose: Razor View file: builds the HTML page shown to the user and displays data supplied by the controller.
+   Note: Razor comments do not display to users; they help you explain the page in viva.
+   ================================================================ *@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -38,7 +44,8 @@
                 </ul>
 
                 <ul class="navbar-nav ms-auto align-items-xl-center gap-xl-1">
-                    @if (User.Identity?.IsAuthenticated == true)
+                    @* Conditional UI: shows/hides content based on role, status, or available data. *@
+@if (User.Identity?.IsAuthenticated == true)
                     {
                         <li class="nav-item">
                             <a class="nav-link" asp-controller="Events" asp-action="MyEvents">My Events</a>
@@ -71,7 +78,8 @@
                         </li>
 
                         <li class="nav-item mt-2 mt-xl-0 ms-xl-2">
-                            <form asp-controller="Account" asp-action="Logout" method="post" class="d-grid">
+                            @* Form area: collects user input and sends it to the controller action. *@
+<form asp-controller="Account" asp-action="Logout" method="post" class="d-grid">
                                 <button type="submit" class="btn btn-light btn-sm rounded-pill px-3 px-lg-4">
                                     Logout
                                 </button>

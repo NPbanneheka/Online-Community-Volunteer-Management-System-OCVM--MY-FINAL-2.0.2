@@ -1,3 +1,9 @@
+@* ================================================================
+   VIVA COMMENTED VERSION - Views/Events/Details.cshtml
+   Purpose: Razor View file: builds the HTML page shown to the user and displays data supplied by the controller.
+   Note: Razor comments do not display to users; they help you explain the page in viva.
+   ================================================================ *@
+
 @model OCVMS.Models.VolunteerEvent
 @{
     ViewData["Title"] = "Event Details";
@@ -23,7 +29,8 @@
 
 <div class="container py-5">
     <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
-        @if (!string.IsNullOrWhiteSpace(Model.ImageUrl))
+        @* Conditional UI: shows/hides content based on role, status, or available data. *@
+@if (!string.IsNullOrWhiteSpace(Model.ImageUrl))
         {
             <img src="@Model.ImageUrl" class="w-100" style="height: 320px; object-fit: cover; object-position: center;" alt="@Model.Title" />
         }
@@ -62,9 +69,11 @@
                     {
                         <div class="card border-0 bg-light rounded-4 p-4 mt-4">
                             <h5 class="fw-bold mb-3"><i class="bi bi-star text-warning me-1"></i> Rate this Event</h5>
-                            <form asp-action="RateEvent" method="post" class="row g-2">
+                            @* Form area: collects user input and sends it to the controller action. *@
+<form asp-action="RateEvent" method="post" class="row g-2">
                                 @Html.AntiForgeryToken()
-                                <input type="hidden" name="id" value="@Model.Id" />
+                                @* Input field: binds form data to the model/view model. *@
+<input type="hidden" name="id" value="@Model.Id" />
                                 <div class="col-md-3">
                                     <select name="score" class="form-select rounded-pill" required>
                                         @for (int i = 5; i >= 1; i--)
@@ -189,8 +198,10 @@
                 @if (canManageEvent)
                 {
                     <a asp-action="JoinedVolunteers" asp-route-id="@Model.Id" class="btn btn-info text-white rounded-pill px-4 fw-bold">Joined Volunteers</a>
-                    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning rounded-pill px-4 fw-bold">Edit Event</a>
-                    <form asp-action="Delete" method="post" onsubmit="return confirm('Delete this event?');">
+                    @* This form/action updates an existing record after permission checks. *@
+<a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning rounded-pill px-4 fw-bold">Edit Event</a>
+                    @* Delete action is protected by controller-side permission checks. *@
+<form asp-action="Delete" method="post" onsubmit="return confirm('Delete this event?');">
                         @Html.AntiForgeryToken()
                         <input type="hidden" name="id" value="@Model.Id" />
                         <button type="submit" class="btn btn-outline-danger rounded-pill px-4 fw-bold">Delete Event</button>

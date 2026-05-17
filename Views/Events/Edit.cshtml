@@ -1,3 +1,9 @@
+@* ================================================================
+   VIVA COMMENTED VERSION - Views/Events/Edit.cshtml
+   Purpose: Razor View file: builds the HTML page shown to the user and displays data supplied by the controller.
+   Note: Razor comments do not display to users; they help you explain the page in viva.
+   ================================================================ *@
+
 @model OCVMS.Models.VolunteerEvent
 @{ ViewData["Title"] = "Edit Event"; }
 
@@ -5,10 +11,13 @@
     <div class="card shadow-sm border-0 rounded-4 p-4">
         <h2 class="fw-bold mb-4">Edit Event</h2>
         
-        <form asp-action="Edit" method="post" enctype="multipart/form-data">
+        @* Form area: collects user input and sends it to the controller action. *@
+@* This form/action updates an existing record after permission checks. *@
+<form asp-action="Edit" method="post" enctype="multipart/form-data">
             <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
             
-            <input type="hidden" asp-for="Id" />
+            @* Input field: binds form data to the model/view model. *@
+<input type="hidden" asp-for="Id" />
             <input type="hidden" asp-for="OrganizerProfileId" />
             <input type="hidden" asp-for="ImageUrl" />
 
@@ -64,7 +73,8 @@
                     <span asp-validation-for="Location" class="text-danger small"></span>
                 </div>
                 <div class="col-12">
-                    @if (!string.IsNullOrWhiteSpace(Model.ImageUrl))
+                    @* Conditional UI: shows/hides content based on role, status, or available data. *@
+@if (!string.IsNullOrWhiteSpace(Model.ImageUrl))
                     {
                         <img src="@Model.ImageUrl" id="eventImagePreview" class="rounded-4 shadow-sm w-100 mb-2" style="max-height:260px; object-fit:cover; object-position:center;" alt="Event image" />
                     }

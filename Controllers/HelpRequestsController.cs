@@ -1,3 +1,9 @@
+// ================================================================
+// VIVA COMMENTED VERSION - Controllers/HelpRequestsController.cs
+// Purpose: Handles support/help requests reported by users and managed by authorized users.
+// Note: Comments were added for learning/viva explanation. Business logic is unchanged.
+// ================================================================
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -10,6 +16,7 @@ namespace OCVMS.Controllers;
 [Authorize]
 public class HelpRequestsController : Controller
 {
+    // Dependencies injected through constructor for database, identity, hosting, or logging work.
     private readonly ApplicationDbContext _context;
     private readonly UserManager<IdentityUser> _userManager;
 
@@ -19,12 +26,15 @@ public class HelpRequestsController : Controller
         _userManager = userManager;
     }
 
+    // Main listing page: loads records, applies filters/search, prepares ViewBag data, then returns the view.
+
     public async Task<IActionResult> Index()
     {
         var profile = await GetCurrentProfileAsync();
         var isAdmin = User.IsInRole("Admin");
 
         var allRequests = await _context.HelpRequests
+            // Include loads related table data needed by the view.
             .Include(h => h.SubmittedBy)
             .OrderByDescending(h => h.CreatedAt)
             .ToListAsync();
@@ -33,6 +43,7 @@ public class HelpRequestsController : Controller
             .Where(h => CanViewHelpRequest(h, profile, isAdmin))
             .ToList();
 
+        // ViewBag passes small extra values to the Razor view.
         ViewBag.CurrentProfileId = profile?.Id;
         ViewBag.CurrentOrganizationName = profile?.OrganizationName;
         ViewBag.IsAdmin = isAdmin;
@@ -48,6 +59,8 @@ public class HelpRequestsController : Controller
         return View(requests);
     }
 
+    // Create page/action: GET shows the form; POST validates input, saves new data, and redirects after success.
+
     public IActionResult Create()
     {
         return View(new HelpRequest());
@@ -55,12 +68,14 @@ public class HelpRequestsController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    // Create page/action: GET shows the form; POST validates input, saves new data, and redirects after success.
     public async Task<IActionResult> Create(HelpRequest helpRequest)
     {
         var profile = await GetCurrentProfileAsync();
 
         if (profile == null)
         {
+            // TempData message is shown once after redirect.
             TempData["Message"] = "Please complete your profile before submitting a support request.";
             return RedirectToAction("Edit", "Profile");
         }
@@ -92,11 +107,14 @@ public class HelpRequestsController : Controller
             });
         }
 
+        // Save all pending database changes.
         await _context.SaveChangesAsync();
 
         TempData["Message"] = "Support request submitted successfully.";
         return RedirectToAction(nameof(Index));
     }
+
+    // Details page: loads one selected record with related data and checks permissions for the current user.
 
     public async Task<IActionResult> Details(int? id)
     {
@@ -118,6 +136,7 @@ public class HelpRequestsController : Controller
     }
 
     [HttpGet]
+    // Edit page/action: GET loads existing data; POST validates ownership/role, updates fields, and saves changes.
     public async Task<IActionResult> Edit(int? id)
     {
         if (id == null) return NotFound();
@@ -137,6 +156,7 @@ public class HelpRequestsController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    // Edit page/action: GET loads existing data; POST validates ownership/role, updates fields, and saves changes.
     public async Task<IActionResult> Edit(int id, HelpRequest helpRequest)
     {
         if (id != helpRequest.Id) return NotFound();
@@ -173,6 +193,7 @@ public class HelpRequestsController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    // Delete action: confirms permission, removes the selected record, and saves the database change.
     public async Task<IActionResult> Delete(int id)
     {
         var helpRequest = await _context.HelpRequests
@@ -195,6 +216,7 @@ public class HelpRequestsController : Controller
     [HttpPost]
     [Authorize(Roles = "Admin")]
     [ValidateAntiForgeryToken]
+    // Controller action: handles a request, performs validation/business logic, and returns a response/view.
     public async Task<IActionResult> UpdateStatus(int id, string status)
     {
         var allowedStatuses = new[] { "Pending", "In Progress", "Resolved", "Closed" };
@@ -228,12 +250,16 @@ public class HelpRequestsController : Controller
         return RedirectToAction(nameof(Details), new { id });
     }
 
+    // Helper method: keeps repeated controller logic in one reusable place.
+
     private async Task<UserProfile?> GetCurrentProfileAsync()
     {
         var userId = _userManager.GetUserId(User);
         if (string.IsNullOrWhiteSpace(userId)) return null;
         return await GetPrimaryProfileForUserAsync(userId);
     }
+
+    // Helper method: keeps repeated controller logic in one reusable place.
 
     private async Task<UserProfile?> GetPrimaryProfileForUserAsync(string userId)
     {
@@ -244,6 +270,8 @@ public class HelpRequestsController : Controller
             .FirstOrDefaultAsync();
     }
 
+    // Helper method: keeps repeated controller logic in one reusable place.
+
     private async Task<bool> CanViewHelpRequestAsync(HelpRequest helpRequest)
     {
         if (User.IsInRole("Admin")) return true;
@@ -251,12 +279,16 @@ public class HelpRequestsController : Controller
         return CanViewHelpRequest(helpRequest, profile, false);
     }
 
+    // Helper method: keeps repeated controller logic in one reusable place.
+
     private async Task<bool> CanManageHelpRequestAsync(HelpRequest helpRequest)
     {
         if (User.IsInRole("Admin")) return true;
         var profile = await GetCurrentProfileAsync();
         return CanManageHelpRequest(helpRequest, profile, false);
     }
+
+    // Helper method: keeps repeated controller logic in one reusable place.
 
     private async Task<bool> CanUpdateHelpRequestStatusAsync(HelpRequest helpRequest)
     {

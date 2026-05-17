@@ -1,3 +1,9 @@
+@* ================================================================
+   VIVA COMMENTED VERSION - Views/HelpRequests/Details.cshtml
+   Purpose: Razor View file: builds the HTML page shown to the user and displays data supplied by the controller.
+   Note: Razor comments do not display to users; they help you explain the page in viva.
+   ================================================================ *@
+
 @model OCVMS.Models.HelpRequest
 @using System.Runtime.InteropServices
 @{
@@ -32,7 +38,8 @@
                 <h2 class="fw-bold mb-1">@Model.Title</h2>
                 <p class="text-muted mb-0">
                     Submitted by @(Model.SubmittedBy?.FullName ?? "User") on @ToSriLankaTime(Model.CreatedAt).ToString("MMM dd, yyyy hh:mm tt")
-                    @if (!string.IsNullOrWhiteSpace(Model.SubmittedBy?.OrganizationName))
+                    @* Conditional UI: shows/hides content based on role, status, or available data. *@
+@if (!string.IsNullOrWhiteSpace(Model.SubmittedBy?.OrganizationName))
                     {
                         <span> · @Model.SubmittedBy.OrganizationName</span>
                     }
@@ -48,13 +55,16 @@
 
         @if (canUpdateHelpRequestStatus)
         {
-            <form asp-action="UpdateStatus" method="post" class="row g-2 align-items-end">
+            @* Form area: collects user input and sends it to the controller action. *@
+<form asp-action="UpdateStatus" method="post" class="row g-2 align-items-end">
                 @Html.AntiForgeryToken()
-                <input type="hidden" name="id" value="@Model.Id" />
+                @* Input field: binds form data to the model/view model. *@
+<input type="hidden" name="id" value="@Model.Id" />
                 <div class="col-md-5">
                     <label class="form-label fw-bold">Update Status</label>
                     <select name="status" class="form-select rounded-3">
-                        @foreach (var status in statuses)
+                        @* Loop: repeats this UI block for each item sent by the controller. *@
+@foreach (var status in statuses)
                         {
                             if (Model.Status == status)
                             {
@@ -79,8 +89,10 @@
             </a>
             @if (canManageHelpRequest)
             {
-                <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning rounded-pill px-4 fw-bold">Edit Request</a>
-                <form asp-action="Delete" method="post" onsubmit="return confirm('Delete this support request?');">
+                @* This form/action updates an existing record after permission checks. *@
+<a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning rounded-pill px-4 fw-bold">Edit Request</a>
+                @* Delete action is protected by controller-side permission checks. *@
+<form asp-action="Delete" method="post" onsubmit="return confirm('Delete this support request?');">
                     @Html.AntiForgeryToken()
                     <input type="hidden" name="id" value="@Model.Id" />
                     <button type="submit" class="btn btn-outline-danger rounded-pill px-4 fw-bold">Delete Request</button>

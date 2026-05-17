@@ -1,3 +1,9 @@
+@* ================================================================
+   VIVA COMMENTED VERSION - Views/Events/Create.cshtml
+   Purpose: Razor View file: builds the HTML page shown to the user and displays data supplied by the controller.
+   Note: Razor comments do not display to users; they help you explain the page in viva.
+   ================================================================ *@
+
 @model OCVMS.Models.VolunteerEvent
 @{ ViewData["Title"] = "Create Event"; }
 
@@ -6,13 +12,16 @@
         <h2 class="fw-bold mb-2">Create New Event</h2>
         <p class="text-muted mb-4">Add event details, registration open/closing dates, capacity, and a suitable event photo.</p>
 
-        <form asp-action="Create" method="post" enctype="multipart/form-data" novalidate>
+        @* Form area: collects user input and sends it to the controller action. *@
+@* This form/action creates a new record after validation. *@
+<form asp-action="Create" method="post" enctype="multipart/form-data" novalidate>
             <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
             <div class="row g-4">
                 <div class="col-12">
                     <label asp-for="Title" class="form-label fw-bold">Event Title</label>
-                    <input asp-for="Title" class="form-control" placeholder="E.g., Beach Cleanup, Book Donation" />
+                    @* Input field: binds form data to the model/view model. *@
+<input asp-for="Title" class="form-control" placeholder="E.g., Beach Cleanup, Book Donation" />
                     <span asp-validation-for="Title" class="text-danger small"></span>
                 </div>
 

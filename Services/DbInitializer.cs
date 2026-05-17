@@ -1,3 +1,9 @@
+// ================================================================
+// VIVA COMMENTED VERSION - Services/DbInitializer.cs
+// Purpose: Creates default roles and default admin account during application startup.
+// Note: Comments were added for learning/viva explanation. Business logic is unchanged.
+// ================================================================
+
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using OCVMS.Data;
@@ -7,7 +13,7 @@ namespace OCVMS.Services;
 
 public static class DbInitializer
 {
-    public static async Task SeedRolesAndAdminAsync(IServiceProvider serviceProvider)
+    // Service entry point used by Program.cs or controllers to prepare demo/runtime data.    public static async Task SeedRolesAndAdminAsync(IServiceProvider serviceProvider)
     {
         var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
         var userManager = serviceProvider.GetRequiredService<UserManager<IdentityUser>>();
@@ -17,7 +23,8 @@ public static class DbInitializer
 
         foreach (var role in roles)
         {
-            if (!await roleManager.RoleExistsAsync(role))
+            if (!// Check whether the required role already exists before creating it.
+            await roleManager.RoleExistsAsync(role))
             {
                 await roleManager.CreateAsync(new IdentityRole(role));
             }
@@ -36,7 +43,8 @@ public static class DbInitializer
                 LockoutEnabled = true
             };
 
-            var result = await userManager.CreateAsync(adminUser, "123456");
+            var result = // Create the default/demo Identity user account.
+            await userManager.CreateAsync(adminUser, "123456");
             if (!result.Succeeded)
             {
                 throw new InvalidOperationException("Default admin account could not be created: " +

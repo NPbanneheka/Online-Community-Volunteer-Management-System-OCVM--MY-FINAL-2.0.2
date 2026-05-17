@@ -1,3 +1,9 @@
+// ================================================================
+// VIVA COMMENTED VERSION - Data/ApplicationDbContext.cs
+// Purpose: EF Core database context: connects C# models with SQL Server tables and configures relationships.
+// Note: Comments were added for learning/viva explanation. Business logic is unchanged.
+// ================================================================
+
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -7,18 +13,35 @@ namespace OCVMS.Data;
 
 public class ApplicationDbContext : IdentityDbContext<IdentityUser>
 {
+    // Constructor receives DB options configured in Program.cs.
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
         : base(options) { }
 
+    // DbSet maps the UserProfile model to the UserProfiles table/query.
     public DbSet<UserProfile> UserProfiles => Set<UserProfile>();
+
+    // DbSet maps the VolunteerEvent model to the VolunteerEvents table/query.
     public DbSet<VolunteerEvent> VolunteerEvents => Set<VolunteerEvent>();
+
+    // DbSet maps the EventRegistration model to the EventRegistrations table/query.
     public DbSet<EventRegistration> EventRegistrations => Set<EventRegistration>();
+
+    // DbSet maps the CommunityPost model to the CommunityPosts table/query.
     public DbSet<CommunityPost> CommunityPosts => Set<CommunityPost>();
+
+    // DbSet maps the PostComment model to the PostComments table/query.
     public DbSet<PostComment> PostComments => Set<PostComment>();
+
+    // DbSet maps the UserRating model to the UserRatings table/query.
     public DbSet<UserRating> UserRatings => Set<UserRating>();
+
+    // DbSet maps the HelpRequest model to the HelpRequests table/query.
     public DbSet<HelpRequest> HelpRequests => Set<HelpRequest>();
+
+    // DbSet maps the Notification model to the Notifications table/query.
     public DbSet<Notification> Notifications => Set<Notification>();
 
+    // Configures EF Core relationships, unique indexes, and delete behavior.
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

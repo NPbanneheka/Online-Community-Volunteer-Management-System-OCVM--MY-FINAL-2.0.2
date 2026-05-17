@@ -1,3 +1,9 @@
+@* ================================================================
+   VIVA COMMENTED VERSION - Views/Events/JoinedVolunteers.cshtml
+   Purpose: Razor View file: builds the HTML page shown to the user and displays data supplied by the controller.
+   Note: Razor comments do not display to users; they help you explain the page in viva.
+   ================================================================ *@
+
 @model OCVMS.Models.VolunteerEvent
 @{
     ViewData["Title"] = "Joined Volunteers";
@@ -18,7 +24,8 @@
 
     <div class="row g-4">
         <div class="col-lg-8">
-            @if (!profiles.Any())
+            @* Conditional UI: shows/hides content based on role, status, or available data. *@
+@if (!profiles.Any())
             {
                 <div class="card border-0 shadow-sm rounded-4 text-center p-5">
                     <i class="bi bi-people text-muted opacity-25" style="font-size:4rem;"></i>
@@ -28,12 +35,14 @@
             else
             {
                 <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
-                    <table class="table align-middle mb-0">
+                    @* Table: displays multiple records in a readable admin/user list. *@
+<table class="table align-middle mb-0">
                         <thead class="table-light">
                             <tr><th>Volunteer</th><th>Email</th><th>Contact</th><th>Verified</th><th style="width: 320px;">Organizer Rating</th></tr>
                         </thead>
                         <tbody>
-                        @foreach (var profile in profiles)
+                        @* Loop: repeats this UI block for each item sent by the controller. *@
+@foreach (var profile in profiles)
                         {
                             <tr>
                                 <td>
@@ -80,9 +89,11 @@
                                             <span>No ratings for this volunteer yet.</span>
                                         }
                                     </div>
-                                    <form asp-action="RateVolunteer" method="post" class="row g-2">
+                                    @* Form area: collects user input and sends it to the controller action. *@
+<form asp-action="RateVolunteer" method="post" class="row g-2">
                                         @Html.AntiForgeryToken()
-                                        <input type="hidden" name="id" value="@Model.Id" />
+                                        @* Input field: binds form data to the model/view model. *@
+<input type="hidden" name="id" value="@Model.Id" />
                                         <input type="hidden" name="volunteerUserId" value="@profile.UserId" />
                                         <div class="col-4">
                                             <select name="score" class="form-select form-select-sm rounded-pill" required>

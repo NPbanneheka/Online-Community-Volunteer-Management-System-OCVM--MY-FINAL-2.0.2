@@ -1,3 +1,9 @@
+@* ================================================================
+   VIVA COMMENTED VERSION - Views/Dashboard/Index.cshtml
+   Purpose: Razor View file: builds the HTML page shown to the user and displays data supplied by the controller.
+   Note: Razor comments do not display to users; they help you explain the page in viva.
+   ================================================================ *@
+
 @model DashboardViewModel
 @{
     ViewData["Title"] = "Dashboard";
@@ -23,7 +29,8 @@
     <div class="col-lg-4">
         <div class="card card-modern p-4 h-100">
             <div class="d-flex align-items-center gap-3">
-                @if (!string.IsNullOrWhiteSpace(myProfile?.ProfileImageUrl))
+                @* Conditional UI: shows/hides content based on role, status, or available data. *@
+@if (!string.IsNullOrWhiteSpace(myProfile?.ProfileImageUrl))
                 {
                     <img src="@myProfile.ProfileImageUrl" class="rounded-circle shadow-sm" style="width:70px;height:70px;object-fit:cover;object-position:center;" alt="Profile" />
                 }
@@ -78,7 +85,8 @@
             {
                 <p class="text-muted mb-0">No upcoming active events available.</p>
             }
-            @foreach (var item in upcoming)
+            @* Loop: repeats this UI block for each item sent by the controller. *@
+@foreach (var item in upcoming)
             {
                 <div class="d-flex justify-content-between align-items-center border-bottom py-2 gap-3">
                     <div class="d-flex align-items-center gap-2">

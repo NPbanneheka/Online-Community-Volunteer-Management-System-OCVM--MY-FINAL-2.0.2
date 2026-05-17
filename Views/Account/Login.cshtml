@@ -1,3 +1,9 @@
+@* ================================================================
+   VIVA COMMENTED VERSION - Views/Account/Login.cshtml
+   Purpose: Razor View file: builds the HTML page shown to the user and displays data supplied by the controller.
+   Note: Razor comments do not display to users; they help you explain the page in viva.
+   ================================================================ *@
+
 @model LoginViewModel
 @{ ViewData["Title"] = "Login"; }
 
@@ -5,12 +11,14 @@
     <div class="col-lg-5">
         <div class="card card-modern p-4 p-lg-5">
             <h2 class="fw-bold mb-4">Welcome back</h2>
-            <form method="post">
+            @* Form area: collects user input and sends it to the controller action. *@
+<form method="post">
                 <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
                 
                 <div class="mb-3">
                     <label asp-for="Email" class="form-label"></label>
-                    <input asp-for="Email" class="form-control form-control-modern" />
+                    @* Input field: binds form data to the model/view model. *@
+<input asp-for="Email" class="form-control form-control-modern" />
                     <span asp-validation-for="Email" class="text-danger small"></span>
                 </div>
                 

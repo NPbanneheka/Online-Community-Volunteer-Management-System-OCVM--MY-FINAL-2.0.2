@@ -1,3 +1,9 @@
+@* ================================================================
+   VIVA COMMENTED VERSION - Views/Profile/ManageUsers.cshtml
+   Purpose: Razor View file: builds the HTML page shown to the user and displays data supplied by the controller.
+   Note: Razor comments do not display to users; they help you explain the page in viva.
+   ================================================================ *@
+
 @using System
 @model IEnumerable<OCVMS.Models.UserProfile>
 @{
@@ -20,7 +26,8 @@
     </div>
 
     <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
-        <table class="table align-middle mb-0">
+        @* Table: displays multiple records in a readable admin/user list. *@
+<table class="table align-middle mb-0">
             <thead class="table-light">
                 <tr>
                     <th>User</th>
@@ -31,7 +38,8 @@
                 </tr>
             </thead>
             <tbody>
-            @foreach (var item in Model)
+            @* Loop: repeats this UI block for each item sent by the controller. *@
+@foreach (var item in Model)
             {
                 var isAdmin = string.Equals(item.RoleName, "Admin", StringComparison.OrdinalIgnoreCase);
                 var isCurrentAdmin = string.Equals(item.UserId, currentAdminUserId, StringComparison.OrdinalIgnoreCase);
@@ -40,7 +48,8 @@
                 <tr>
                     <td>
                         <div class="d-flex align-items-center gap-3">
-                            @if (!string.IsNullOrWhiteSpace(item.ProfileImageUrl))
+                            @* Conditional UI: shows/hides content based on role, status, or available data. *@
+@if (!string.IsNullOrWhiteSpace(item.ProfileImageUrl))
                             {
                                 <img src="@item.ProfileImageUrl" class="rounded-circle" style="width:45px;height:45px;object-fit:cover;" alt="Profile" />
                             }
@@ -100,9 +109,11 @@
                             {
                                 @if (item.IsVerified)
                                 {
-                                    <form asp-action="UnverifyUser" method="post" class="d-inline">
+                                    @* Form area: collects user input and sends it to the controller action. *@
+<form asp-action="UnverifyUser" method="post" class="d-inline">
                                         @Html.AntiForgeryToken()
-                                        <input type="hidden" name="id" value="@item.Id" />
+                                        @* Input field: binds form data to the model/view model. *@
+<input type="hidden" name="id" value="@item.Id" />
                                         <button type="submit" class="btn btn-sm btn-outline-warning rounded-pill px-3"
                                                 onclick="return confirm('Change this verified account back to pending verification?');">
                                             Unverify

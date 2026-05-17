@@ -1,11 +1,18 @@
+// ================================================================
+// VIVA COMMENTED VERSION - ViewModels/RegisterViewModel.cs
+// Purpose: ViewModel file: carries validated data between Razor forms/views and controller actions without exposing full database entities.
+// Note: Comments were added for learning/viva explanation. Business logic is unchanged.
+// ================================================================
+
 using System.ComponentModel.DataAnnotations;
 
 namespace OCVMS.ViewModels;
-
+// This class defines structured data used by the application.
 public class RegisterViewModel
 {
     [Required(ErrorMessage = "Full Name is required.")]
     [Display(Name = "Full Name")]
+    // Readable user name shown in profile and admin screens.
     public string FullName { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "Email Address is required.")]
@@ -28,5 +35,6 @@ public class RegisterViewModel
 
     [Display(Name = "Organization Name")]
     [StringLength(120, ErrorMessage = "Organization name cannot be longer than 120 characters.")]
+    // Organizer organization name used for ownership and grouping.
     public string? OrganizationName { get; set; }
 }

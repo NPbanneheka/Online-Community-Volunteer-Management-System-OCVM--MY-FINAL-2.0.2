@@ -1,3 +1,9 @@
+// ================================================================
+// VIVA COMMENTED VERSION - Controllers/AccountController.cs
+// Purpose: Handles registration, login, logout, access denied page, and password change workflow.
+// Note: Comments were added for learning/viva explanation. Business logic is unchanged.
+// ================================================================
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -9,6 +15,7 @@ namespace OCVMS.Controllers;
 
 public class AccountController : Controller
 {
+    // Dependencies injected through constructor for database, identity, hosting, or logging work.
     private readonly UserManager<IdentityUser> _userManager;
     private readonly SignInManager<IdentityUser> _signInManager;
     private readonly RoleManager<IdentityRole> _roleManager;
@@ -28,11 +35,13 @@ public class AccountController : Controller
 
     [HttpGet]
     [AllowAnonymous]
+    // Registration action: creates a new user/account or registers the current user for an event depending on controller context.
     public IActionResult Register() => View(new RegisterViewModel());
 
     [HttpPost]
     [AllowAnonymous]
     [ValidateAntiForgeryToken]
+    // Registration action: creates a new user/account or registers the current user for an event depending on controller context.
     public async Task<IActionResult> Register(RegisterViewModel model)
     {
         var allowedPublicRoles = new[] { "Volunteer", "Organizer" };
@@ -90,10 +99,12 @@ public class AccountController : Controller
             IsVerified = false
         });
 
+        // Save all pending database changes.
         await _context.SaveChangesAsync();
         await _signInManager.SignInAsync(user, isPersistent: false);
 
-        TempData["Message"] = model.RoleName == "Organizer"
+        // TempData message is shown once after redirect.
+            TempData["Message"] = model.RoleName == "Organizer"
             ? "Organizer account created successfully. Your organization name was saved for secure ownership access."
             : "Account created successfully. Welcome to OCVMS!";
 
@@ -102,11 +113,13 @@ public class AccountController : Controller
 
     [HttpGet]
     [AllowAnonymous]
+    // Login action: validates credentials and creates the authenticated user session.
     public IActionResult Login() => View();
 
     [HttpPost]
     [AllowAnonymous]
     [ValidateAntiForgeryToken]
+    // Login action: validates credentials and creates the authenticated user session.
     public async Task<IActionResult> Login(LoginViewModel model)
     {
         if (!ModelState.IsValid)
@@ -146,6 +159,7 @@ public class AccountController : Controller
 
     [HttpGet]
     [Authorize]
+    // Password-change action: validates the old password and updates the account password securely using Identity.
     public IActionResult ChangePassword()
     {
         return View(new ChangePasswordViewModel());
@@ -154,6 +168,7 @@ public class AccountController : Controller
     [HttpPost]
     [Authorize]
     [ValidateAntiForgeryToken]
+    // Password-change action: validates the old password and updates the account password securely using Identity.
     public async Task<IActionResult> ChangePassword(ChangePasswordViewModel model)
     {
         if (!ModelState.IsValid)
@@ -185,6 +200,7 @@ public class AccountController : Controller
     [HttpPost]
     [Authorize]
     [ValidateAntiForgeryToken]
+    // Logout action: clears the current authenticated session.
     public async Task<IActionResult> Logout()
     {
         await _signInManager.SignOutAsync();
@@ -193,5 +209,6 @@ public class AccountController : Controller
     }
 
     [AllowAnonymous]
+    // Shows a friendly page when the logged-in user has no permission for a protected action.
     public IActionResult AccessDenied() => View();
 }

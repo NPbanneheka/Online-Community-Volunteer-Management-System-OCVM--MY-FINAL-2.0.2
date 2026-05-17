@@ -1,3 +1,9 @@
+@* ================================================================
+   VIVA COMMENTED VERSION - Views/HelpRequests/Create.cshtml
+   Purpose: Razor View file: builds the HTML page shown to the user and displays data supplied by the controller.
+   Note: Razor comments do not display to users; they help you explain the page in viva.
+   ================================================================ *@
+
 @model OCVMS.Models.HelpRequest
 @{
     ViewData["Title"] = "Create Support Request";
@@ -10,12 +16,15 @@
                 <h2 class="fw-bold mb-2">Create Support Request</h2>
                 <p class="text-muted mb-4">Report a system issue, bug, error, login problem, or difficulty to the admin team.</p>
 
-                <form asp-action="Create" method="post">
+                @* Form area: collects user input and sends it to the controller action. *@
+@* This form/action creates a new record after validation. *@
+<form asp-action="Create" method="post">
                     <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
                     <div class="mb-3">
                         <label asp-for="Title" class="form-label fw-bold">Support Request Title</label>
-                        <input asp-for="Title" class="form-control rounded-3" placeholder="E.g., Login issue, event registration error, profile update problem" />
+                        @* Input field: binds form data to the model/view model. *@
+<input asp-for="Title" class="form-control rounded-3" placeholder="E.g., Login issue, event registration error, profile update problem" />
                         <span asp-validation-for="Title" class="text-danger small"></span>
                     </div>
 

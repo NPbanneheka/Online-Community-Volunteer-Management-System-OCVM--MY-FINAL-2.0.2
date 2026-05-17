@@ -1,3 +1,9 @@
+@* ================================================================
+   VIVA COMMENTED VERSION - Views/Community/Feed.cshtml
+   Purpose: Razor View file: builds the HTML page shown to the user and displays data supplied by the controller.
+   Note: Razor comments do not display to users; they help you explain the page in viva.
+   ================================================================ *@
+
 @model IEnumerable<OCVMS.Models.CommunityPost>
 @using System.Runtime.InteropServices
 @{
@@ -32,7 +38,8 @@
 }
 
 <div class="container py-4">
-    @if (TempData["Error"] != null) { <div class="alert alert-danger border-0 shadow-sm rounded-pill"><i class="bi bi-x-circle-fill me-2"></i>@TempData["Error"]</div> }
+    @* Conditional UI: shows/hides content based on role, status, or available data. *@
+@if (TempData["Error"] != null) { <div class="alert alert-danger border-0 shadow-sm rounded-pill"><i class="bi bi-x-circle-fill me-2"></i>@TempData["Error"]</div> }
 
     <div class="row g-4">
         <div class="col-lg-3">
@@ -73,10 +80,12 @@
 
         <div class="col-lg-6">
             <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
-                <form asp-action="CreatePost" method="post">
+                @* Form area: collects user input and sends it to the controller action. *@
+<form asp-action="CreatePost" method="post">
                     @Html.AntiForgeryToken()
                     <div class="d-flex gap-2 mb-3 flex-wrap">
-                        <input type="radio" class="btn-check" name="postType" id="typeShare" value="Share" checked>
+                        @* Input field: binds form data to the model/view model. *@
+<input type="radio" class="btn-check" name="postType" id="typeShare" value="Share" checked>
                         <label class="btn btn-outline-primary rounded-pill px-4 fw-bold" for="typeShare">
                             <i class="bi bi-pencil-square me-1"></i> Share Post
                         </label>
@@ -190,7 +199,8 @@
                         {
                             <div class="bg-light p-3 rounded-4 mt-3">
                                 <h6 class="fw-bold mb-3 text-secondary small"><i class="bi bi-chat-dots me-1"></i> Comments (@post.PostComments.Count)</h6>
-                                @foreach (var comment in post.PostComments.OrderBy(c => c.CreatedAt))
+                                @* Loop: repeats this UI block for each item sent by the controller. *@
+@foreach (var comment in post.PostComments.OrderBy(c => c.CreatedAt))
                                 {
                                     var canManageComment = manageableCommentIds.Contains(comment.Id);
                                     <div class="d-flex mb-2">

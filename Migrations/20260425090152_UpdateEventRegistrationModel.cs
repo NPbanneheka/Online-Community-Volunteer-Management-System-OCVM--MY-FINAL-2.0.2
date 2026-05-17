@@ -1,3 +1,9 @@
+// ================================================================
+// VIVA COMMENTED VERSION - Migrations/20260425090152_UpdateEventRegistrationModel.cs
+// Purpose: Source file in the OVMS/OCVMS project.
+// Note: Comments were added for learning/viva explanation. Business logic is unchanged.
+// ================================================================
+
 ﻿using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable

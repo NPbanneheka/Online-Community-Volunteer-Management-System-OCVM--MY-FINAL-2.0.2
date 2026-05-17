@@ -1,3 +1,9 @@
+@* ================================================================
+   VIVA COMMENTED VERSION - Views/Home/Index.cshtml
+   Purpose: Razor View file: builds the HTML page shown to the user and displays data supplied by the controller.
+   Note: Razor comments do not display to users; they help you explain the page in viva.
+   ================================================================ *@
+
 @model IEnumerable<OCVMS.Models.VolunteerEvent>
 @{
     ViewData["Title"] = "Home Page";
@@ -11,7 +17,8 @@
             <p class="lead mb-4">Connect volunteers, organizers, and communities in one clean and attractive platform.</p>
             
             <div class="d-flex gap-3">
-                @if (User.Identity?.IsAuthenticated == true)
+                @* Conditional UI: shows/hides content based on role, status, or available data. *@
+@if (User.Identity?.IsAuthenticated == true)
                 {
                     <a asp-controller="Dashboard" asp-action="Index" class="btn btn-light btn-lg px-4 rounded-pill fw-bold shadow-sm" style="color: #1a759f !important;">Go to Dashboard</a>
                 }
@@ -59,7 +66,8 @@
         }
         else
         {
-            @foreach (var item in Model)
+            @* Loop: repeats this UI block for each item sent by the controller. *@
+@foreach (var item in Model)
             {
                 <div class="col">
                     <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden transition-hover">

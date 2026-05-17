@@ -1,3 +1,9 @@
+@* ================================================================
+   VIVA COMMENTED VERSION - Views/Events/Index.cshtml
+   Purpose: Razor View file: builds the HTML page shown to the user and displays data supplied by the controller.
+   Note: Razor comments do not display to users; they help you explain the page in viva.
+   ================================================================ *@
+
 @model IEnumerable<OCVMS.Models.VolunteerEvent>
 @{
     ViewData["Title"] = "Volunteer Events";
@@ -13,19 +19,23 @@
             <h1 class="fw-bold mb-1">Volunteer Events</h1>
             <p class="text-muted mb-0">Browse active events, view registration closing dates, and join opportunities.</p>
         </div>
-        @if (User.IsInRole("Admin") || User.IsInRole("Organizer"))
+        @* Conditional UI: shows/hides content based on role, status, or available data. *@
+@if (User.IsInRole("Admin") || User.IsInRole("Organizer"))
         {
-            <a asp-action="Create" class="btn btn-primary rounded-pill px-4 fw-bold">
+            @* This form/action creates a new record after validation. *@
+<a asp-action="Create" class="btn btn-primary rounded-pill px-4 fw-bold">
                 <i class="bi bi-plus-lg me-1"></i> Create New Event
             </a>
         }
     </div>
 
-    <form asp-action="Index" method="get" class="mb-5 card border-0 shadow-sm rounded-4 p-3">
+    @* Form area: collects user input and sends it to the controller action. *@
+<form asp-action="Index" method="get" class="mb-5 card border-0 shadow-sm rounded-4 p-3">
         <div class="row g-2 align-items-end">
             <div class="col-lg-5 col-md-12">
                 <label class="form-label small fw-bold text-muted">Search</label>
-                <input type="text" name="searchTerm" class="form-control rounded-pill px-4" placeholder="Search by title, organizer, or organization..." value="@ViewBag.SearchTerm">
+                @* Input field: binds form data to the model/view model. *@
+<input type="text" name="searchTerm" class="form-control rounded-pill px-4" placeholder="Search by title, organizer, or organization..." value="@ViewBag.SearchTerm">
             </div>
             <div class="col-lg-3 col-md-4">
                 <label class="form-label small fw-bold text-muted">Event Date</label>
@@ -57,7 +67,8 @@
     else
     {
         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-            @foreach (var item in Model)
+            @* Loop: repeats this UI block for each item sent by the controller. *@
+@foreach (var item in Model)
             {
                 var canManage = manageableEventIds.Contains(item.Id);
                 var publicStatus = item.PublicStatus;
@@ -117,7 +128,8 @@
                                 {
                                     <div class="d-flex gap-2 mb-2">
                                         <a asp-action="JoinedVolunteers" asp-route-id="@item.Id" class="btn btn-info btn-sm rounded-pill w-50 fw-bold text-white">Volunteers</a>
-                                        <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-warning btn-sm rounded-pill w-50 fw-bold">Edit</a>
+                                        @* This form/action updates an existing record after permission checks. *@
+<a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-warning btn-sm rounded-pill w-50 fw-bold">Edit</a>
                                     </div>
                                 }
                                 @if (User.Identity?.IsAuthenticated == true)

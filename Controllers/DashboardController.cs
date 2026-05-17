@@ -1,3 +1,9 @@
+// ================================================================
+// VIVA COMMENTED VERSION - Controllers/DashboardController.cs
+// Purpose: Builds role-based dashboard data for Admin, Organizer, and Volunteer users.
+// Note: Comments were added for learning/viva explanation. Business logic is unchanged.
+// ================================================================
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -13,6 +19,7 @@ public class DashboardController : Controller
 {
     private const string ApplicationRatingTargetId = "__APPLICATION__";
     private const int ApplicationRatingEventId = 0;
+    // Dependencies injected through constructor for database, identity, hosting, or logging work.
 
     private readonly ApplicationDbContext _context;
     private readonly UserManager<IdentityUser> _userManager;
@@ -22,6 +29,8 @@ public class DashboardController : Controller
         _context = context;
         _userManager = userManager;
     }
+
+    // Main listing page: loads records, applies filters/search, prepares ViewBag data, then returns the view.
 
     public async Task<IActionResult> Index()
     {
@@ -58,6 +67,7 @@ public class DashboardController : Controller
             RatingCount = await ratingsQuery.CountAsync()
         };
 
+        // ViewBag passes small extra values to the Razor view.
         ViewBag.MyProfile = profile;
         ViewBag.RatingTitle = ratingTitle;
         ViewBag.RatingEmptyText = ratingEmptyText;
@@ -69,6 +79,7 @@ public class DashboardController : Controller
             .ToListAsync();
 
         ViewBag.RecentPosts = await _context.CommunityPosts
+            // Include loads related table data needed by the view.
             .Include(p => p.User)
             .OrderByDescending(x => x.CreatedAt)
             .Take(5)
@@ -76,6 +87,8 @@ public class DashboardController : Controller
 
         return View(vm);
     }
+
+    // Helper method: keeps repeated controller logic in one reusable place.
 
     private async Task<UserProfile?> GetPrimaryProfileForUserAsync(string userId)
     {

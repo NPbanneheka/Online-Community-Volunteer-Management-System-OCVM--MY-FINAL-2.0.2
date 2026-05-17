@@ -1,3 +1,9 @@
+// ================================================================
+// VIVA COMMENTED VERSION - Controllers/NotificationsController.cs
+// Purpose: Shows and manages user notifications.
+// Note: Comments were added for learning/viva explanation. Business logic is unchanged.
+// ================================================================
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -10,6 +16,7 @@ namespace OCVMS.Controllers;
 [Authorize]
 public class NotificationsController : Controller
 {
+    // Dependencies injected through constructor for database, identity, hosting, or logging work.
     private readonly ApplicationDbContext _context;
     private readonly UserManager<IdentityUser> _userManager;
 
@@ -19,6 +26,8 @@ public class NotificationsController : Controller
         _userManager = userManager;
     }
 
+    // Main listing page: loads records, applies filters/search, prepares ViewBag data, then returns the view.
+
     public async Task<IActionResult> Index()
     {
         var userId = _userManager.GetUserId(User);
@@ -26,6 +35,7 @@ public class NotificationsController : Controller
 
         if (profile == null)
         {
+            // TempData message is shown once after redirect.
             TempData["Message"] = "Please complete your profile to view notifications.";
             return RedirectToAction("Edit", "Profile");
         }
@@ -40,6 +50,7 @@ public class NotificationsController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    // Controller action: handles a request, performs validation/business logic, and returns a response/view.
     public async Task<IActionResult> MarkAsRead(int id)
     {
         var userId = _userManager.GetUserId(User);
@@ -51,7 +62,8 @@ public class NotificationsController : Controller
         if (notification != null)
         {
             notification.IsRead = true;
-            await _context.SaveChangesAsync();
+            // Save all pending database changes.
+        await _context.SaveChangesAsync();
         }
 
         return RedirectToAction(nameof(Index));
@@ -59,6 +71,7 @@ public class NotificationsController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    // Controller action: handles a request, performs validation/business logic, and returns a response/view.
     public async Task<IActionResult> MarkAllAsRead()
     {
         var userId = _userManager.GetUserId(User);
@@ -80,6 +93,8 @@ public class NotificationsController : Controller
 
         return RedirectToAction(nameof(Index));
     }
+
+    // Helper method: keeps repeated controller logic in one reusable place.
 
     private async Task<UserProfile?> GetPrimaryProfileForUserAsync(string userId)
     {
