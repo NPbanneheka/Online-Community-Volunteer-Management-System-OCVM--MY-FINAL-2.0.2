@@ -17,23 +17,22 @@
                 </div>
 
                 <div class="col-md-4">
-                    <label asp-for="RegistrationOpenDate" class="form-label fw-bold">Registration Open Date</label>
+                    <label asp-for="RegistrationOpenDate" class="form-label fw-bold">Open Date</label>
                     <input asp-for="RegistrationOpenDate" type="date" class="form-control" />
-                    <small class="text-muted">Volunteers can start registering from this date.</small>
+                    <small class="text-muted">Volunteers can register from this date.</small>
                     <span asp-validation-for="RegistrationOpenDate" class="text-danger small"></span>
                 </div>
 
                 <div class="col-md-4">
-                    <label asp-for="RegistrationClosingDate" class="form-label fw-bold">Registration Closing Date</label>
+                    <label asp-for="RegistrationClosingDate" class="form-label fw-bold">Closing Date</label>
                     <input asp-for="RegistrationClosingDate" type="date" class="form-control" />
-                    <small class="text-muted">Volunteer registration will close after this date.</small>
+                    <small class="text-muted">After this date the event closes automatically.</small>
                     <span asp-validation-for="RegistrationClosingDate" class="text-danger small"></span>
                 </div>
 
                 <div class="col-md-4">
                     <label asp-for="EventDate" class="form-label fw-bold">Event Date</label>
                     <input asp-for="EventDate" type="date" class="form-control" />
-                    <small class="text-muted">The actual date when the event will be held.</small>
                     <span asp-validation-for="EventDate" class="text-danger small"></span>
                 </div>
                 

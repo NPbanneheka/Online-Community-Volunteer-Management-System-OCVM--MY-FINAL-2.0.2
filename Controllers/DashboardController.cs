@@ -30,37 +30,6 @@ public class DashboardController : Controller
 
         var profile = await GetPrimaryProfileForUserAsync(user.Id);
 
-<<<<<<< HEAD
-        IQueryable<UserRating> ratingsQuery = _context.UserRatings.Where(x => x.ToUserId == user.Id);
-        string ratingLabel = "Average Rating";
-        string ratingSubText = "Based on your received rating(s)";
-
-        if (User.IsInRole("Admin"))
-        {
-            ratingsQuery = _context.UserRatings;
-            ratingLabel = "System Rating";
-            ratingSubText = "Based on all event rating(s)";
-        }
-        else if (profile != null &&
-                 string.Equals(profile.RoleName, "Organizer", StringComparison.OrdinalIgnoreCase) &&
-                 !string.IsNullOrWhiteSpace(profile.OrganizationName))
-        {
-            var organizationName = profile.OrganizationName.Trim().ToLower();
-
-            var organizationEventIds = await _context.VolunteerEvents
-                .Include(e => e.OrganizerProfile)
-                .Where(e => e.OrganizerProfile != null &&
-                            e.OrganizerProfile.OrganizationName != null &&
-                            e.OrganizerProfile.OrganizationName.Trim().ToLower() == organizationName)
-                .Select(e => e.Id)
-                .ToListAsync();
-
-            ratingsQuery = _context.UserRatings
-                .Where(r => organizationEventIds.Contains(r.EventId));
-
-            ratingLabel = "Organization Rating";
-            ratingSubText = $"Based on {profile.OrganizationName.Trim()} event rating(s)";
-=======
         IQueryable<UserRating> ratingsQuery;
         string ratingTitle;
         string ratingEmptyText;
@@ -76,7 +45,6 @@ public class DashboardController : Controller
             ratingsQuery = _context.UserRatings.Where(x => x.ToUserId == user.Id);
             ratingTitle = "Average Rating";
             ratingEmptyText = "No ratings yet";
->>>>>>> d6771abc44ca293a34d2889517c254d6fd455ff6
         }
 
         var vm = new DashboardViewModel
@@ -91,13 +59,8 @@ public class DashboardController : Controller
         };
 
         ViewBag.MyProfile = profile;
-<<<<<<< HEAD
-        ViewBag.RatingLabel = ratingLabel;
-        ViewBag.RatingSubText = ratingSubText;
-=======
         ViewBag.RatingTitle = ratingTitle;
         ViewBag.RatingEmptyText = ratingEmptyText;
->>>>>>> d6771abc44ca293a34d2889517c254d6fd455ff6
 
         ViewBag.UpcomingEvents = await _context.VolunteerEvents
             .Where(x => x.EventDate >= DateTime.Today && x.Status != "Closed" && x.Status != "Completed" && x.Status != "Cancelled")

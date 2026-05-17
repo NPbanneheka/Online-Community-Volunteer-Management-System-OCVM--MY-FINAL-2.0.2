@@ -30,7 +30,7 @@
                     <tr>
                         <th>Event</th>
                         <th>Date / Time</th>
-                        <th>Registration Dates</th>
+                        <th>Open / Close</th>
                         <th>Capacity</th>
                         <th>Status</th>
                         <th class="text-end">Actions</th>
@@ -48,11 +48,8 @@
                                 }
                                 else
                                 {
-                                    <div class="bg-light rounded-3 d-flex align-items-center justify-content-center" style="width:70px;height:55px;">
-                                        <i class="bi bi-image text-muted"></i>
-                                    </div>
+                                    <div class="bg-light rounded-3 d-flex align-items-center justify-content-center" style="width:70px;height:55px;"><i class="bi bi-image text-muted"></i></div>
                                 }
-
                                 <div>
                                     <div class="fw-bold">@item.Title</div>
                                     <small class="text-muted">@item.Location</small>
@@ -63,34 +60,16 @@
                                 </div>
                             </div>
                         </td>
-
-                        <td>
-                            @item.EventDate.ToString("MMM dd, yyyy")<br/>
-                            <small class="text-muted">@item.EventTime.ToString(@"hh\:mm")</small>
-                        </td>
-
-                        <td>
-                            <span class="fw-semibold">Open:</span> @item.RegistrationOpenDate.ToString("MMM dd")<br/>
-                            <small class="text-muted">Closing: @(item.RegistrationClosingDate?.ToString("MMM dd") ?? "Not set")</small>
-                        </td>
-
-                        <td>
-                            <a asp-action="JoinedVolunteers" asp-route-id="@item.Id" class="fw-bold text-decoration-none">
-                                @(item.Registrations?.Count ?? 0) / @item.Capacity
-                            </a>
-                        </td>
-
-                        <td>
-                            <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3 py-2">@item.Status</span>
-                        </td>
-
+                        <td>@item.EventDate.ToString("MMM dd, yyyy")<br/><small class="text-muted">@item.EventTime.ToString(@"hh\:mm")</small></td>
+                        <td>@item.RegistrationOpenDate.ToString("MMM dd")<br/><small class="text-muted">Close: @(item.RegistrationClosingDate?.ToString("MMM dd") ?? "Not set")</small></td>
+                        <td><a asp-action="JoinedVolunteers" asp-route-id="@item.Id" class="fw-bold text-decoration-none">@(item.Registrations?.Count ?? 0) / @item.Capacity</a></td>
+                        <td><span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3 py-2">@item.Status</span></td>
                         <td class="text-end" style="min-width: 260px;">
                             <div class="btn-group btn-group-sm" role="group">
                                 <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-outline-primary">View</a>
                                 <a asp-action="JoinedVolunteers" asp-route-id="@item.Id" class="btn btn-outline-info">Volunteers</a>
                                 <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-warning">Edit</a>
                             </div>
-
                             <form asp-action="Delete" method="post" class="d-inline ms-1" onsubmit="return confirm('Delete this event? This will also remove related registrations.');">
                                 @Html.AntiForgeryToken()
                                 <input type="hidden" name="id" value="@item.Id" />

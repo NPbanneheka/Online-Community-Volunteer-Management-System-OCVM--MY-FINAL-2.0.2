@@ -36,7 +36,6 @@ public class AccountController : Controller
     public async Task<IActionResult> Register(RegisterViewModel model)
     {
         var allowedPublicRoles = new[] { "Volunteer", "Organizer" };
-
         if (!allowedPublicRoles.Contains(model.RoleName))
         {
             ModelState.AddModelError(nameof(model.RoleName), "Please select a valid role.");
@@ -61,14 +60,12 @@ public class AccountController : Controller
         };
 
         var result = await _userManager.CreateAsync(user, model.Password);
-
         if (!result.Succeeded)
         {
             foreach (var error in result.Errors)
             {
                 ModelState.AddModelError(string.Empty, error.Description);
             }
-
             return View(model);
         }
 
@@ -94,7 +91,6 @@ public class AccountController : Controller
         });
 
         await _context.SaveChangesAsync();
-
         await _signInManager.SignInAsync(user, isPersistent: false);
 
         TempData["Message"] = model.RoleName == "Organizer"
@@ -119,26 +115,10 @@ public class AccountController : Controller
         }
 
         var user = await _userManager.FindByEmailAsync(model.Email);
-<<<<<<< HEAD
-
-        if (user != null)
-        {
-            var isLockedOut = await _userManager.IsLockedOutAsync(user);
-
-            if (isLockedOut)
-            {
-                ModelState.AddModelError(
-                    string.Empty,
-                    "Your account has been suspended by the administrator. Please contact the system admin for more information.");
-
-                return View(model);
-            }
-=======
         if (user != null && user.LockoutEnd.HasValue && user.LockoutEnd.Value > DateTimeOffset.UtcNow)
         {
             ModelState.AddModelError(string.Empty, $"This account is temporarily banned from logging in until {user.LockoutEnd.Value.LocalDateTime:yyyy-MM-dd HH:mm}. Please contact the administrator.");
             return View(model);
->>>>>>> d6771abc44ca293a34d2889517c254d6fd455ff6
         }
 
         // For better privacy on shared/lab computers, do not keep users signed in after the browser session ends.
@@ -155,20 +135,14 @@ public class AccountController : Controller
 
         if (result.IsLockedOut)
         {
-<<<<<<< HEAD
-            ModelState.AddModelError(
-                string.Empty,
-                "Your account has been suspended by the administrator. Please contact the system admin for more information.");
-
-=======
             ModelState.AddModelError(string.Empty, "This account is temporarily banned from logging in. Please contact the administrator.");
->>>>>>> d6771abc44ca293a34d2889517c254d6fd455ff6
             return View(model);
         }
 
         ModelState.AddModelError(string.Empty, "Email address or password is incorrect.");
         return View(model);
     }
+
 
     [HttpGet]
     [Authorize]
@@ -188,26 +162,22 @@ public class AccountController : Controller
         }
 
         var user = await _userManager.GetUserAsync(User);
-
         if (user == null)
         {
             return RedirectToAction(nameof(Login));
         }
 
         var result = await _userManager.ChangePasswordAsync(user, model.CurrentPassword, model.NewPassword);
-
         if (!result.Succeeded)
         {
             foreach (var error in result.Errors)
             {
                 ModelState.AddModelError(string.Empty, error.Description);
             }
-
             return View(model);
         }
 
         await _signInManager.RefreshSignInAsync(user);
-
         TempData["Message"] = "Your password was changed successfully.";
         return RedirectToAction("MyProfile", "Profile");
     }
@@ -218,7 +188,6 @@ public class AccountController : Controller
     public async Task<IActionResult> Logout()
     {
         await _signInManager.SignOutAsync();
-
         TempData["Message"] = "You have logged out successfully.";
         return RedirectToAction("Index", "Home");
     }

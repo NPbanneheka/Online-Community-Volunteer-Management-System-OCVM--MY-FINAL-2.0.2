@@ -40,13 +40,9 @@
                 <ul class="navbar-nav ms-auto align-items-xl-center gap-xl-1">
                     @if (User.Identity?.IsAuthenticated == true)
                     {
-<<<<<<< HEAD
-                        <li class="nav-item"><a class="nav-link" asp-controller="Events" asp-action="MyEvents">My Events</a></li>
-=======
                         <li class="nav-item">
                             <a class="nav-link" asp-controller="Events" asp-action="MyEvents">My Events</a>
                         </li>
->>>>>>> d6771abc44ca293a34d2889517c254d6fd455ff6
 
                         @if (User.IsInRole("Admin") || User.IsInRole("Organizer"))
                         {
@@ -55,10 +51,6 @@
                             </li>
                         }
 
-<<<<<<< HEAD
-                        <li class="nav-item"><a class="nav-link" asp-controller="Dashboard" asp-action="Index">Dashboard</a></li>
-                        <li class="nav-item"><a class="nav-link" asp-controller="Notifications" asp-action="Index">Notifications</a></li>
-=======
                         <li class="nav-item">
                             <a class="nav-link" asp-controller="Dashboard" asp-action="Index">Dashboard</a>
                         </li>
@@ -66,7 +58,6 @@
                         <li class="nav-item">
                             <a class="nav-link" asp-controller="Notifications" asp-action="Index">Notifications</a>
                         </li>
->>>>>>> d6771abc44ca293a34d2889517c254d6fd455ff6
 
                         @if (User.IsInRole("Admin"))
                         {
@@ -75,13 +66,6 @@
                             </li>
                         }
 
-<<<<<<< HEAD
-                        <li class="nav-item"><a class="nav-link" asp-controller="Profile" asp-action="MyProfile">Profile</a></li>
-                        
-                        <li class="nav-item d-flex align-items-center ms-lg-2">
-                            <form asp-controller="Account" asp-action="Logout" method="post">
-                                <button class="btn btn-light btn-sm rounded-pill px-3">Logout</button>
-=======
                         <li class="nav-item">
                             <a class="nav-link" asp-controller="Profile" asp-action="MyProfile">Profile</a>
                         </li>
@@ -91,7 +75,6 @@
                                 <button type="submit" class="btn btn-light btn-sm rounded-pill px-3 px-lg-4">
                                     Logout
                                 </button>
->>>>>>> d6771abc44ca293a34d2889517c254d6fd455ff6
                             </form>
                         </li>
                     }

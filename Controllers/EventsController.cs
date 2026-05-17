@@ -698,27 +698,9 @@ public class EventsController : Controller
         if (isAdmin) return true;
         if (currentProfile == null) return false;
 
-        // Organizer can always manage events created by their own profile.
-        if (volunteerEvent.OrganizerProfileId == currentProfile.Id)
-        {
-            return true;
-        }
-
-        // Organizer can also manage events created by another organizer in the same organization.
-        if (!string.Equals(currentProfile.RoleName, "Organizer", StringComparison.OrdinalIgnoreCase))
-        {
-            return false;
-        }
-
-        var currentOrganization = currentProfile.OrganizationName?.Trim();
-        var eventOrganization = volunteerEvent.OrganizerProfile?.OrganizationName?.Trim();
-
-        if (string.IsNullOrWhiteSpace(currentOrganization) || string.IsNullOrWhiteSpace(eventOrganization))
-        {
-            return false;
-        }
-
-        return string.Equals(currentOrganization, eventOrganization, StringComparison.OrdinalIgnoreCase);
+        // Final ownership rule: an Organizer can edit/delete only the event created by their own profile.
+        // Organization-name matching is not used for authorization, because another user could type the same organization name.
+        return volunteerEvent.OrganizerProfileId == currentProfile.Id;
     }
 
     private async Task<string?> SaveEventImageAsync(IFormFile? file, string? oldImageUrl)
