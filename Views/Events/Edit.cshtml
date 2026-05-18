@@ -1,50 +1,70 @@
+@* Views/Events/Edit.cshtml: Razor view that renders the Events/Edit page in the browser. Comments describe UI/data purpose only. *@
+@* @model declares the C# type this Razor page receives from its controller. *@
 @model OCVMS.Models.VolunteerEvent
+@* Razor code block prepares page variables such as title, filters, or values from ViewBag/ViewData. *@
 @{ ViewData["Title"] = "Edit Event"; }
 
 <div class="container py-4">
     <div class="card shadow-sm border-0 rounded-4 p-4">
         <h2 class="fw-bold mb-4">Edit Event</h2>
         
+        @* Form sends user input back to a controller action for validation and processing. *@
         <form asp-action="Edit" method="post" enctype="multipart/form-data">
             <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
             
+            @* asp-for binds this input to a ViewModel or Model property. *@
             <input type="hidden" asp-for="Id" />
+            @* asp-for binds this input to a ViewModel or Model property. *@
             <input type="hidden" asp-for="OrganizerProfileId" />
+            @* asp-for binds this input to a ViewModel or Model property. *@
             <input type="hidden" asp-for="ImageUrl" />
 
             <div class="row g-3">
                 <div class="col-md-8">
                     <label asp-for="Title" class="form-label fw-bold">Event Title</label>
+                    @* asp-for binds this input to a ViewModel or Model property. *@
                     <input asp-for="Title" class="form-control" />
+                    @* Displays server/client validation messages for the connected input property. *@
                     <span asp-validation-for="Title" class="text-danger small"></span>
                 </div>
                 <div class="col-md-4">
                     <label asp-for="Capacity" class="form-label fw-bold">Capacity</label>
+                    @* asp-for binds this input to a ViewModel or Model property. *@
                     <input asp-for="Capacity" type="number" min="1" class="form-control" />
+                    @* Displays server/client validation messages for the connected input property. *@
                     <span asp-validation-for="Capacity" class="text-danger small"></span>
                 </div>
                 <div class="col-md-4">
                     <label asp-for="RegistrationOpenDate" class="form-label fw-bold">Open Date</label>
+                    @* asp-for binds this input to a ViewModel or Model property. *@
                     <input asp-for="RegistrationOpenDate" type="date" class="form-control" />
+                    @* Displays server/client validation messages for the connected input property. *@
                     <span asp-validation-for="RegistrationOpenDate" class="text-danger small"></span>
                 </div>
                 <div class="col-md-4">
                     <label asp-for="RegistrationClosingDate" class="form-label fw-bold">Closing Date</label>
+                    @* asp-for binds this input to a ViewModel or Model property. *@
                     <input asp-for="RegistrationClosingDate" type="date" class="form-control" />
+                    @* Displays server/client validation messages for the connected input property. *@
                     <span asp-validation-for="RegistrationClosingDate" class="text-danger small"></span>
                 </div>
                 <div class="col-md-4">
                     <label asp-for="EventDate" class="form-label fw-bold">Event Date</label>
+                    @* asp-for binds this input to a ViewModel or Model property. *@
                     <input asp-for="EventDate" type="date" class="form-control" />
+                    @* Displays server/client validation messages for the connected input property. *@
                     <span asp-validation-for="EventDate" class="text-danger small"></span>
                 </div>
                 <div class="col-md-4">
                     <label asp-for="EventTime" class="form-label fw-bold">Event Time</label>
+                    @* asp-for binds this input to a ViewModel or Model property. *@
                     <input asp-for="EventTime" type="time" class="form-control" />
+                    @* Displays server/client validation messages for the connected input property. *@
                     <span asp-validation-for="EventTime" class="text-danger small"></span>
                 </div>
                 <div class="col-md-4">
                     <label asp-for="Status" class="form-label fw-bold">Status</label>
+                    @* asp-for binds this input to a ViewModel or Model property. *@
                     <select asp-for="Status" class="form-select">
                         <option value="Upcoming">Upcoming</option>
                         <option value="Ongoing">Ongoing</option>
@@ -52,6 +72,7 @@
                         <option value="Completed">Completed</option>
                         <option value="Cancelled">Cancelled</option>
                     </select>
+                    @* Displays server/client validation messages for the connected input property. *@
                     <span asp-validation-for="Status" class="text-danger small"></span>
                 </div>
                 <div class="col-md-4">
@@ -60,10 +81,13 @@
                 </div>
                 <div class="col-12">
                     <label asp-for="Location" class="form-label fw-bold">Location</label>
+                    @* asp-for binds this input to a ViewModel or Model property. *@
                     <input asp-for="Location" class="form-control" />
+                    @* Displays server/client validation messages for the connected input property. *@
                     <span asp-validation-for="Location" class="text-danger small"></span>
                 </div>
                 <div class="col-12">
+                    @* Conditional UI: renders this section only when the condition is true. *@
                     @if (!string.IsNullOrWhiteSpace(Model.ImageUrl))
                     {
                         <img src="@Model.ImageUrl" id="eventImagePreview" class="rounded-4 shadow-sm w-100 mb-2" style="max-height:260px; object-fit:cover; object-position:center;" alt="Event image" />
@@ -75,13 +99,16 @@
                 </div>
                 <div class="col-12">
                     <label asp-for="Description" class="form-label fw-bold">Description</label>
+                    @* asp-for binds this input to a ViewModel or Model property. *@
                     <textarea asp-for="Description" class="form-control" rows="4"></textarea>
+                    @* Displays server/client validation messages for the connected input property. *@
                     <span asp-validation-for="Description" class="text-danger small"></span>
                 </div>
             </div>
 
             <div class="mt-4">
                 <button type="submit" class="btn btn-warning px-4 rounded-pill fw-bold">Save Changes</button>
+                @* Tag Helpers generate correct MVC URLs for controller actions. *@
                 <a asp-action="Index" class="btn btn-light ms-2 rounded-pill">Cancel</a>
             </div>
         </form>

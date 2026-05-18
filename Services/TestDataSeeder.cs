@@ -1,10 +1,17 @@
+// Services/TestDataSeeder.cs
+// This service file that contains reusable setup or seeding logic used by the application.
+// Comments explain purpose, connected technologies, variables, and data flow without changing behavior.
+// ASP.NET Core Identity services for users, roles, passwords, sign-in sessions, and lockout/ban behavior.
 using Microsoft.AspNetCore.Identity;
+// Entity Framework Core features such as Include(), Where(), ToListAsync(), and database queries.
 using Microsoft.EntityFrameworkCore;
 using OCVMS.Data;
 using OCVMS.Models;
 
+// Namespace groups related OCVMS classes so they can be referenced cleanly across the project.
 namespace OCVMS.Services;
 
+// Test-data service: creates sample records for development or demonstration purposes.
 public static class TestDataSeeder
 {
     private const string TestPassword = "123";
@@ -102,8 +109,10 @@ public static class TestDataSeeder
     {
         foreach (var role in new[] { "Admin", "Organizer", "Volunteer" })
         {
+            // Checks whether the required Identity role already exists before creating or assigning it.
             if (!await roleManager.RoleExistsAsync(role))
             {
+                // Creates a missing Identity role so role-based authorization can work correctly.
                 await roleManager.CreateAsync(new IdentityRole(role));
             }
         }
@@ -124,6 +133,7 @@ public static class TestDataSeeder
     {
         var user = await userManager.FindByEmailAsync(email);
 
+        // Handles missing data safely before continuing with the requested operation.
         if (user == null)
         {
             user = new IdentityUser
@@ -151,9 +161,12 @@ public static class TestDataSeeder
             await userManager.AddToRoleAsync(user, roleName);
         }
 
+        // Retrieves a single matching database record asynchronously; returns null when not found.
         var profile = await context.UserProfiles.FirstOrDefaultAsync(p => p.UserId == user.Id);
+        // Handles missing data safely before continuing with the requested operation.
         if (profile == null)
         {
+            // Creates an OCVMS profile record connected to an Identity user account.
             profile = new UserProfile
             {
                 UserId = user.Id,
@@ -276,6 +289,7 @@ public static class TestDataSeeder
             var registrationOpenDate = DateTime.Today.AddDays(-3 + (i % 3));
             var registrationClosingDate = eventDate.AddDays(-1);
 
+            // Creates an event entity that will be stored in the VolunteerEvents table.
             var volunteerEvent = new VolunteerEvent
             {
                 Title = title,
@@ -304,6 +318,7 @@ public static class TestDataSeeder
         List<UserProfile> volunteerProfiles)
     {
         var events = await context.VolunteerEvents
+            // Include loads related table data so the view can access connected records without extra queries.
             .Include(e => e.OrganizerProfile)
             .OrderBy(e => e.EventDate)
             .Take(50)
@@ -342,6 +357,7 @@ public static class TestDataSeeder
 
                 if (!alreadyRegistered)
                 {
+                    // Creates a registration entity connecting a volunteer profile to an event.
                     context.EventRegistrations.Add(new EventRegistration
                     {
                         VolunteerEventId = currentEvent.Id,

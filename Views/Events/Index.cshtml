@@ -1,4 +1,7 @@
+@* Views/Events/Index.cshtml: Razor view that renders the Events/Index page in the browser. Comments describe UI/data purpose only. *@
+@* @model declares the C# type this Razor page receives from its controller. *@
 @model IEnumerable<OCVMS.Models.VolunteerEvent>
+@* Razor code block prepares page variables such as title, filters, or values from ViewBag/ViewData. *@
 @{
     ViewData["Title"] = "Volunteer Events";
     var registeredEventIds = ViewBag.UserRegisteredEvents as List<int> ?? new List<int>();
@@ -13,14 +16,17 @@
             <h1 class="fw-bold mb-1">Volunteer Events</h1>
             <p class="text-muted mb-0">Browse active events, view registration closing dates, and join opportunities.</p>
         </div>
+        @* Conditional UI: renders this section only when the condition is true. *@
         @if (User.IsInRole("Admin") || User.IsInRole("Organizer"))
         {
+            @* Tag Helpers generate correct MVC URLs for controller actions. *@
             <a asp-action="Create" class="btn btn-primary rounded-pill px-4 fw-bold">
                 <i class="bi bi-plus-lg me-1"></i> Create New Event
             </a>
         }
     </div>
 
+    @* Form sends user input back to a controller action for validation and processing. *@
     <form asp-action="Index" method="get" class="mb-5 card border-0 shadow-sm rounded-4 p-3">
         <div class="row g-2 align-items-end">
             <div class="col-lg-5 col-md-12">
@@ -34,9 +40,13 @@
             <div class="col-lg-2 col-md-4">
                 <label class="form-label small fw-bold text-muted">Status</label>
                 <select name="statusFilter" class="form-select rounded-pill">
+                    @* Conditional UI: renders this section only when the condition is true. *@
                     @if (statusFilter == "Active") { <option value="Active" selected>Active Events</option> } else { <option value="Active">Active Events</option> }
+                    @* Conditional UI: renders this section only when the condition is true. *@
                     @if (statusFilter == "Upcoming") { <option value="Upcoming" selected>Upcoming Events</option> } else { <option value="Upcoming">Upcoming Events</option> }
+                    @* Conditional UI: renders this section only when the condition is true. *@
                     @if (statusFilter == "Closed") { <option value="Closed" selected>Closed/Completed</option> } else { <option value="Closed">Closed/Completed</option> }
+                    @* Conditional UI: renders this section only when the condition is true. *@
                     @if (statusFilter == "All") { <option value="All" selected>All Events</option> } else { <option value="All">All Events</option> }
                 </select>
             </div>
@@ -46,6 +56,7 @@
         </div>
     </form>
 
+    @* Conditional UI: renders this section only when the condition is true. *@
     @if (Model == null || !Model.Any())
     {
         <div class="alert alert-light text-center rounded-4 p-5 shadow-sm border-0">
@@ -57,6 +68,7 @@
     else
     {
         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+            @* Loops through the model/list data and renders one UI section for each record. *@
             @foreach (var item in Model)
             {
                 var canManage = manageableEventIds.Contains(item.Id);
@@ -74,6 +86,7 @@
                 };
                 <div class="col">
                     <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden">
+                        @* Conditional UI: renders this section only when the condition is true. *@
                         @if (!string.IsNullOrWhiteSpace(item.ImageUrl))
                         {
                             <img src="@item.ImageUrl" class="event-card-image" alt="@item.Title" />
@@ -98,10 +111,12 @@
 
                             <div class="mb-2 small text-muted">
                                 <i class="bi bi-person-badge text-info"></i> @(item.OrganizerProfile?.FullName ?? "Organizer")
+                                @* Conditional UI: renders this section only when the condition is true. *@
                                 @if (item.OrganizerProfile?.IsVerified == true)
                                 {
                                     <i class="bi bi-patch-check-fill text-success ms-1" title="Verified organizer"></i>
                                 }
+                                @* Conditional UI: renders this section only when the condition is true. *@
                                 @if (!string.IsNullOrWhiteSpace(item.OrganizerProfile?.OrganizationName))
                                 {
                                     <span> · @item.OrganizerProfile.OrganizationName</span>
@@ -113,13 +128,17 @@
                             </div>
 
                             <div class="mt-auto">
+                                @* Conditional UI: renders this section only when the condition is true. *@
                                 @if (canManage)
                                 {
                                     <div class="d-flex gap-2 mb-2">
+                                        @* Tag Helpers generate correct MVC URLs for controller actions. *@
                                         <a asp-action="JoinedVolunteers" asp-route-id="@item.Id" class="btn btn-info btn-sm rounded-pill w-50 fw-bold text-white">Volunteers</a>
+                                        @* Tag Helpers generate correct MVC URLs for controller actions. *@
                                         <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-warning btn-sm rounded-pill w-50 fw-bold">Edit</a>
                                     </div>
                                 }
+                                @* Conditional UI: renders this section only when the condition is true. *@
                                 @if (User.Identity?.IsAuthenticated == true)
                                 {
                                     if (registeredEventIds.Contains(item.Id))
@@ -138,6 +157,7 @@
                                     }
                                     else
                                     {
+                                        @* Form sends user input back to a controller action for validation and processing. *@
                                         <form asp-controller="Events" asp-action="Register" method="post" class="mb-2">
                                             @Html.AntiForgeryToken()
                                             <input type="hidden" name="eventId" value="@item.Id" />
@@ -147,8 +167,10 @@
                                 }
                                 else
                                 {
+                                    @* Tag Helpers generate correct MVC URLs for controller actions. *@
                                     <a asp-controller="Account" asp-action="Login" class="btn btn-outline-primary w-100 rounded-pill fw-bold mb-2">Login to Register</a>
                                 }
+                                @* Tag Helpers generate correct MVC URLs for controller actions. *@
                                 <a asp-controller="Events" asp-action="Details" asp-route-id="@item.Id" class="btn btn-light text-primary w-100 rounded-pill fw-bold border">View Details</a>
                             </div>
                         </div>

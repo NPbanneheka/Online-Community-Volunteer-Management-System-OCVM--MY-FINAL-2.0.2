@@ -1,0 +1,8 @@
+Run these commands from the project folder:
+
+dotnet clean .\OCVMS.csproj
+dotnet restore .\OCVMS.csproj
+dotnet build .\OCVMS.csproj
+dotnet run --project .\OCVMS.csproj
+
+If the project already has a working database, run build first before running EF database update.

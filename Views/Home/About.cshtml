@@ -1,4 +1,6 @@
+@* Views/Home/About.cshtml: Razor view that renders the Home/About page in the browser. Comments describe UI/data purpose only. *@
 @using OCVMS.Models
+@* Razor code block prepares page variables such as title, filters, or values from ViewBag/ViewData. *@
 @{
     ViewData["Title"] = "About";
     double appAverageRating = ViewBag.AppAverageRating ?? 0.0;
@@ -11,6 +13,7 @@
         <h1 class="fw-bold mb-3">About OCVMS</h1>
         <p class="text-muted mb-3">OCVMS is a web-based system for volunteer management, event organization, reputation tracking, and community engagement.</p>
         <div class="d-flex flex-wrap gap-3 align-items-center">
+            @* Conditional UI: renders this section only when the condition is true. *@
             @if (appRatingCount > 0)
             {
                 <span class="badge bg-warning bg-opacity-10 text-warning rounded-pill px-4 py-3">
@@ -25,6 +28,7 @@
         </div>
     </div>
 
+    @* Conditional UI: renders this section only when the condition is true. *@
     @if (TempData["Message"] != null)
     {
         <div class="alert alert-success rounded-4 border-0 shadow-sm">@TempData["Message"]</div>
@@ -34,8 +38,10 @@
         <h3 class="fw-bold mb-2">Rate the OCVMS Platform</h3>
         <p class="text-muted">All logged-in users can share a rating for the overall web application experience. This average will be shown on the admin dashboard.</p>
 
+        @* Conditional UI: renders this section only when the condition is true. *@
         @if (User.Identity?.IsAuthenticated == true)
         {
+            @* Form sends user input back to a controller action for validation and processing. *@
             <form asp-action="RateApplication" method="post" class="row g-3">
                 @Html.AntiForgeryToken()
                 <div class="col-md-3">
