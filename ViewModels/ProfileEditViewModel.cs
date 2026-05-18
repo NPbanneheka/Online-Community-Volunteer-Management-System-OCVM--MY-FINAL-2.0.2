@@ -1,8 +1,8 @@
-// ================================================================
-// VIVA COMMENTED VERSION - ViewModels/ProfileEditViewModel.cs
-// Purpose: ViewModel file: carries validated data between Razor forms/views and controller actions without exposing full database entities.
-// Note: Comments were added for learning/viva explanation. Business logic is unchanged.
-// ================================================================
+// View model for ProfileEditViewModel.
+// Technology map:
+// - ASP.NET Core MVC uses this class to transfer form/page data between Controller and Razor View.
+// - DataAnnotation attributes provide validation rules shown in the UI.
+// Connected files: Controllers receive this model; Views bind form fields to these properties.
 
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Http; // පින්තූර අප්ලෝඩ් (IFormFile) සඳහා මෙය අත්‍යවශ්‍ය වේ

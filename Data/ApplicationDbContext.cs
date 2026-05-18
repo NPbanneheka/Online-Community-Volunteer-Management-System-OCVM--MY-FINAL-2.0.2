@@ -1,8 +1,9 @@
-// ================================================================
-// VIVA COMMENTED VERSION - Data/ApplicationDbContext.cs
-// Purpose: EF Core database context: connects C# models with SQL Server tables and configures relationships.
-// Note: Comments were added for learning/viva explanation. Business logic is unchanged.
-// ================================================================
+// Central Entity Framework Core database context.
+// Technology map:
+// - IdentityDbContext: adds ASP.NET Identity tables such as AspNetUsers and AspNetRoles.
+// - DbSet<T>: maps C# model classes to SQL Server database tables.
+// - Fluent API: configures relationships, indexes, and delete behavior.
+// Connected files: Program.cs registers this context; Controllers query it; Models define table structures.
 
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;

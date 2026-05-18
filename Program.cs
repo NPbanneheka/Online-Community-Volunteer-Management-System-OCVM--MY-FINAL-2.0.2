@@ -1,8 +1,10 @@
-// ================================================================
-// VIVA COMMENTED VERSION - Program.cs
-// Purpose: Application startup file: configures MVC, database, Identity login, authentication, runtime DB fixes, and default routing.
-// Note: Comments were added for learning/viva explanation. Business logic is unchanged.
-// ================================================================
+// Application startup and request pipeline configuration.
+// Technology map:
+// - ASP.NET Core MVC: controllers, views, routing, static files.
+// - Entity Framework Core + SQL Server: database connection through ApplicationDbContext.
+// - ASP.NET Core Identity: login, roles, password hashing, authentication cookies.
+// - Dependency Injection: services are registered here and injected into controllers/services.
+// Connected files: appsettings.json, ApplicationDbContext.cs, DbInitializer.cs, Controllers, Views.
 
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
@@ -102,7 +104,6 @@ app.MapControllerRoute(
 
 app.MapRazorPages();
 app.Run();
-
 
 // Runtime safety method: adds missing DB columns when an older restored database is used.
 static async Task EnsureRuntimeSchemaAsync(IServiceProvider services)

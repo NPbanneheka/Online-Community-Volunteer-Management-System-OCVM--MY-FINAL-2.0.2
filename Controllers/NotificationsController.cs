@@ -1,8 +1,9 @@
-// ================================================================
-// VIVA COMMENTED VERSION - Controllers/NotificationsController.cs
-// Purpose: Shows and manages user notifications.
-// Note: Comments were added for learning/viva explanation. Business logic is unchanged.
-// ================================================================
+// Handles user notifications such as viewing, marking as read, and deleting notifications.
+// Technology map:
+// - ASP.NET Core MVC returns notification pages and redirects.
+// - EF Core queries the Notifications table for the current user's profile.
+// - Identity links the logged-in account to the correct UserProfile.
+// Connected files: Notification and UserProfile models, Notifications views.
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -16,9 +17,8 @@ namespace OCVMS.Controllers;
 [Authorize]
 public class NotificationsController : Controller
 {
-    // Dependencies injected through constructor for database, identity, hosting, or logging work.
-    private readonly ApplicationDbContext _context;
-    private readonly UserManager<IdentityUser> _userManager;
+    private readonly ApplicationDbContext _context; // EF Core context connected to SQL Server tables.
+    private readonly UserManager<IdentityUser> _userManager; // Identity service for user lookup, roles, and account operations.
 
     public NotificationsController(ApplicationDbContext context, UserManager<IdentityUser> userManager)
     {
@@ -35,8 +35,7 @@ public class NotificationsController : Controller
 
         if (profile == null)
         {
-            // TempData message is shown once after redirect.
-            TempData["Message"] = "Please complete your profile to view notifications.";
+        TempData["Message"] = "Please complete your profile to view notifications.";
             return RedirectToAction("Edit", "Profile");
         }
 
@@ -50,7 +49,6 @@ public class NotificationsController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    // Controller action: handles a request, performs validation/business logic, and returns a response/view.
     public async Task<IActionResult> MarkAsRead(int id)
     {
         var userId = _userManager.GetUserId(User);
@@ -62,7 +60,6 @@ public class NotificationsController : Controller
         if (notification != null)
         {
             notification.IsRead = true;
-            // Save all pending database changes.
         await _context.SaveChangesAsync();
         }
 
@@ -71,7 +68,6 @@ public class NotificationsController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    // Controller action: handles a request, performs validation/business logic, and returns a response/view.
     public async Task<IActionResult> MarkAllAsRead()
     {
         var userId = _userManager.GetUserId(User);
@@ -93,8 +89,6 @@ public class NotificationsController : Controller
 
         return RedirectToAction(nameof(Index));
     }
-
-    // Helper method: keeps repeated controller logic in one reusable place.
 
     private async Task<UserProfile?> GetPrimaryProfileForUserAsync(string userId)
     {

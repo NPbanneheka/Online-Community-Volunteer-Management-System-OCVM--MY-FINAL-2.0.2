@@ -1,8 +1,9 @@
-// ================================================================
-// VIVA COMMENTED VERSION - Controllers/DashboardController.cs
-// Purpose: Builds role-based dashboard data for Admin, Organizer, and Volunteer users.
-// Note: Comments were added for learning/viva explanation. Business logic is unchanged.
-// ================================================================
+// Builds the role-aware dashboard summary shown after login.
+// Technology map:
+// - ASP.NET Core MVC prepares dashboard data for Razor views.
+// - EF Core counts users, events, registrations, help requests, and notifications.
+// - ASP.NET Identity identifies the current user and role.
+// Connected files: DashboardViewModel, UserProfile, VolunteerEvent, EventRegistration, HelpRequest.
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -17,12 +18,11 @@ namespace OCVMS.Controllers;
 [Authorize]
 public class DashboardController : Controller
 {
-    private const string ApplicationRatingTargetId = "__APPLICATION__";
-    private const int ApplicationRatingEventId = 0;
-    // Dependencies injected through constructor for database, identity, hosting, or logging work.
+    private const string ApplicationRatingTargetId = "__APPLICATION__"; // Special rating target used when rating the whole platform instead of a single event.
+    private const int ApplicationRatingEventId = 0; // EventId placeholder for platform-level ratings.
 
-    private readonly ApplicationDbContext _context;
-    private readonly UserManager<IdentityUser> _userManager;
+    private readonly ApplicationDbContext _context; // EF Core context connected to SQL Server tables.
+    private readonly UserManager<IdentityUser> _userManager; // Identity service for user lookup, roles, and account operations.
 
     public DashboardController(ApplicationDbContext context, UserManager<IdentityUser> userManager)
     {
@@ -66,8 +66,6 @@ public class DashboardController : Controller
             AverageRating = await ratingsQuery.Select(x => (double?)x.Score).AverageAsync() ?? 0,
             RatingCount = await ratingsQuery.CountAsync()
         };
-
-        // ViewBag passes small extra values to the Razor view.
         ViewBag.MyProfile = profile;
         ViewBag.RatingTitle = ratingTitle;
         ViewBag.RatingEmptyText = ratingEmptyText;
@@ -79,7 +77,6 @@ public class DashboardController : Controller
             .ToListAsync();
 
         ViewBag.RecentPosts = await _context.CommunityPosts
-            // Include loads related table data needed by the view.
             .Include(p => p.User)
             .OrderByDescending(x => x.CreatedAt)
             .Take(5)
@@ -87,8 +84,6 @@ public class DashboardController : Controller
 
         return View(vm);
     }
-
-    // Helper method: keeps repeated controller logic in one reusable place.
 
     private async Task<UserProfile?> GetPrimaryProfileForUserAsync(string userId)
     {

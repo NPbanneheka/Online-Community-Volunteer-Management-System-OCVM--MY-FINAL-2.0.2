@@ -1,8 +1,8 @@
-// ================================================================
-// VIVA COMMENTED VERSION - Services/DbInitializer.cs
-// Purpose: Creates default roles and default admin account during application startup.
-// Note: Comments were added for learning/viva explanation. Business logic is unchanged.
-// ================================================================
+// Seeds default roles and the initial administrator account.
+// Technology map:
+// - ASP.NET Core Identity creates roles and admin user securely.
+// - Dependency Injection provides UserManager and RoleManager.
+// Connected files: Program.cs calls this service during application startup.
 
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;

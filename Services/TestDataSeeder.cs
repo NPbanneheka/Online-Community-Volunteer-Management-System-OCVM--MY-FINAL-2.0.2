@@ -1,8 +1,8 @@
-// ================================================================
-// VIVA COMMENTED VERSION - Services/TestDataSeeder.cs
-// Purpose: Optional demo-data seeder used to populate sample users, events, posts, and notifications.
-// Note: Comments were added for learning/viva explanation. Business logic is unchanged.
-// ================================================================
+// Optional development/test data seeder.
+// Technology map:
+// - EF Core inserts sample database records for testing/demo purposes.
+// - Identity services can link test users with roles and profiles.
+// Connected files: Program.cs can enable this service; Models define seeded table data.
 
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;

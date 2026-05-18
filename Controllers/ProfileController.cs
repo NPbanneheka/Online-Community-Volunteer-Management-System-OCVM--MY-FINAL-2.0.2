@@ -1,8 +1,10 @@
-// ================================================================
-// VIVA COMMENTED VERSION - Controllers/ProfileController.cs
-// Purpose: Handles user profiles, profile editing, admin user management, verification, ban/unban, and account deletion.
-// Note: Comments were added for learning/viva explanation. Business logic is unchanged.
-// ================================================================
+// Handles profiles and admin-side user management: view/edit profile, verify, ban, unban, and delete users.
+// Technology map:
+// - ASP.NET Core MVC handles profile pages and admin actions.
+// - ASP.NET Core Identity manages account-level data, roles, lockout, and deletion.
+// - EF Core manages project data such as profiles, events, registrations, posts, ratings, and notifications.
+// - IWebHostEnvironment is used for profile image upload paths.
+// Connected files: ProfileEditViewModel, UserProfile model, Profile views, related project entities.
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
@@ -20,10 +22,9 @@ namespace OCVMS.Controllers;
 [Authorize]
 public class ProfileController : Controller
 {
-    // Dependencies injected through constructor for database, identity, hosting, or logging work.
-    private readonly ApplicationDbContext _context;
-    private readonly UserManager<IdentityUser> _userManager;
-    private readonly IWebHostEnvironment _environment;
+    private readonly ApplicationDbContext _context; // EF Core context connected to SQL Server tables.
+    private readonly UserManager<IdentityUser> _userManager; // Identity service for user lookup, roles, and account operations.
+    private readonly IWebHostEnvironment _environment; // Provides wwwroot paths for uploaded image files.
 
     public ProfileController(
         ApplicationDbContext context,
@@ -177,11 +178,8 @@ public class ProfileController : Controller
         }
         // If no new image is uploaded, keep the existing saved image path.
         // Do not trust the hidden ProfileImageUrl field because it can be changed from the browser.
-
-        // Save all pending database changes.
         await _context.SaveChangesAsync();
-        // TempData message is shown once after redirect.
-            TempData["Message"] = "Profile updated successfully!";
+        TempData["Message"] = "Profile updated successfully!";
         return RedirectToAction(nameof(MyProfile));
     }
 
@@ -191,8 +189,6 @@ public class ProfileController : Controller
     {
         var profile = await GetPrimaryProfileForUserAsync(id);
         if (profile == null) return NotFound();
-
-        // ViewBag passes small extra values to the Razor view.
         ViewBag.AverageRating = await _context.UserRatings
             .Where(x => x.ToUserId == id)
             .Select(x => (double?)x.Score)
@@ -265,7 +261,6 @@ public class ProfileController : Controller
     [HttpPost]
     [Authorize(Roles = "Admin")]
     [ValidateAntiForgeryToken]
-    // Controller action: handles a request, performs validation/business logic, and returns a response/view.
     public async Task<IActionResult> UnverifyUser(int id)
     {
         return await SetVerificationStatusAsync(id, false);
@@ -274,7 +269,6 @@ public class ProfileController : Controller
     [HttpPost]
     [Authorize(Roles = "Admin")]
     [ValidateAntiForgeryToken]
-    // Controller action: handles a request, performs validation/business logic, and returns a response/view.
     public async Task<IActionResult> TempBanUser(int id)
     {
         return await SetTemporaryBanStatusAsync(id, true);
@@ -289,8 +283,6 @@ public class ProfileController : Controller
         return await SetTemporaryBanStatusAsync(id, false);
     }
 
-    // Helper method: keeps repeated controller logic in one reusable place.
-
     private async Task<IActionResult> SetVerificationStatusAsync(int id, bool verified)
     {
         var profile = await _context.UserProfiles.FirstOrDefaultAsync(p => p.Id == id);
@@ -299,13 +291,13 @@ public class ProfileController : Controller
         var user = await _userManager.FindByIdAsync(profile.UserId);
         if (user == null)
         {
-            TempData["Message"] = "Identity account was not found for the selected user.";
+        TempData["Message"] = "Identity account was not found for the selected user.";
             return RedirectToAction(nameof(ManageUsers));
         }
 
         if (string.Equals(profile.RoleName, "Admin", StringComparison.OrdinalIgnoreCase) || await _userManager.IsInRoleAsync(user, "Admin"))
         {
-            TempData["Message"] = "Admin accounts are protected system accounts. Their verification status cannot be changed from User Management.";
+        TempData["Message"] = "Admin accounts are protected system accounts. Their verification status cannot be changed from User Management.";
             return RedirectToAction(nameof(ManageUsers));
         }
 
@@ -327,8 +319,6 @@ public class ProfileController : Controller
         return RedirectToAction(nameof(ManageUsers));
     }
 
-    // Helper method: keeps repeated controller logic in one reusable place.
-
     private async Task<IActionResult> SetTemporaryBanStatusAsync(int id, bool ban)
     {
         var profile = await _context.UserProfiles.FirstOrDefaultAsync(p => p.Id == id);
@@ -337,20 +327,20 @@ public class ProfileController : Controller
         var user = await _userManager.FindByIdAsync(profile.UserId);
         if (user == null)
         {
-            TempData["Message"] = "Identity account was not found for the selected user.";
+        TempData["Message"] = "Identity account was not found for the selected user.";
             return RedirectToAction(nameof(ManageUsers));
         }
 
         var currentUserId = _userManager.GetUserId(User);
         if (user.Id == currentUserId)
         {
-            TempData["Message"] = "You cannot temporarily ban or unban your own currently logged-in admin account.";
+        TempData["Message"] = "You cannot temporarily ban or unban your own currently logged-in admin account.";
             return RedirectToAction(nameof(ManageUsers));
         }
 
         if (string.Equals(profile.RoleName, "Admin", StringComparison.OrdinalIgnoreCase) || await _userManager.IsInRoleAsync(user, "Admin"))
         {
-            TempData["Message"] = "Admin accounts are protected and cannot be temporarily banned or unbanned from this page.";
+        TempData["Message"] = "Admin accounts are protected and cannot be temporarily banned or unbanned from this page.";
             return RedirectToAction(nameof(ManageUsers));
         }
 
@@ -360,7 +350,7 @@ public class ProfileController : Controller
         var result = await _userManager.UpdateAsync(user);
         if (!result.Succeeded)
         {
-            TempData["Message"] = "Could not update the temporary ban status: " +
+        TempData["Message"] = "Could not update the temporary ban status: " +
                                   string.Join(", ", result.Errors.Select(e => e.Description));
             return RedirectToAction(nameof(ManageUsers));
         }
@@ -384,20 +374,20 @@ public class ProfileController : Controller
         var user = await _userManager.FindByIdAsync(profile.UserId);
         if (user == null)
         {
-            TempData["Message"] = "Identity account was not found. Please check this user manually.";
+        TempData["Message"] = "Identity account was not found. Please check this user manually.";
             return RedirectToAction(nameof(ManageUsers));
         }
 
         var currentUserId = _userManager.GetUserId(User);
         if (user.Id == currentUserId)
         {
-            TempData["Message"] = "You cannot delete your own admin account while logged in.";
+        TempData["Message"] = "You cannot delete your own admin account while logged in.";
             return RedirectToAction(nameof(ManageUsers));
         }
 
         if (await _userManager.IsInRoleAsync(user, "Admin"))
         {
-            TempData["Message"] = "Admin accounts are protected and cannot be deleted from this page.";
+        TempData["Message"] = "Admin accounts are protected and cannot be deleted from this page.";
             return RedirectToAction(nameof(ManageUsers));
         }
 
@@ -499,17 +489,15 @@ public class ProfileController : Controller
                 }
             });
 
-            TempData["Message"] = $"{deletedFullName}'s account and all related data were deleted successfully.";
+        TempData["Message"] = $"{deletedFullName}'s account and all related data were deleted successfully.";
         }
         catch (Exception ex)
         {
-            TempData["Message"] = ex.Message;
+        TempData["Message"] = ex.Message;
         }
 
         return RedirectToAction(nameof(ManageUsers));
     }
-
-    // Helper method: keeps repeated controller logic in one reusable place.
 
     private async Task<UserProfile?> GetPrimaryProfileForUserAsync(string userId)
     {
@@ -519,8 +507,6 @@ public class ProfileController : Controller
             .ThenByDescending(x => x.Id)
             .FirstOrDefaultAsync();
     }
-
-    // Helper method: keeps repeated controller logic in one reusable place.
 
     private void DeleteLocalFile(string? relativeUrl, string folderName)
     {

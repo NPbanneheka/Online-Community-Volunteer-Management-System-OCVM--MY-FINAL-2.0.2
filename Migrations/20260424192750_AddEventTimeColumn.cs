@@ -1,9 +1,3 @@
-// ================================================================
-// VIVA COMMENTED VERSION - Migrations/20260424192750_AddEventTimeColumn.cs
-// Purpose: Source file in the OVMS/OCVMS project.
-// Note: Comments were added for learning/viva explanation. Business logic is unchanged.
-// ================================================================
-
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 

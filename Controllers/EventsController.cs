@@ -1,8 +1,10 @@
-// ================================================================
-// VIVA COMMENTED VERSION - Controllers/EventsController.cs
-// Purpose: Main event management controller: list events, create/edit/delete events, register volunteers, cancel registration, ratings, and ownership checks.
-// Note: Comments were added for learning/viva explanation. Business logic is unchanged.
-// ================================================================
+// Main event workflow controller: listing, creating, editing, deleting, joining, cancelling, and rating events.
+// Technology map:
+// - ASP.NET Core MVC actions handle browser requests and form submissions.
+// - EF Core LINQ queries VolunteerEvents, EventRegistrations, UserProfiles, Ratings, and Notifications.
+// - Identity provides the current logged-in user for ownership and role checks.
+// - IWebHostEnvironment is used when event image files are saved under wwwroot.
+// Connected files: VolunteerEvent, EventRegistration, UserProfile, UserRating, Notification models and Events views.
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
@@ -18,13 +20,12 @@ namespace OCVMS.Controllers;
 [Authorize]
 public class EventsController : Controller
 {
-    private const string ApplicationRatingTargetId = "__APPLICATION__";
-    private const int ApplicationRatingEventId = 0;
-    // Dependencies injected through constructor for database, identity, hosting, or logging work.
+    private const string ApplicationRatingTargetId = "__APPLICATION__"; // Special rating target used when rating the whole platform instead of a single event.
+    private const int ApplicationRatingEventId = 0; // EventId placeholder for platform-level ratings.
 
-    private readonly ApplicationDbContext _context;
-    private readonly UserManager<IdentityUser> _userManager;
-    private readonly IWebHostEnvironment _environment;
+    private readonly ApplicationDbContext _context; // EF Core context connected to SQL Server tables.
+    private readonly UserManager<IdentityUser> _userManager; // Identity service for user lookup, roles, and account operations.
+    private readonly IWebHostEnvironment _environment; // Provides wwwroot paths for uploaded image files.
 
     public EventsController(ApplicationDbContext context, UserManager<IdentityUser> userManager, IWebHostEnvironment environment)
     {
@@ -40,7 +41,6 @@ public class EventsController : Controller
         await AutoCloseExpiredEventsAsync();
 
         var eventsQuery = _context.VolunteerEvents
-            // Include loads related table data needed by the view.
             .Include(e => e.OrganizerProfile)
             .Include(e => e.Registrations)
             .AsQueryable();
@@ -95,8 +95,6 @@ public class EventsController : Controller
 
         var currentProfile = await GetCurrentProfileAsync();
         var isAdmin = User.IsInRole("Admin");
-
-        // ViewBag passes small extra values to the Razor view.
         ViewBag.CurrentProfileId = currentProfile?.Id;
         ViewBag.CurrentOrganizationName = currentProfile?.OrganizationName;
         ViewBag.IsAdmin = isAdmin;
@@ -149,8 +147,7 @@ public class EventsController : Controller
         var profile = await GetCurrentProfileAsync();
         if (profile == null)
         {
-            // TempData message is shown once after redirect.
-            TempData["Message"] = "Please complete your profile before managing events.";
+        TempData["Message"] = "Please complete your profile before managing events.";
             return RedirectToAction("Edit", "Profile");
         }
 
@@ -190,7 +187,7 @@ public class EventsController : Controller
 
         if (!volunteerEvent.IsRegistrationOpen)
         {
-            TempData["Message"] = "Registration is not open for this event.";
+        TempData["Message"] = "Registration is not open for this event.";
             return RedirectToAction(nameof(Details), new { id = eventId });
         }
 
@@ -199,13 +196,13 @@ public class EventsController : Controller
 
         if (alreadyRegistered)
         {
-            TempData["Message"] = "You are already registered for this event.";
+        TempData["Message"] = "You are already registered for this event.";
             return RedirectToAction(nameof(Details), new { id = eventId });
         }
 
         if (volunteerEvent.Registrations.Count >= volunteerEvent.Capacity)
         {
-            TempData["Message"] = "This event has reached its volunteer capacity.";
+        TempData["Message"] = "This event has reached its volunteer capacity.";
             return RedirectToAction(nameof(Details), new { id = eventId });
         }
 
@@ -225,8 +222,6 @@ public class EventsController : Controller
                 Message = $"You registered for the event: {volunteerEvent.Title}."
             });
         }
-
-        // Save all pending database changes.
         await _context.SaveChangesAsync();
 
         TempData["Message"] = "Successfully registered for the event!";
@@ -235,7 +230,6 @@ public class EventsController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    // Controller action: handles a request, performs validation/business logic, and returns a response/view.
     public async Task<IActionResult> Unregister(int eventId)
     {
         var userId = _userManager.GetUserId(User);
@@ -260,7 +254,7 @@ public class EventsController : Controller
             }
 
             await _context.SaveChangesAsync();
-            TempData["Message"] = "Successfully unregistered from the event.";
+        TempData["Message"] = "Successfully unregistered from the event.";
         }
 
         return RedirectToAction(nameof(MyEvents));
@@ -316,13 +310,13 @@ public class EventsController : Controller
         var profile = await GetCurrentProfileAsync();
         if (profile == null)
         {
-            TempData["Message"] = "Please complete your profile before creating an event.";
+        TempData["Message"] = "Please complete your profile before creating an event.";
             return RedirectToAction("Edit", "Profile");
         }
 
         if (User.IsInRole("Organizer") && string.IsNullOrWhiteSpace(profile.OrganizationName))
         {
-            TempData["Message"] = "Please add your organization name to your profile before creating events.";
+        TempData["Message"] = "Please add your organization name to your profile before creating events.";
             return RedirectToAction("Edit", "Profile");
         }
 
@@ -347,13 +341,13 @@ public class EventsController : Controller
 
         if (userProfile == null)
         {
-            TempData["Message"] = "Please complete your user profile before creating an event.";
+        TempData["Message"] = "Please complete your user profile before creating an event.";
             return RedirectToAction("Edit", "Profile");
         }
 
         if (User.IsInRole("Organizer") && string.IsNullOrWhiteSpace(userProfile.OrganizationName))
         {
-            TempData["Message"] = "Please add your organization name to your profile before creating events.";
+        TempData["Message"] = "Please add your organization name to your profile before creating events.";
             return RedirectToAction("Edit", "Profile");
         }
 
@@ -556,7 +550,6 @@ public class EventsController : Controller
     [HttpPost]
     [Authorize(Roles = "Organizer,Admin")]
     [ValidateAntiForgeryToken]
-    // Controller action: handles a request, performs validation/business logic, and returns a response/view.
     public async Task<IActionResult> SendVolunteerNotification(int id, string message)
     {
         var volunteerEvent = await _context.VolunteerEvents
@@ -569,7 +562,7 @@ public class EventsController : Controller
 
         if (string.IsNullOrWhiteSpace(message))
         {
-            TempData["Message"] = "Please enter a message before sending.";
+        TempData["Message"] = "Please enter a message before sending.";
             return RedirectToAction(nameof(JoinedVolunteers), new { id });
         }
 
@@ -594,7 +587,6 @@ public class EventsController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    // Controller action: handles a request, performs validation/business logic, and returns a response/view.
     public async Task<IActionResult> RateEvent(int id, int score, string? reviewText)
     {
         var userId = _userManager.GetUserId(User);
@@ -602,7 +594,7 @@ public class EventsController : Controller
 
         if (score < 1 || score > 5)
         {
-            TempData["Message"] = "Please select a rating between 1 and 5.";
+        TempData["Message"] = "Please select a rating between 1 and 5.";
             return RedirectToAction(nameof(Details), new { id });
         }
 
@@ -633,7 +625,6 @@ public class EventsController : Controller
     [HttpPost]
     [Authorize(Roles = "Organizer,Admin")]
     [ValidateAntiForgeryToken]
-    // Controller action: handles a request, performs validation/business logic, and returns a response/view.
     public async Task<IActionResult> RateVolunteer(int id, string volunteerUserId, int score, string? reviewText)
     {
         var volunteerEvent = await _context.VolunteerEvents
@@ -646,20 +637,20 @@ public class EventsController : Controller
 
         if (string.IsNullOrWhiteSpace(volunteerUserId))
         {
-            TempData["Message"] = "Volunteer account was not found.";
+        TempData["Message"] = "Volunteer account was not found.";
             return RedirectToAction(nameof(JoinedVolunteers), new { id });
         }
 
         if (score < 1 || score > 5)
         {
-            TempData["Message"] = "Please select a rating between 1 and 5.";
+        TempData["Message"] = "Please select a rating between 1 and 5.";
             return RedirectToAction(nameof(JoinedVolunteers), new { id });
         }
 
         var isRegisteredVolunteer = volunteerEvent.Registrations.Any(r => r.UserId == volunteerUserId);
         if (!isRegisteredVolunteer)
         {
-            TempData["Message"] = "Only registered volunteers can be rated for this event.";
+        TempData["Message"] = "Only registered volunteers can be rated for this event.";
             return RedirectToAction(nameof(JoinedVolunteers), new { id });
         }
 
@@ -688,16 +679,12 @@ public class EventsController : Controller
         return RedirectToAction(nameof(JoinedVolunteers), new { id });
     }
 
-    // Helper method: keeps repeated controller logic in one reusable place.
-
     private async Task<UserProfile?> GetCurrentProfileAsync()
     {
         var userId = _userManager.GetUserId(User);
         if (string.IsNullOrWhiteSpace(userId)) return null;
         return await GetPrimaryProfileForUserAsync(userId);
     }
-
-    // Helper method: keeps repeated controller logic in one reusable place.
 
     private async Task<UserProfile?> GetPrimaryProfileForUserAsync(string userId)
     {
@@ -707,8 +694,6 @@ public class EventsController : Controller
             .ThenByDescending(x => x.CreatedAt)
             .FirstOrDefaultAsync();
     }
-
-    // Helper method: keeps repeated controller logic in one reusable place.
 
     private async Task<bool> CanManageEventAsync(VolunteerEvent volunteerEvent)
     {
@@ -735,8 +720,6 @@ public class EventsController : Controller
         // Organization-name matching is not used for authorization, because another user could type the same organization name.
         return volunteerEvent.OrganizerProfileId == currentProfile.Id;
     }
-
-    // Helper method: keeps repeated controller logic in one reusable place.
 
     private async Task<string?> SaveEventImageAsync(IFormFile? file, string? oldImageUrl)
     {
@@ -772,8 +755,6 @@ public class EventsController : Controller
         return "/uploads/events/" + uniqueFileName;
     }
 
-    // Helper method: keeps repeated controller logic in one reusable place.
-
     private void DeleteLocalFile(string? relativeUrl, string folderName)
     {
         if (string.IsNullOrWhiteSpace(relativeUrl)) return;
@@ -787,8 +768,6 @@ public class EventsController : Controller
             System.IO.File.Delete(fullPath);
         }
     }
-
-    // Helper method: keeps repeated controller logic in one reusable place.
 
     private async Task AutoCloseExpiredEventsAsync()
     {

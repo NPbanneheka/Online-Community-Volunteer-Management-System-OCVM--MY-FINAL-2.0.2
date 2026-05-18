@@ -1,8 +1,8 @@
-// ================================================================
-// VIVA COMMENTED VERSION - ViewModels/DashboardViewModel.cs
-// Purpose: ViewModel file: carries validated data between Razor forms/views and controller actions without exposing full database entities.
-// Note: Comments were added for learning/viva explanation. Business logic is unchanged.
-// ================================================================
+// View model for DashboardViewModel.
+// Technology map:
+// - ASP.NET Core MVC uses this class to transfer form/page data between Controller and Razor View.
+// - DataAnnotation attributes provide validation rules shown in the UI.
+// Connected files: Controllers receive this model; Views bind form fields to these properties.
 
 namespace OCVMS.ViewModels;
 // This class defines structured data used by the application.

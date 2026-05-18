@@ -1,8 +1,8 @@
-// ================================================================
-// VIVA COMMENTED VERSION - Models/UserProfile.cs
-// Purpose: Model file: represents one database entity/table and defines its fields plus navigation relationships.
-// Note: Comments were added for learning/viva explanation. Business logic is unchanged.
-// ================================================================
+// Data model for UserProfile.
+// Technology map:
+// - EF Core uses this class to create/query a database table or relationship.
+// - Properties become table columns; navigation properties connect related tables.
+// Connected files: ApplicationDbContext configures this model; Controllers and Views use it.
 
 using System.ComponentModel.DataAnnotations;
 

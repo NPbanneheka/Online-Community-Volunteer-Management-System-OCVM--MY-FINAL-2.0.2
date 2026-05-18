@@ -1,8 +1,8 @@
-// ================================================================
-// VIVA COMMENTED VERSION - Controllers/HomeController.cs
-// Purpose: Handles public home, about, privacy, and error pages.
-// Note: Comments were added for learning/viva explanation. Business logic is unchanged.
-// ================================================================
+// Handles public home pages such as landing, about, privacy, and error handling.
+// Technology map:
+// - ASP.NET Core MVC returns public Razor views.
+// - EF Core may provide homepage statistics or featured data.
+// Connected files: Home views, ErrorViewModel, ApplicationDbContext.
 
 using System.Diagnostics;
 using Microsoft.AspNetCore.Authorization;
@@ -16,13 +16,12 @@ namespace OCVMS.Controllers;
 
 public class HomeController : Controller
 {
-    private const string ApplicationRatingTargetId = "__APPLICATION__";
-    private const int ApplicationRatingEventId = 0;
-    // Dependencies injected through constructor for database, identity, hosting, or logging work.
+    private const string ApplicationRatingTargetId = "__APPLICATION__"; // Special rating target used when rating the whole platform instead of a single event.
+    private const int ApplicationRatingEventId = 0; // EventId placeholder for platform-level ratings.
 
     private readonly ILogger<HomeController> _logger;
-    private readonly ApplicationDbContext _context;
-    private readonly UserManager<IdentityUser> _userManager;
+    private readonly ApplicationDbContext _context; // EF Core context connected to SQL Server tables.
+    private readonly UserManager<IdentityUser> _userManager; // Identity service for user lookup, roles, and account operations.
 
     public HomeController(ILogger<HomeController> logger, ApplicationDbContext context, UserManager<IdentityUser> userManager)
     {
@@ -44,8 +43,6 @@ public class HomeController : Controller
                 .ThenBy(e => e.EventTime)
                 .Take(3)
                 .ToListAsync();
-
-            // ViewBag passes small extra values to the Razor view.
         ViewBag.UserCount = await _context.UserProfiles
                 .Select(u => u.UserId)
                 .Distinct()
@@ -69,11 +66,7 @@ public class HomeController : Controller
         }
     }
 
-    // Controller action: handles a request, performs validation/business logic, and returns a response/view.
-
     public IActionResult Privacy() => View();
-
-    // Controller action: handles a request, performs validation/business logic, and returns a response/view.
 
     public async Task<IActionResult> About()
     {
@@ -92,7 +85,6 @@ public class HomeController : Controller
     [HttpPost]
     [Authorize]
     [ValidateAntiForgeryToken]
-    // Controller action: handles a request, performs validation/business logic, and returns a response/view.
     public async Task<IActionResult> RateApplication(int score, string? reviewText)
     {
         var userId = _userManager.GetUserId(User);
@@ -100,8 +92,7 @@ public class HomeController : Controller
 
         if (score < 1 || score > 5)
         {
-            // TempData message is shown once after redirect.
-            TempData["Message"] = "Please select a rating between 1 and 5.";
+        TempData["Message"] = "Please select a rating between 1 and 5.";
             return RedirectToAction(nameof(About));
         }
 
@@ -121,7 +112,6 @@ public class HomeController : Controller
 
         rating.Score = score;
         rating.ReviewText = reviewText;
-        // Save all pending database changes.
         await _context.SaveChangesAsync();
 
         TempData["Message"] = "Thank you for rating the platform.";
@@ -129,7 +119,6 @@ public class HomeController : Controller
     }
 
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-    // Controller action: handles a request, performs validation/business logic, and returns a response/view.
     public IActionResult Error()
     {
         return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
