@@ -13,7 +13,8 @@ namespace OCVMS.Services;
 
 public static class DbInitializer
 {
-    // Service entry point used by Program.cs or controllers to prepare demo/runtime data.    public static async Task SeedRolesAndAdminAsync(IServiceProvider serviceProvider)
+    // Service entry point used by Program.cs or controllers to prepare demo/runtime data.
+    public static async Task SeedRolesAndAdminAsync(IServiceProvider serviceProvider)
     {
         var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
         var userManager = serviceProvider.GetRequiredService<UserManager<IdentityUser>>();
@@ -23,8 +24,8 @@ public static class DbInitializer
 
         foreach (var role in roles)
         {
-            if (!// Check whether the required role already exists before creating it.
-            await roleManager.RoleExistsAsync(role))
+            // Check whether the required role already exists before creating it.
+            if (!await roleManager.RoleExistsAsync(role))
             {
                 await roleManager.CreateAsync(new IdentityRole(role));
             }
@@ -43,8 +44,8 @@ public static class DbInitializer
                 LockoutEnabled = true
             };
 
-            var result = // Create the default/demo Identity user account.
-            await userManager.CreateAsync(adminUser, "123456");
+            // Create the default/demo Identity user account.
+            var result = await userManager.CreateAsync(adminUser, "123456");
             if (!result.Succeeded)
             {
                 throw new InvalidOperationException("Default admin account could not be created: " +

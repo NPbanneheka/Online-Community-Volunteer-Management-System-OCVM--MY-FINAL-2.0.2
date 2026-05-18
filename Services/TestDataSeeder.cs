@@ -108,8 +108,8 @@ public static class TestDataSeeder
     {
         foreach (var role in new[] { "Admin", "Organizer", "Volunteer" })
         {
-            if (!// Check whether the required role already exists before creating it.
-            await roleManager.RoleExistsAsync(role))
+            // Check whether the required role already exists before creating it.
+            if (!await roleManager.RoleExistsAsync(role))
             {
                 await roleManager.CreateAsync(new IdentityRole(role));
             }
@@ -141,8 +141,8 @@ public static class TestDataSeeder
                 PhoneNumberConfirmed = true
             };
 
-            var createResult = // Create the default/demo Identity user account.
-            await userManager.CreateAsync(user);
+            // Create the default/demo Identity user account.
+            var createResult = await userManager.CreateAsync(user);
             if (!createResult.Succeeded)
             {
                 throw new InvalidOperationException($"Could not create user {email}: " +

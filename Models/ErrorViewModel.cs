@@ -7,7 +7,8 @@
 namespace OCVMS.Models;
 
 // පද්ධතියේ වැරදීමක් (Error) වූ විට එම විස්තර ගබඩා කර පෙන්වීමට මෙය භාවිතා වේ
-// This class defines structured data used by the application.public class ErrorViewModel
+// This class defines structured data used by the application.
+public class ErrorViewModel
 {
     public string? RequestId { get; set; }
 
