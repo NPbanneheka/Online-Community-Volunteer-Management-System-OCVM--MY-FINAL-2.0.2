@@ -1,5 +1,16 @@
+<<<<<<< HEAD
 @* Views/HelpRequests/Details.cshtml: Razor view that renders the HelpRequests/Details page in the browser. Comments describe UI/data purpose only. *@
 @* @model declares the C# type this Razor page receives from its controller. *@
+=======
+@* 
+View responsibility: Views/HelpRequests/Details.cshtml
+Technology map:
+- Razor syntax mixes HTML with C# expressions for dynamic page rendering.
+- Tag Helpers such as asp-action/asp-controller connect forms and links to MVC controller actions.
+- Model/ViewBag data comes from the controller action that returns this view.
+*@
+
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
 @model OCVMS.Models.HelpRequest
 @using System.Runtime.InteropServices
 @* Razor code block prepares page variables such as title, filters, or values from ViewBag/ViewData. *@
@@ -35,8 +46,13 @@
                 <h2 class="fw-bold mb-1">@Model.Title</h2>
                 <p class="text-muted mb-0">
                     Submitted by @(Model.SubmittedBy?.FullName ?? "User") on @ToSriLankaTime(Model.CreatedAt).ToString("MMM dd, yyyy hh:mm tt")
+<<<<<<< HEAD
                     @* Conditional UI: renders this section only when the condition is true. *@
                     @if (!string.IsNullOrWhiteSpace(Model.SubmittedBy?.OrganizationName))
+=======
+                    @* Conditional UI: shows/hides content based on role, status, or available data. *@
+@if (!string.IsNullOrWhiteSpace(Model.SubmittedBy?.OrganizationName))
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
                     {
                         <span> · @Model.SubmittedBy.OrganizationName</span>
                     }
@@ -53,15 +69,26 @@
         @* Conditional UI: renders this section only when the condition is true. *@
         @if (canUpdateHelpRequestStatus)
         {
+<<<<<<< HEAD
             @* Form sends user input back to a controller action for validation and processing. *@
             <form asp-action="UpdateStatus" method="post" class="row g-2 align-items-end">
+=======
+            @* Form area: collects user input and sends it to the controller action. *@
+<form asp-action="UpdateStatus" method="post" class="row g-2 align-items-end">
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
                 @Html.AntiForgeryToken()
-                <input type="hidden" name="id" value="@Model.Id" />
+                @* Input field: binds form data to the model/view model. *@
+<input type="hidden" name="id" value="@Model.Id" />
                 <div class="col-md-5">
                     <label class="form-label fw-bold">Update Status</label>
                     <select name="status" class="form-select rounded-3">
+<<<<<<< HEAD
                         @* Loops through the model/list data and renders one UI section for each record. *@
                         @foreach (var status in statuses)
+=======
+                        @* Loop: repeats this UI block for each item sent by the controller. *@
+@foreach (var status in statuses)
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
                         {
                             if (Model.Status == status)
                             {
@@ -88,10 +115,17 @@
             @* Conditional UI: renders this section only when the condition is true. *@
             @if (canManageHelpRequest)
             {
+<<<<<<< HEAD
                 @* Tag Helpers generate correct MVC URLs for controller actions. *@
                 <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning rounded-pill px-4 fw-bold">Edit Request</a>
                 @* Form sends user input back to a controller action for validation and processing. *@
                 <form asp-action="Delete" method="post" onsubmit="return confirm('Delete this support request?');">
+=======
+                @* This form/action updates an existing record after permission checks. *@
+<a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning rounded-pill px-4 fw-bold">Edit Request</a>
+                @* Delete action is protected by controller-side permission checks. *@
+<form asp-action="Delete" method="post" onsubmit="return confirm('Delete this support request?');">
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
                     @Html.AntiForgeryToken()
                     <input type="hidden" name="id" value="@Model.Id" />
                     <button type="submit" class="btn btn-outline-danger rounded-pill px-4 fw-bold">Delete Request</button>

@@ -1,7 +1,18 @@
+<<<<<<< HEAD
 // Controllers/EventsController.cs
 // This MVC controller file that receives browser requests and coordinates models, services, and views.
 // Comments explain purpose, connected technologies, variables, and data flow without changing behavior.
 // ASP.NET Core authorization attributes such as [Authorize] and [AllowAnonymous].
+=======
+// Main event workflow controller: listing, creating, editing, deleting, joining, cancelling, and rating events.
+// Technology map:
+// - ASP.NET Core MVC actions handle browser requests and form submissions.
+// - EF Core LINQ queries VolunteerEvents, EventRegistrations, UserProfiles, Ratings, and Notifications.
+// - Identity provides the current logged-in user for ownership and role checks.
+// - IWebHostEnvironment is used when event image files are saved under wwwroot.
+// Connected files: VolunteerEvent, EventRegistration, UserProfile, UserRating, Notification models and Events views.
+
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -21,14 +32,20 @@ namespace OCVMS.Controllers;
 // Controller class: methods inside this class respond to user actions from the browser.
 public class EventsController : Controller
 {
-    private const string ApplicationRatingTargetId = "__APPLICATION__";
-    private const int ApplicationRatingEventId = 0;
+    private const string ApplicationRatingTargetId = "__APPLICATION__"; // Special rating target used when rating the whole platform instead of a single event.
+    private const int ApplicationRatingEventId = 0; // EventId placeholder for platform-level ratings.
 
+<<<<<<< HEAD
     // _context connects this class to SQL Server through Entity Framework Core and ApplicationDbContext.
     private readonly ApplicationDbContext _context;
     // _userManager works with ASP.NET Identity users, including lookup, creation, roles, and passwords.
     private readonly UserManager<IdentityUser> _userManager;
     private readonly IWebHostEnvironment _environment;
+=======
+    private readonly ApplicationDbContext _context; // EF Core context connected to SQL Server tables.
+    private readonly UserManager<IdentityUser> _userManager; // Identity service for user lookup, roles, and account operations.
+    private readonly IWebHostEnvironment _environment; // Provides wwwroot paths for uploaded image files.
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
 
     public EventsController(ApplicationDbContext context, UserManager<IdentityUser> userManager, IWebHostEnvironment environment)
     {
@@ -38,7 +55,11 @@ public class EventsController : Controller
     }
 
     [AllowAnonymous]
+<<<<<<< HEAD
     // Loads the default page or list view for this controller.
+=======
+    // Main listing page: loads records, applies filters/search, prepares ViewBag data, then returns the view.
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
     public async Task<IActionResult> Index(string? searchTerm, string? statusFilter, DateTime? eventDate)
     {
         await AutoCloseExpiredEventsAsync();
@@ -101,7 +122,6 @@ public class EventsController : Controller
         var currentProfile = await GetCurrentProfileAsync();
         // Checks the logged-in user's role using ASP.NET Core Identity role membership.
         var isAdmin = User.IsInRole("Admin");
-
         ViewBag.CurrentProfileId = currentProfile?.Id;
         ViewBag.CurrentOrganizationName = currentProfile?.OrganizationName;
         ViewBag.IsAdmin = isAdmin;
@@ -126,7 +146,11 @@ public class EventsController : Controller
         return View(eventsList);
     }
 
+<<<<<<< HEAD
     // Loads events joined by the currently logged-in volunteer.
+=======
+    // Loads events joined by the current volunteer user.
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
 
     public async Task<IActionResult> MyEvents()
     {
@@ -154,7 +178,11 @@ public class EventsController : Controller
     }
 
     [Authorize(Roles = "Organizer,Admin")]
+<<<<<<< HEAD
     // Loads events created by the current organizer profile.
+=======
+    // Loads events that the current organizer/admin is allowed to manage.
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
     public async Task<IActionResult> MyCreatedEvents()
     {
         await AutoCloseExpiredEventsAsync();
@@ -163,9 +191,13 @@ public class EventsController : Controller
         // Handles missing data safely before continuing with the requested operation.
         if (profile == null)
         {
+<<<<<<< HEAD
             // TempData stores a one-time message that is displayed after redirecting to another page.
             TempData["Message"] = "Please complete your profile before managing events.";
             // Redirects the browser to another MVC action after the current operation is complete.
+=======
+        TempData["Message"] = "Please complete your profile before managing events.";
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
             return RedirectToAction("Edit", "Profile");
         }
 
@@ -193,7 +225,11 @@ public class EventsController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+<<<<<<< HEAD
     // Handles user registration and stores both Identity login data and OCVMS profile data.
+=======
+    // Registration action: creates a new user/account or registers the current user for an event depending on controller context.
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
     public async Task<IActionResult> Register(int eventId)
     {
         await AutoCloseExpiredEventsAsync();
@@ -215,9 +251,13 @@ public class EventsController : Controller
 
         if (!volunteerEvent.IsRegistrationOpen)
         {
+<<<<<<< HEAD
             // TempData stores a one-time message that is displayed after redirecting to another page.
             TempData["Message"] = "Registration is not open for this event.";
             // Redirects the browser to another MVC action after the current operation is complete.
+=======
+        TempData["Message"] = "Registration is not open for this event.";
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
             return RedirectToAction(nameof(Details), new { id = eventId });
         }
 
@@ -226,17 +266,25 @@ public class EventsController : Controller
 
         if (alreadyRegistered)
         {
+<<<<<<< HEAD
             // TempData stores a one-time message that is displayed after redirecting to another page.
             TempData["Message"] = "You are already registered for this event.";
             // Redirects the browser to another MVC action after the current operation is complete.
+=======
+        TempData["Message"] = "You are already registered for this event.";
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
             return RedirectToAction(nameof(Details), new { id = eventId });
         }
 
         if (volunteerEvent.Registrations.Count >= volunteerEvent.Capacity)
         {
+<<<<<<< HEAD
             // TempData stores a one-time message that is displayed after redirecting to another page.
             TempData["Message"] = "This event has reached its volunteer capacity.";
             // Redirects the browser to another MVC action after the current operation is complete.
+=======
+        TempData["Message"] = "This event has reached its volunteer capacity.";
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
             return RedirectToAction(nameof(Details), new { id = eventId });
         }
 
@@ -260,8 +308,11 @@ public class EventsController : Controller
                 Message = $"You registered for the event: {volunteerEvent.Title}."
             });
         }
+<<<<<<< HEAD
 
         // Commits all pending EF Core changes to the SQL Server database.
+=======
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
         await _context.SaveChangesAsync();
 
         // TempData stores a one-time message that is displayed after redirecting to another page.
@@ -304,8 +355,12 @@ public class EventsController : Controller
 
             // Commits all pending EF Core changes to the SQL Server database.
             await _context.SaveChangesAsync();
+<<<<<<< HEAD
             // TempData stores a one-time message that is displayed after redirecting to another page.
             TempData["Message"] = "Successfully unregistered from the event.";
+=======
+        TempData["Message"] = "Successfully unregistered from the event.";
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
         }
 
         // Redirects the browser to another MVC action after the current operation is complete.
@@ -313,7 +368,11 @@ public class EventsController : Controller
     }
 
     [AllowAnonymous]
+<<<<<<< HEAD
     // Loads a single record with related data for a detail page.
+=======
+    // Details page: loads one selected record with related data and checks permissions for the current user.
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
     public async Task<IActionResult> Details(int? id)
     {
         // Handles missing data safely before continuing with the requested operation.
@@ -365,25 +424,37 @@ public class EventsController : Controller
     }
 
     [Authorize(Roles = "Organizer,Admin")]
+<<<<<<< HEAD
     // Displays or processes the form used to create a new record.
+=======
+    // Create page/action: GET shows the form; POST validates input, saves new data, and redirects after success.
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
     public async Task<IActionResult> Create()
     {
         var profile = await GetCurrentProfileAsync();
         // Handles missing data safely before continuing with the requested operation.
         if (profile == null)
         {
+<<<<<<< HEAD
             // TempData stores a one-time message that is displayed after redirecting to another page.
             TempData["Message"] = "Please complete your profile before creating an event.";
             // Redirects the browser to another MVC action after the current operation is complete.
+=======
+        TempData["Message"] = "Please complete your profile before creating an event.";
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
             return RedirectToAction("Edit", "Profile");
         }
 
         // Checks the logged-in user's role using ASP.NET Core Identity role membership.
         if (User.IsInRole("Organizer") && string.IsNullOrWhiteSpace(profile.OrganizationName))
         {
+<<<<<<< HEAD
             // TempData stores a one-time message that is displayed after redirecting to another page.
             TempData["Message"] = "Please add your organization name to your profile before creating events.";
             // Redirects the browser to another MVC action after the current operation is complete.
+=======
+        TempData["Message"] = "Please add your organization name to your profile before creating events.";
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
             return RedirectToAction("Edit", "Profile");
         }
 
@@ -403,7 +474,11 @@ public class EventsController : Controller
     [HttpPost]
     [Authorize(Roles = "Organizer,Admin")]
     [ValidateAntiForgeryToken]
+<<<<<<< HEAD
     // Displays or processes the form used to create a new record.
+=======
+    // Create page/action: GET shows the form; POST validates input, saves new data, and redirects after success.
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
     public async Task<IActionResult> Create(VolunteerEvent volunteerEvent, IFormFile? eventImage)
     {
         var userProfile = await GetCurrentProfileAsync();
@@ -411,18 +486,26 @@ public class EventsController : Controller
         // Handles missing data safely before continuing with the requested operation.
         if (userProfile == null)
         {
+<<<<<<< HEAD
             // TempData stores a one-time message that is displayed after redirecting to another page.
             TempData["Message"] = "Please complete your user profile before creating an event.";
             // Redirects the browser to another MVC action after the current operation is complete.
+=======
+        TempData["Message"] = "Please complete your user profile before creating an event.";
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
             return RedirectToAction("Edit", "Profile");
         }
 
         // Checks the logged-in user's role using ASP.NET Core Identity role membership.
         if (User.IsInRole("Organizer") && string.IsNullOrWhiteSpace(userProfile.OrganizationName))
         {
+<<<<<<< HEAD
             // TempData stores a one-time message that is displayed after redirecting to another page.
             TempData["Message"] = "Please add your organization name to your profile before creating events.";
             // Redirects the browser to another MVC action after the current operation is complete.
+=======
+        TempData["Message"] = "Please add your organization name to your profile before creating events.";
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
             return RedirectToAction("Edit", "Profile");
         }
 
@@ -484,7 +567,11 @@ public class EventsController : Controller
     }
 
     [Authorize(Roles = "Organizer,Admin")]
+<<<<<<< HEAD
     // Displays or processes the form used to update an existing record.
+=======
+    // Edit page/action: GET loads existing data; POST validates ownership/role, updates fields, and saves changes.
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
     public async Task<IActionResult> Edit(int? id)
     {
         // Handles missing data safely before continuing with the requested operation.
@@ -513,7 +600,11 @@ public class EventsController : Controller
     [HttpPost]
     [Authorize(Roles = "Organizer,Admin")]
     [ValidateAntiForgeryToken]
+<<<<<<< HEAD
     // Displays or processes the form used to update an existing record.
+=======
+    // Edit page/action: GET loads existing data; POST validates ownership/role, updates fields, and saves changes.
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
     public async Task<IActionResult> Edit(int id, VolunteerEvent volunteerEvent, IFormFile? eventImage)
     {
         // Returns HTTP 404 when the requested record does not exist.
@@ -581,7 +672,11 @@ public class EventsController : Controller
     [HttpPost]
     [Authorize(Roles = "Organizer,Admin")]
     [ValidateAntiForgeryToken]
+<<<<<<< HEAD
     // Deletes an existing record after validation and authorization checks.
+=======
+    // Delete action: confirms permission, removes the selected record, and saves the database change.
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
     public async Task<IActionResult> Delete(int id)
     {
         var volunteerEvent = await _context.VolunteerEvents
@@ -621,7 +716,11 @@ public class EventsController : Controller
     }
 
     [Authorize(Roles = "Organizer,Admin")]
+<<<<<<< HEAD
     // Shows volunteers who have registered for a selected event.
+=======
+    // Shows the volunteer list registered for a selected event.
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
     public async Task<IActionResult> JoinedVolunteers(int id)
     {
         var volunteerEvent = await _context.VolunteerEvents
@@ -691,9 +790,13 @@ public class EventsController : Controller
 
         if (string.IsNullOrWhiteSpace(message))
         {
+<<<<<<< HEAD
             // TempData stores a one-time message that is displayed after redirecting to another page.
             TempData["Message"] = "Please enter a message before sending.";
             // Redirects the browser to another MVC action after the current operation is complete.
+=======
+        TempData["Message"] = "Please enter a message before sending.";
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
             return RedirectToAction(nameof(JoinedVolunteers), new { id });
         }
 
@@ -734,9 +837,13 @@ public class EventsController : Controller
 
         if (score < 1 || score > 5)
         {
+<<<<<<< HEAD
             // TempData stores a one-time message that is displayed after redirecting to another page.
             TempData["Message"] = "Please select a rating between 1 and 5.";
             // Redirects the browser to another MVC action after the current operation is complete.
+=======
+        TempData["Message"] = "Please select a rating between 1 and 5.";
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
             return RedirectToAction(nameof(Details), new { id });
         }
 
@@ -797,26 +904,38 @@ public class EventsController : Controller
 
         if (string.IsNullOrWhiteSpace(volunteerUserId))
         {
+<<<<<<< HEAD
             // TempData stores a one-time message that is displayed after redirecting to another page.
             TempData["Message"] = "Volunteer account was not found.";
             // Redirects the browser to another MVC action after the current operation is complete.
+=======
+        TempData["Message"] = "Volunteer account was not found.";
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
             return RedirectToAction(nameof(JoinedVolunteers), new { id });
         }
 
         if (score < 1 || score > 5)
         {
+<<<<<<< HEAD
             // TempData stores a one-time message that is displayed after redirecting to another page.
             TempData["Message"] = "Please select a rating between 1 and 5.";
             // Redirects the browser to another MVC action after the current operation is complete.
+=======
+        TempData["Message"] = "Please select a rating between 1 and 5.";
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
             return RedirectToAction(nameof(JoinedVolunteers), new { id });
         }
 
         var isRegisteredVolunteer = volunteerEvent.Registrations.Any(r => r.UserId == volunteerUserId);
         if (!isRegisteredVolunteer)
         {
+<<<<<<< HEAD
             // TempData stores a one-time message that is displayed after redirecting to another page.
             TempData["Message"] = "Only registered volunteers can be rated for this event.";
             // Redirects the browser to another MVC action after the current operation is complete.
+=======
+        TempData["Message"] = "Only registered volunteers can be rated for this event.";
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
             return RedirectToAction(nameof(JoinedVolunteers), new { id });
         }
 

@@ -1,5 +1,16 @@
+<<<<<<< HEAD
 @* Views/Dashboard/Index.cshtml: Razor view that renders the Dashboard/Index page in the browser. Comments describe UI/data purpose only. *@
 @* @model declares the C# type this Razor page receives from its controller. *@
+=======
+@* 
+View responsibility: Views/Dashboard/Index.cshtml
+Technology map:
+- Razor syntax mixes HTML with C# expressions for dynamic page rendering.
+- Tag Helpers such as asp-action/asp-controller connect forms and links to MVC controller actions.
+- Model/ViewBag data comes from the controller action that returns this view.
+*@
+
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
 @model DashboardViewModel
 @* Razor code block prepares page variables such as title, filters, or values from ViewBag/ViewData. *@
 @{
@@ -27,8 +38,13 @@
     <div class="col-lg-4">
         <div class="card card-modern p-4 h-100">
             <div class="d-flex align-items-center gap-3">
+<<<<<<< HEAD
                 @* Conditional UI: renders this section only when the condition is true. *@
                 @if (!string.IsNullOrWhiteSpace(myProfile?.ProfileImageUrl))
+=======
+                @* Conditional UI: shows/hides content based on role, status, or available data. *@
+@if (!string.IsNullOrWhiteSpace(myProfile?.ProfileImageUrl))
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
                 {
                     <img src="@myProfile.ProfileImageUrl" class="rounded-circle shadow-sm" style="width:70px;height:70px;object-fit:cover;object-position:center;" alt="Profile" />
                 }
@@ -86,8 +102,13 @@
             {
                 <p class="text-muted mb-0">No upcoming active events available.</p>
             }
+<<<<<<< HEAD
             @* Loops through the model/list data and renders one UI section for each record. *@
             @foreach (var item in upcoming)
+=======
+            @* Loop: repeats this UI block for each item sent by the controller. *@
+@foreach (var item in upcoming)
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
             {
                 <div class="d-flex justify-content-between align-items-center border-bottom py-2 gap-3">
                     <div class="d-flex align-items-center gap-2">

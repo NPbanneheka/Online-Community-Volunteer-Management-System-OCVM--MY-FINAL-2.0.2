@@ -1,18 +1,35 @@
+<<<<<<< HEAD
 // ViewModels/RegisterViewModel.cs
 // This view model file that carries validated form or dashboard data between controllers and Razor views.
 // Comments explain purpose, connected technologies, variables, and data flow without changing behavior.
+=======
+// View model for RegisterViewModel.
+// Technology map:
+// - ASP.NET Core MVC uses this class to transfer form/page data between Controller and Razor View.
+// - DataAnnotation attributes provide validation rules shown in the UI.
+// Connected files: Controllers receive this model; Views bind form fields to these properties.
+
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
 using System.ComponentModel.DataAnnotations;
 
 // Namespace groups related OCVMS classes so they can be referenced cleanly across the project.
 namespace OCVMS.ViewModels;
+<<<<<<< HEAD
 
 // ViewModel class: contains only the data needed by a form or page, often with validation rules.
+=======
+// This class defines structured data used by the application.
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
 public class RegisterViewModel
 {
     // Validation attribute: the form cannot be submitted successfully without this value.
     [Required(ErrorMessage = "Full Name is required.")]
     [Display(Name = "Full Name")]
+<<<<<<< HEAD
     // Display name used in profiles, posts, registrations, and admin pages.
+=======
+    // Readable user name shown in profile and admin screens.
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
     public string FullName { get; set; } = string.Empty;
 
     // Validation attribute: the form cannot be submitted successfully without this value.
@@ -46,6 +63,10 @@ public class RegisterViewModel
     [Display(Name = "Organization Name")]
     // Validation attribute: limits the allowed length of the submitted text.
     [StringLength(120, ErrorMessage = "Organization name cannot be longer than 120 characters.")]
+<<<<<<< HEAD
     // Stores the organization name for organizer profiles and ownership checks.
+=======
+    // Organizer organization name used for ownership and grouping.
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
     public string? OrganizationName { get; set; }
 }

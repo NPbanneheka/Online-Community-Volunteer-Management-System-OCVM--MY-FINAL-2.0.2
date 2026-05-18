@@ -1,6 +1,15 @@
+<<<<<<< HEAD
 // Controllers/HomeController.cs
 // This MVC controller file that receives browser requests and coordinates models, services, and views.
 // Comments explain purpose, connected technologies, variables, and data flow without changing behavior.
+=======
+// Handles public home pages such as landing, about, privacy, and error handling.
+// Technology map:
+// - ASP.NET Core MVC returns public Razor views.
+// - EF Core may provide homepage statistics or featured data.
+// Connected files: Home views, ErrorViewModel, ApplicationDbContext.
+
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
 using System.Diagnostics;
 // ASP.NET Core authorization attributes such as [Authorize] and [AllowAnonymous].
 using Microsoft.AspNetCore.Authorization;
@@ -19,15 +28,20 @@ namespace OCVMS.Controllers;
 // Controller class: methods inside this class respond to user actions from the browser.
 public class HomeController : Controller
 {
-    private const string ApplicationRatingTargetId = "__APPLICATION__";
-    private const int ApplicationRatingEventId = 0;
+    private const string ApplicationRatingTargetId = "__APPLICATION__"; // Special rating target used when rating the whole platform instead of a single event.
+    private const int ApplicationRatingEventId = 0; // EventId placeholder for platform-level ratings.
 
     // _logger records diagnostic information for troubleshooting application behavior.
     private readonly ILogger<HomeController> _logger;
+<<<<<<< HEAD
     // _context connects this class to SQL Server through Entity Framework Core and ApplicationDbContext.
     private readonly ApplicationDbContext _context;
     // _userManager works with ASP.NET Identity users, including lookup, creation, roles, and passwords.
     private readonly UserManager<IdentityUser> _userManager;
+=======
+    private readonly ApplicationDbContext _context; // EF Core context connected to SQL Server tables.
+    private readonly UserManager<IdentityUser> _userManager; // Identity service for user lookup, roles, and account operations.
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
 
     public HomeController(ILogger<HomeController> logger, ApplicationDbContext context, UserManager<IdentityUser> userManager)
     {
@@ -36,7 +50,11 @@ public class HomeController : Controller
         _userManager = userManager;
     }
 
+<<<<<<< HEAD
     // Loads the default page or list view for this controller.
+=======
+    // Main listing page: loads records, applies filters/search, prepares ViewBag data, then returns the view.
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
 
     public async Task<IActionResult> Index()
     {
@@ -49,8 +67,7 @@ public class HomeController : Controller
                 .ThenBy(e => e.EventTime)
                 .Take(3)
                 .ToListAsync();
-
-            ViewBag.UserCount = await _context.UserProfiles
+        ViewBag.UserCount = await _context.UserProfiles
                 .Select(u => u.UserId)
                 .Distinct()
                 .CountAsync();
@@ -110,9 +127,13 @@ public class HomeController : Controller
 
         if (score < 1 || score > 5)
         {
+<<<<<<< HEAD
             // TempData stores a one-time message that is displayed after redirecting to another page.
             TempData["Message"] = "Please select a rating between 1 and 5.";
             // Redirects the browser to another MVC action after the current operation is complete.
+=======
+        TempData["Message"] = "Please select a rating between 1 and 5.";
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
             return RedirectToAction(nameof(About));
         }
 

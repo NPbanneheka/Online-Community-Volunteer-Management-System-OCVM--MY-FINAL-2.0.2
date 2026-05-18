@@ -1,5 +1,16 @@
+<<<<<<< HEAD
 @* Views/Events/Details.cshtml: Razor view that renders the Events/Details page in the browser. Comments describe UI/data purpose only. *@
 @* @model declares the C# type this Razor page receives from its controller. *@
+=======
+@* 
+View responsibility: Views/Events/Details.cshtml
+Technology map:
+- Razor syntax mixes HTML with C# expressions for dynamic page rendering.
+- Tag Helpers such as asp-action/asp-controller connect forms and links to MVC controller actions.
+- Model/ViewBag data comes from the controller action that returns this view.
+*@
+
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
 @model OCVMS.Models.VolunteerEvent
 @* Razor code block prepares page variables such as title, filters, or values from ViewBag/ViewData. *@
 @{
@@ -26,8 +37,13 @@
 
 <div class="container py-5">
     <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+<<<<<<< HEAD
         @* Conditional UI: renders this section only when the condition is true. *@
         @if (!string.IsNullOrWhiteSpace(Model.ImageUrl))
+=======
+        @* Conditional UI: shows/hides content based on role, status, or available data. *@
+@if (!string.IsNullOrWhiteSpace(Model.ImageUrl))
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
         {
             <img src="@Model.ImageUrl" class="w-100" style="height: 320px; object-fit: cover; object-position: center;" alt="@Model.Title" />
         }
@@ -69,10 +85,16 @@
                     {
                         <div class="card border-0 bg-light rounded-4 p-4 mt-4">
                             <h5 class="fw-bold mb-3"><i class="bi bi-star text-warning me-1"></i> Rate this Event</h5>
+<<<<<<< HEAD
                             @* Form sends user input back to a controller action for validation and processing. *@
                             <form asp-action="RateEvent" method="post" class="row g-2">
+=======
+                            @* Form area: collects user input and sends it to the controller action. *@
+<form asp-action="RateEvent" method="post" class="row g-2">
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
                                 @Html.AntiForgeryToken()
-                                <input type="hidden" name="id" value="@Model.Id" />
+                                @* Input field: binds form data to the model/view model. *@
+<input type="hidden" name="id" value="@Model.Id" />
                                 <div class="col-md-3">
                                     <select name="score" class="form-select rounded-pill" required>
                                         @for (int i = 5; i >= 1; i--)
@@ -208,10 +230,17 @@
                 {
                     @* Tag Helpers generate correct MVC URLs for controller actions. *@
                     <a asp-action="JoinedVolunteers" asp-route-id="@Model.Id" class="btn btn-info text-white rounded-pill px-4 fw-bold">Joined Volunteers</a>
+<<<<<<< HEAD
                     @* Tag Helpers generate correct MVC URLs for controller actions. *@
                     <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning rounded-pill px-4 fw-bold">Edit Event</a>
                     @* Form sends user input back to a controller action for validation and processing. *@
                     <form asp-action="Delete" method="post" onsubmit="return confirm('Delete this event?');">
+=======
+                    @* This form/action updates an existing record after permission checks. *@
+<a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning rounded-pill px-4 fw-bold">Edit Event</a>
+                    @* Delete action is protected by controller-side permission checks. *@
+<form asp-action="Delete" method="post" onsubmit="return confirm('Delete this event?');">
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
                         @Html.AntiForgeryToken()
                         <input type="hidden" name="id" value="@Model.Id" />
                         <button type="submit" class="btn btn-outline-danger rounded-pill px-4 fw-bold">Delete Event</button>

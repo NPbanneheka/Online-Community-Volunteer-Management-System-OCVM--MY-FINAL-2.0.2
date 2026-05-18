@@ -1,5 +1,16 @@
+<<<<<<< HEAD
 @* Views/Community/Feed.cshtml: Razor view that renders the Community/Feed page in the browser. Comments describe UI/data purpose only. *@
 @* @model declares the C# type this Razor page receives from its controller. *@
+=======
+@* 
+View responsibility: Views/Community/Feed.cshtml
+Technology map:
+- Razor syntax mixes HTML with C# expressions for dynamic page rendering.
+- Tag Helpers such as asp-action/asp-controller connect forms and links to MVC controller actions.
+- Model/ViewBag data comes from the controller action that returns this view.
+*@
+
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
 @model IEnumerable<OCVMS.Models.CommunityPost>
 @using System.Runtime.InteropServices
 @* Razor code block prepares page variables such as title, filters, or values from ViewBag/ViewData. *@
@@ -35,8 +46,13 @@
 }
 
 <div class="container py-4">
+<<<<<<< HEAD
     @* Conditional UI: renders this section only when the condition is true. *@
     @if (TempData["Error"] != null) { <div class="alert alert-danger border-0 shadow-sm rounded-pill"><i class="bi bi-x-circle-fill me-2"></i>@TempData["Error"]</div> }
+=======
+    @* Conditional UI: shows/hides content based on role, status, or available data. *@
+@if (TempData["Error"] != null) { <div class="alert alert-danger border-0 shadow-sm rounded-pill"><i class="bi bi-x-circle-fill me-2"></i>@TempData["Error"]</div> }
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
 
     <div class="row g-4">
         <div class="col-lg-3">
@@ -79,11 +95,17 @@
 
         <div class="col-lg-6">
             <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+<<<<<<< HEAD
                 @* Form sends user input back to a controller action for validation and processing. *@
                 <form asp-action="CreatePost" method="post">
+=======
+                @* Form area: collects user input and sends it to the controller action. *@
+<form asp-action="CreatePost" method="post">
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
                     @Html.AntiForgeryToken()
                     <div class="d-flex gap-2 mb-3 flex-wrap">
-                        <input type="radio" class="btn-check" name="postType" id="typeShare" value="Share" checked>
+                        @* Input field: binds form data to the model/view model. *@
+<input type="radio" class="btn-check" name="postType" id="typeShare" value="Share" checked>
                         <label class="btn btn-outline-primary rounded-pill px-4 fw-bold" for="typeShare">
                             <i class="bi bi-pencil-square me-1"></i> Share Post
                         </label>
@@ -212,8 +234,13 @@
                         {
                             <div class="bg-light p-3 rounded-4 mt-3">
                                 <h6 class="fw-bold mb-3 text-secondary small"><i class="bi bi-chat-dots me-1"></i> Comments (@post.PostComments.Count)</h6>
+<<<<<<< HEAD
                                 @* Loops through the model/list data and renders one UI section for each record. *@
                                 @foreach (var comment in post.PostComments.OrderBy(c => c.CreatedAt))
+=======
+                                @* Loop: repeats this UI block for each item sent by the controller. *@
+@foreach (var comment in post.PostComments.OrderBy(c => c.CreatedAt))
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
                                 {
                                     var canManageComment = manageableCommentIds.Contains(comment.Id);
                                     <div class="d-flex mb-2">

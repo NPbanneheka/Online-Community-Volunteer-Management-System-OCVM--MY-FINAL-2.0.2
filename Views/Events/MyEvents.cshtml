@@ -1,5 +1,16 @@
+<<<<<<< HEAD
 @* Views/Events/MyEvents.cshtml: Razor view that renders the Events/MyEvents page in the browser. Comments describe UI/data purpose only. *@
 @* @model declares the C# type this Razor page receives from its controller. *@
+=======
+@* 
+View responsibility: Views/Events/MyEvents.cshtml
+Technology map:
+- Razor syntax mixes HTML with C# expressions for dynamic page rendering.
+- Tag Helpers such as asp-action/asp-controller connect forms and links to MVC controller actions.
+- Model/ViewBag data comes from the controller action that returns this view.
+*@
+
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
 @model IEnumerable<OCVMS.Models.VolunteerEvent>
 @* Razor code block prepares page variables such as title, filters, or values from ViewBag/ViewData. *@
 @{
@@ -13,8 +24,13 @@
         <a asp-controller="Events" asp-action="Index" class="btn btn-outline-primary rounded-pill px-4">Find More Events</a>
     </div>
 
+<<<<<<< HEAD
     @* Conditional UI: renders this section only when the condition is true. *@
     @if (!Model.Any())
+=======
+    @* Conditional UI: shows/hides content based on role, status, or available data. *@
+@if (!Model.Any())
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
     {
         <div class="card border-0 shadow-sm rounded-4 text-center p-5">
             <i class="bi bi-calendar-x text-muted" style="font-size: 4rem; opacity: 0.3;"></i>
@@ -27,8 +43,13 @@
     else
     {
         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+<<<<<<< HEAD
             @* Loops through the model/list data and renders one UI section for each record. *@
             @foreach (var item in Model)
+=======
+            @* Loop: repeats this UI block for each item sent by the controller. *@
+@foreach (var item in Model)
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
             {
                 <div class="col">
                     <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden">
@@ -56,10 +77,16 @@
                             <div class="d-grid gap-2 mt-4">
                                 @* Tag Helpers generate correct MVC URLs for controller actions. *@
                                 <a asp-controller="Events" asp-action="Details" asp-route-id="@item.Id" class="btn btn-outline-primary rounded-pill fw-bold">View Details</a>
+<<<<<<< HEAD
                                 @* Form sends user input back to a controller action for validation and processing. *@
                                 <form asp-controller="Events" asp-action="Unregister" method="post" onsubmit="return confirm('Are you sure you want to cancel your registration?');">
+=======
+                                @* Form area: collects user input and sends it to the controller action. *@
+<form asp-controller="Events" asp-action="Unregister" method="post" onsubmit="return confirm('Are you sure you want to cancel your registration?');">
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
                                     @Html.AntiForgeryToken()
-                                    <input type="hidden" name="eventId" value="@item.Id" />
+                                    @* Input field: binds form data to the model/view model. *@
+<input type="hidden" name="eventId" value="@item.Id" />
                                     <button type="submit" class="btn btn-light text-danger w-100 rounded-pill fw-bold"><i class="bi bi-x-circle me-1"></i> Cancel Registration</button>
                                 </form>
                             </div>

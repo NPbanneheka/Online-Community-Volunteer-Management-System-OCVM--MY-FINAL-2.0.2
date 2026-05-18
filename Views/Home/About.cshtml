@@ -1,4 +1,15 @@
+<<<<<<< HEAD
 @* Views/Home/About.cshtml: Razor view that renders the Home/About page in the browser. Comments describe UI/data purpose only. *@
+=======
+@* 
+View responsibility: Views/Home/About.cshtml
+Technology map:
+- Razor syntax mixes HTML with C# expressions for dynamic page rendering.
+- Tag Helpers such as asp-action/asp-controller connect forms and links to MVC controller actions.
+- Model/ViewBag data comes from the controller action that returns this view.
+*@
+
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
 @using OCVMS.Models
 @* Razor code block prepares page variables such as title, filters, or values from ViewBag/ViewData. *@
 @{
@@ -13,8 +24,13 @@
         <h1 class="fw-bold mb-3">About OCVMS</h1>
         <p class="text-muted mb-3">OCVMS is a web-based system for volunteer management, event organization, reputation tracking, and community engagement.</p>
         <div class="d-flex flex-wrap gap-3 align-items-center">
+<<<<<<< HEAD
             @* Conditional UI: renders this section only when the condition is true. *@
             @if (appRatingCount > 0)
+=======
+            @* Conditional UI: shows/hides content based on role, status, or available data. *@
+@if (appRatingCount > 0)
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
             {
                 <span class="badge bg-warning bg-opacity-10 text-warning rounded-pill px-4 py-3">
                     <i class="bi bi-star-fill me-1"></i> Overall Platform Rating: @appAverageRating.ToString("0.0") / 5
@@ -41,8 +57,13 @@
         @* Conditional UI: renders this section only when the condition is true. *@
         @if (User.Identity?.IsAuthenticated == true)
         {
+<<<<<<< HEAD
             @* Form sends user input back to a controller action for validation and processing. *@
             <form asp-action="RateApplication" method="post" class="row g-3">
+=======
+            @* Form area: collects user input and sends it to the controller action. *@
+<form asp-action="RateApplication" method="post" class="row g-3">
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
                 @Html.AntiForgeryToken()
                 <div class="col-md-3">
                     <label class="form-label fw-semibold">Your Rating</label>
@@ -62,7 +83,8 @@
                 </div>
                 <div class="col-md-9">
                     <label class="form-label fw-semibold">Short Review (Optional)</label>
-                    <input name="reviewText" class="form-control rounded-pill" placeholder="Share a short comment about the platform" value="@myAppRating?.ReviewText" />
+                    @* Input field: binds form data to the model/view model. *@
+<input name="reviewText" class="form-control rounded-pill" placeholder="Share a short comment about the platform" value="@myAppRating?.ReviewText" />
                 </div>
                 <div class="col-12">
                     <button type="submit" class="btn btn-warning rounded-pill px-4 fw-bold">@(myAppRating == null ? "Submit Platform Rating" : "Update Platform Rating")</button>

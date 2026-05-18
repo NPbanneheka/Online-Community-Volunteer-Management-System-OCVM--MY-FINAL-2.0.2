@@ -1,7 +1,17 @@
+<<<<<<< HEAD
 // Controllers/HelpRequestsController.cs
 // This MVC controller file that receives browser requests and coordinates models, services, and views.
 // Comments explain purpose, connected technologies, variables, and data flow without changing behavior.
 // ASP.NET Core authorization attributes such as [Authorize] and [AllowAnonymous].
+=======
+// Handles support/help request creation, tracking, editing, resolving, and deletion.
+// Technology map:
+// - ASP.NET Core MVC receives help request forms and returns Razor views.
+// - EF Core stores support requests and related notifications.
+// - Identity and role checks separate normal users from admin-level management.
+// Connected files: HelpRequest, Notification, UserProfile models and HelpRequests views.
+
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
 using Microsoft.AspNetCore.Authorization;
 // ASP.NET Core Identity services for users, roles, passwords, sign-in sessions, and lockout/ban behavior.
 using Microsoft.AspNetCore.Identity;
@@ -19,10 +29,15 @@ namespace OCVMS.Controllers;
 // Controller class: methods inside this class respond to user actions from the browser.
 public class HelpRequestsController : Controller
 {
+<<<<<<< HEAD
     // _context connects this class to SQL Server through Entity Framework Core and ApplicationDbContext.
     private readonly ApplicationDbContext _context;
     // _userManager works with ASP.NET Identity users, including lookup, creation, roles, and passwords.
     private readonly UserManager<IdentityUser> _userManager;
+=======
+    private readonly ApplicationDbContext _context; // EF Core context connected to SQL Server tables.
+    private readonly UserManager<IdentityUser> _userManager; // Identity service for user lookup, roles, and account operations.
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
 
     public HelpRequestsController(ApplicationDbContext context, UserManager<IdentityUser> userManager)
     {
@@ -30,7 +45,11 @@ public class HelpRequestsController : Controller
         _userManager = userManager;
     }
 
+<<<<<<< HEAD
     // Loads the default page or list view for this controller.
+=======
+    // Main listing page: loads records, applies filters/search, prepares ViewBag data, then returns the view.
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
 
     public async Task<IActionResult> Index()
     {
@@ -47,7 +66,6 @@ public class HelpRequestsController : Controller
         var requests = allRequests
             .Where(h => CanViewHelpRequest(h, profile, isAdmin))
             .ToList();
-
         ViewBag.CurrentProfileId = profile?.Id;
         ViewBag.CurrentOrganizationName = profile?.OrganizationName;
         ViewBag.IsAdmin = isAdmin;
@@ -64,7 +82,11 @@ public class HelpRequestsController : Controller
         return View(requests);
     }
 
+<<<<<<< HEAD
     // Displays or processes the form used to create a new record.
+=======
+    // Create page/action: GET shows the form; POST validates input, saves new data, and redirects after success.
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
 
     public IActionResult Create()
     {
@@ -74,7 +96,11 @@ public class HelpRequestsController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+<<<<<<< HEAD
     // Displays or processes the form used to create a new record.
+=======
+    // Create page/action: GET shows the form; POST validates input, saves new data, and redirects after success.
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
     public async Task<IActionResult> Create(HelpRequest helpRequest)
     {
         var profile = await GetCurrentProfileAsync();
@@ -82,9 +108,13 @@ public class HelpRequestsController : Controller
         // Handles missing data safely before continuing with the requested operation.
         if (profile == null)
         {
+<<<<<<< HEAD
             // TempData stores a one-time message that is displayed after redirecting to another page.
             TempData["Message"] = "Please complete your profile before submitting a support request.";
             // Redirects the browser to another MVC action after the current operation is complete.
+=======
+        TempData["Message"] = "Please complete your profile before submitting a support request.";
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
             return RedirectToAction("Edit", "Profile");
         }
 
@@ -119,8 +149,11 @@ public class HelpRequestsController : Controller
                 Message = $"New support request submitted: {helpRequest.Title}."
             });
         }
+<<<<<<< HEAD
 
         // Commits all pending EF Core changes to the SQL Server database.
+=======
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
         await _context.SaveChangesAsync();
 
         // TempData stores a one-time message that is displayed after redirecting to another page.
@@ -129,7 +162,11 @@ public class HelpRequestsController : Controller
         return RedirectToAction(nameof(Index));
     }
 
+<<<<<<< HEAD
     // Loads a single record with related data for a detail page.
+=======
+    // Details page: loads one selected record with related data and checks permissions for the current user.
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
 
     public async Task<IActionResult> Details(int? id)
     {
@@ -159,7 +196,11 @@ public class HelpRequestsController : Controller
     }
 
     [HttpGet]
+<<<<<<< HEAD
     // Displays or processes the form used to update an existing record.
+=======
+    // Edit page/action: GET loads existing data; POST validates ownership/role, updates fields, and saves changes.
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
     public async Task<IActionResult> Edit(int? id)
     {
         // Handles missing data safely before continuing with the requested operation.
@@ -187,7 +228,11 @@ public class HelpRequestsController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+<<<<<<< HEAD
     // Displays or processes the form used to update an existing record.
+=======
+    // Edit page/action: GET loads existing data; POST validates ownership/role, updates fields, and saves changes.
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
     public async Task<IActionResult> Edit(int id, HelpRequest helpRequest)
     {
         // Returns HTTP 404 when the requested record does not exist.
@@ -235,7 +280,11 @@ public class HelpRequestsController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+<<<<<<< HEAD
     // Deletes an existing record after validation and authorization checks.
+=======
+    // Delete action: confirms permission, removes the selected record, and saves the database change.
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
     public async Task<IActionResult> Delete(int id)
     {
         var helpRequest = await _context.HelpRequests
@@ -273,9 +322,13 @@ public class HelpRequestsController : Controller
         var allowedStatuses = new[] { "Pending", "In Progress", "Resolved", "Closed" };
         if (!allowedStatuses.Contains(status))
         {
+<<<<<<< HEAD
             // TempData stores a one-time message that is displayed after redirecting to another page.
             TempData["Message"] = "Invalid status selected.";
             // Redirects the browser to another MVC action after the current operation is complete.
+=======
+        TempData["Message"] = "Invalid status selected.";
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
             return RedirectToAction(nameof(Index));
         }
 

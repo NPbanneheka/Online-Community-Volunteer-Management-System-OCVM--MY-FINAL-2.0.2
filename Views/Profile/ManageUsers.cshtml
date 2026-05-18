@@ -1,4 +1,15 @@
+<<<<<<< HEAD
 @* Views/Profile/ManageUsers.cshtml: Razor view that renders the Profile/ManageUsers page in the browser. Comments describe UI/data purpose only. *@
+=======
+@* 
+View responsibility: Views/Profile/ManageUsers.cshtml
+Technology map:
+- Razor syntax mixes HTML with C# expressions for dynamic page rendering.
+- Tag Helpers such as asp-action/asp-controller connect forms and links to MVC controller actions.
+- Model/ViewBag data comes from the controller action that returns this view.
+*@
+
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
 @using System
 @* @model declares the C# type this Razor page receives from its controller. *@
 @model IEnumerable<OCVMS.Models.UserProfile>
@@ -23,7 +34,8 @@
     </div>
 
     <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
-        <table class="table align-middle mb-0">
+        @* Table: displays multiple records in a readable admin/user list. *@
+<table class="table align-middle mb-0">
             <thead class="table-light">
                 <tr>
                     <th>User</th>
@@ -34,8 +46,13 @@
                 </tr>
             </thead>
             <tbody>
+<<<<<<< HEAD
             @* Loops through the model/list data and renders one UI section for each record. *@
             @foreach (var item in Model)
+=======
+            @* Loop: repeats this UI block for each item sent by the controller. *@
+@foreach (var item in Model)
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
             {
                 var isAdmin = string.Equals(item.RoleName, "Admin", StringComparison.OrdinalIgnoreCase);
                 var isCurrentAdmin = string.Equals(item.UserId, currentAdminUserId, StringComparison.OrdinalIgnoreCase);
@@ -44,8 +61,13 @@
                 <tr>
                     <td>
                         <div class="d-flex align-items-center gap-3">
+<<<<<<< HEAD
                             @* Conditional UI: renders this section only when the condition is true. *@
                             @if (!string.IsNullOrWhiteSpace(item.ProfileImageUrl))
+=======
+                            @* Conditional UI: shows/hides content based on role, status, or available data. *@
+@if (!string.IsNullOrWhiteSpace(item.ProfileImageUrl))
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
                             {
                                 <img src="@item.ProfileImageUrl" class="rounded-circle" style="width:45px;height:45px;object-fit:cover;" alt="Profile" />
                             }
@@ -108,10 +130,16 @@
                                 @* Conditional UI: renders this section only when the condition is true. *@
                                 @if (item.IsVerified)
                                 {
+<<<<<<< HEAD
                                     @* Form sends user input back to a controller action for validation and processing. *@
                                     <form asp-action="UnverifyUser" method="post" class="d-inline">
+=======
+                                    @* Form area: collects user input and sends it to the controller action. *@
+<form asp-action="UnverifyUser" method="post" class="d-inline">
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
                                         @Html.AntiForgeryToken()
-                                        <input type="hidden" name="id" value="@item.Id" />
+                                        @* Input field: binds form data to the model/view model. *@
+<input type="hidden" name="id" value="@item.Id" />
                                         <button type="submit" class="btn btn-sm btn-outline-warning rounded-pill px-3"
                                                 onclick="return confirm('Change this verified account back to pending verification?');">
                                             Unverify

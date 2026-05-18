@@ -1,5 +1,16 @@
+<<<<<<< HEAD
 @* Views/Events/Index.cshtml: Razor view that renders the Events/Index page in the browser. Comments describe UI/data purpose only. *@
 @* @model declares the C# type this Razor page receives from its controller. *@
+=======
+@* 
+View responsibility: Views/Events/Index.cshtml
+Technology map:
+- Razor syntax mixes HTML with C# expressions for dynamic page rendering.
+- Tag Helpers such as asp-action/asp-controller connect forms and links to MVC controller actions.
+- Model/ViewBag data comes from the controller action that returns this view.
+*@
+
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
 @model IEnumerable<OCVMS.Models.VolunteerEvent>
 @* Razor code block prepares page variables such as title, filters, or values from ViewBag/ViewData. *@
 @{
@@ -16,22 +27,36 @@
             <h1 class="fw-bold mb-1">Volunteer Events</h1>
             <p class="text-muted mb-0">Browse active events, view registration closing dates, and join opportunities.</p>
         </div>
+<<<<<<< HEAD
         @* Conditional UI: renders this section only when the condition is true. *@
         @if (User.IsInRole("Admin") || User.IsInRole("Organizer"))
         {
             @* Tag Helpers generate correct MVC URLs for controller actions. *@
             <a asp-action="Create" class="btn btn-primary rounded-pill px-4 fw-bold">
+=======
+        @* Conditional UI: shows/hides content based on role, status, or available data. *@
+@if (User.IsInRole("Admin") || User.IsInRole("Organizer"))
+        {
+            @* This form/action creates a new record after validation. *@
+<a asp-action="Create" class="btn btn-primary rounded-pill px-4 fw-bold">
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
                 <i class="bi bi-plus-lg me-1"></i> Create New Event
             </a>
         }
     </div>
 
+<<<<<<< HEAD
     @* Form sends user input back to a controller action for validation and processing. *@
     <form asp-action="Index" method="get" class="mb-5 card border-0 shadow-sm rounded-4 p-3">
+=======
+    @* Form area: collects user input and sends it to the controller action. *@
+<form asp-action="Index" method="get" class="mb-5 card border-0 shadow-sm rounded-4 p-3">
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
         <div class="row g-2 align-items-end">
             <div class="col-lg-5 col-md-12">
                 <label class="form-label small fw-bold text-muted">Search</label>
-                <input type="text" name="searchTerm" class="form-control rounded-pill px-4" placeholder="Search by title, organizer, or organization..." value="@ViewBag.SearchTerm">
+                @* Input field: binds form data to the model/view model. *@
+<input type="text" name="searchTerm" class="form-control rounded-pill px-4" placeholder="Search by title, organizer, or organization..." value="@ViewBag.SearchTerm">
             </div>
             <div class="col-lg-3 col-md-4">
                 <label class="form-label small fw-bold text-muted">Event Date</label>
@@ -68,8 +93,13 @@
     else
     {
         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+<<<<<<< HEAD
             @* Loops through the model/list data and renders one UI section for each record. *@
             @foreach (var item in Model)
+=======
+            @* Loop: repeats this UI block for each item sent by the controller. *@
+@foreach (var item in Model)
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
             {
                 var canManage = manageableEventIds.Contains(item.Id);
                 var publicStatus = item.PublicStatus;
@@ -134,8 +164,13 @@
                                     <div class="d-flex gap-2 mb-2">
                                         @* Tag Helpers generate correct MVC URLs for controller actions. *@
                                         <a asp-action="JoinedVolunteers" asp-route-id="@item.Id" class="btn btn-info btn-sm rounded-pill w-50 fw-bold text-white">Volunteers</a>
+<<<<<<< HEAD
                                         @* Tag Helpers generate correct MVC URLs for controller actions. *@
                                         <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-warning btn-sm rounded-pill w-50 fw-bold">Edit</a>
+=======
+                                        @* This form/action updates an existing record after permission checks. *@
+<a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-warning btn-sm rounded-pill w-50 fw-bold">Edit</a>
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
                                     </div>
                                 }
                                 @* Conditional UI: renders this section only when the condition is true. *@

@@ -1,7 +1,17 @@
+<<<<<<< HEAD
 // Controllers/DashboardController.cs
 // This MVC controller file that receives browser requests and coordinates models, services, and views.
 // Comments explain purpose, connected technologies, variables, and data flow without changing behavior.
 // ASP.NET Core authorization attributes such as [Authorize] and [AllowAnonymous].
+=======
+// Builds the role-aware dashboard summary shown after login.
+// Technology map:
+// - ASP.NET Core MVC prepares dashboard data for Razor views.
+// - EF Core counts users, events, registrations, help requests, and notifications.
+// - ASP.NET Identity identifies the current user and role.
+// Connected files: DashboardViewModel, UserProfile, VolunteerEvent, EventRegistration, HelpRequest.
+
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
 using Microsoft.AspNetCore.Authorization;
 // ASP.NET Core Identity services for users, roles, passwords, sign-in sessions, and lockout/ban behavior.
 using Microsoft.AspNetCore.Identity;
@@ -20,13 +30,18 @@ namespace OCVMS.Controllers;
 // Controller class: methods inside this class respond to user actions from the browser.
 public class DashboardController : Controller
 {
-    private const string ApplicationRatingTargetId = "__APPLICATION__";
-    private const int ApplicationRatingEventId = 0;
+    private const string ApplicationRatingTargetId = "__APPLICATION__"; // Special rating target used when rating the whole platform instead of a single event.
+    private const int ApplicationRatingEventId = 0; // EventId placeholder for platform-level ratings.
 
+<<<<<<< HEAD
     // _context connects this class to SQL Server through Entity Framework Core and ApplicationDbContext.
     private readonly ApplicationDbContext _context;
     // _userManager works with ASP.NET Identity users, including lookup, creation, roles, and passwords.
     private readonly UserManager<IdentityUser> _userManager;
+=======
+    private readonly ApplicationDbContext _context; // EF Core context connected to SQL Server tables.
+    private readonly UserManager<IdentityUser> _userManager; // Identity service for user lookup, roles, and account operations.
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
 
     public DashboardController(ApplicationDbContext context, UserManager<IdentityUser> userManager)
     {
@@ -34,7 +49,11 @@ public class DashboardController : Controller
         _userManager = userManager;
     }
 
+<<<<<<< HEAD
     // Loads the default page or list view for this controller.
+=======
+    // Main listing page: loads records, applies filters/search, prepares ViewBag data, then returns the view.
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
 
     public async Task<IActionResult> Index()
     {
@@ -73,7 +92,6 @@ public class DashboardController : Controller
             AverageRating = await ratingsQuery.Select(x => (double?)x.Score).AverageAsync() ?? 0,
             RatingCount = await ratingsQuery.CountAsync()
         };
-
         ViewBag.MyProfile = profile;
         ViewBag.RatingTitle = ratingTitle;
         ViewBag.RatingEmptyText = ratingEmptyText;

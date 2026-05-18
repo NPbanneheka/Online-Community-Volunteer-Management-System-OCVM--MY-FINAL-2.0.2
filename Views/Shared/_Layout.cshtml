@@ -1,4 +1,15 @@
+<<<<<<< HEAD
 @* Views/Shared/_Layout.cshtml: Razor view that renders the Shared/_Layout page in the browser. Comments describe UI/data purpose only. *@
+=======
+@* 
+View responsibility: Views/Shared/_Layout.cshtml
+Technology map:
+- Razor syntax mixes HTML with C# expressions for dynamic page rendering.
+- Tag Helpers such as asp-action/asp-controller connect forms and links to MVC controller actions.
+- Model/ViewBag data comes from the controller action that returns this view.
+*@
+
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -45,8 +56,13 @@
                 </ul>
 
                 <ul class="navbar-nav ms-auto align-items-xl-center gap-xl-1">
+<<<<<<< HEAD
                     @* Conditional UI: renders this section only when the condition is true. *@
                     @if (User.Identity?.IsAuthenticated == true)
+=======
+                    @* Conditional UI: shows/hides content based on role, status, or available data. *@
+@if (User.Identity?.IsAuthenticated == true)
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
                     {
                         <li class="nav-item">
                             @* Tag Helpers generate correct MVC URLs for controller actions. *@
@@ -87,8 +103,13 @@
                         </li>
 
                         <li class="nav-item mt-2 mt-xl-0 ms-xl-2">
+<<<<<<< HEAD
                             @* Form sends user input back to a controller action for validation and processing. *@
                             <form asp-controller="Account" asp-action="Logout" method="post" class="d-grid">
+=======
+                            @* Form area: collects user input and sends it to the controller action. *@
+<form asp-controller="Account" asp-action="Logout" method="post" class="d-grid">
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
                                 <button type="submit" class="btn btn-light btn-sm rounded-pill px-3 px-lg-4">
                                     Logout
                                 </button>

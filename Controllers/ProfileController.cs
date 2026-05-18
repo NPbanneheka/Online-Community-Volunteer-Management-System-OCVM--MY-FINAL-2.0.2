@@ -1,7 +1,18 @@
+<<<<<<< HEAD
 // Controllers/ProfileController.cs
 // This MVC controller file that receives browser requests and coordinates models, services, and views.
 // Comments explain purpose, connected technologies, variables, and data flow without changing behavior.
 // ASP.NET Core authorization attributes such as [Authorize] and [AllowAnonymous].
+=======
+// Handles profiles and admin-side user management: view/edit profile, verify, ban, unban, and delete users.
+// Technology map:
+// - ASP.NET Core MVC handles profile pages and admin actions.
+// - ASP.NET Core Identity manages account-level data, roles, lockout, and deletion.
+// - EF Core manages project data such as profiles, events, registrations, posts, ratings, and notifications.
+// - IWebHostEnvironment is used for profile image upload paths.
+// Connected files: ProfileEditViewModel, UserProfile model, Profile views, related project entities.
+
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -23,11 +34,17 @@ namespace OCVMS.Controllers;
 // Controller class: methods inside this class respond to user actions from the browser.
 public class ProfileController : Controller
 {
+<<<<<<< HEAD
     // _context connects this class to SQL Server through Entity Framework Core and ApplicationDbContext.
     private readonly ApplicationDbContext _context;
     // _userManager works with ASP.NET Identity users, including lookup, creation, roles, and passwords.
     private readonly UserManager<IdentityUser> _userManager;
     private readonly IWebHostEnvironment _environment;
+=======
+    private readonly ApplicationDbContext _context; // EF Core context connected to SQL Server tables.
+    private readonly UserManager<IdentityUser> _userManager; // Identity service for user lookup, roles, and account operations.
+    private readonly IWebHostEnvironment _environment; // Provides wwwroot paths for uploaded image files.
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
 
     public ProfileController(
         ApplicationDbContext context,
@@ -39,7 +56,11 @@ public class ProfileController : Controller
         _environment = environment;
     }
 
+<<<<<<< HEAD
     // Displays the current user profile and related profile information.
+=======
+    // Shows the current user profile with personal and role-related information.
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
 
     public async Task<IActionResult> MyProfile()
     {
@@ -54,7 +75,11 @@ public class ProfileController : Controller
     }
 
     [HttpGet]
+<<<<<<< HEAD
     // Displays or processes the form used to update an existing record.
+=======
+    // Edit page/action: GET loads existing data; POST validates ownership/role, updates fields, and saves changes.
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
     public async Task<IActionResult> Edit()
     {
         var user = await _userManager.GetUserAsync(User);
@@ -95,7 +120,11 @@ public class ProfileController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+<<<<<<< HEAD
     // Displays or processes the form used to update an existing record.
+=======
+    // Edit page/action: GET loads existing data; POST validates ownership/role, updates fields, and saves changes.
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
     public async Task<IActionResult> Edit(ProfileEditViewModel model)
     {
         var user = await _userManager.GetUserAsync(User);
@@ -197,8 +226,11 @@ public class ProfileController : Controller
         }
         // If no new image is uploaded, keep the existing saved image path.
         // Do not trust the hidden ProfileImageUrl field because it can be changed from the browser.
+<<<<<<< HEAD
 
         // Commits all pending EF Core changes to the SQL Server database.
+=======
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
         await _context.SaveChangesAsync();
         // TempData stores a one-time message that is displayed after redirecting to another page.
         TempData["Message"] = "Profile updated successfully!";
@@ -207,14 +239,17 @@ public class ProfileController : Controller
     }
 
     [AllowAnonymous]
+<<<<<<< HEAD
     // Displays another user profile in read-only mode.
+=======
+    // Shows another user profile in read-only mode.
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
     public async Task<IActionResult> ViewProfile(string id)
     {
         var profile = await GetPrimaryProfileForUserAsync(id);
         // Handles missing data safely before continuing with the requested operation.
         // Returns HTTP 404 when the requested record does not exist.
         if (profile == null) return NotFound();
-
         ViewBag.AverageRating = await _context.UserRatings
             .Where(x => x.ToUserId == id)
             .Select(x => (double?)x.Score)
@@ -224,7 +259,11 @@ public class ProfileController : Controller
         return View(profile);
     }
 
+<<<<<<< HEAD
     // Loads the default page or list view for this controller.
+=======
+    // Main listing page: loads records, applies filters/search, prepares ViewBag data, then returns the view.
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
 
     public IActionResult Index()
     {
@@ -233,7 +272,11 @@ public class ProfileController : Controller
     }
 
     [Authorize(Roles = "Admin")]
+<<<<<<< HEAD
     // Loads user accounts for administrator review, verification, banning, or deletion.
+=======
+    // Admin user-management page: lists users and supports verification, ban/unban, and delete actions.
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
     public async Task<IActionResult> ManageUsers()
     {
         var adminProfilesToFix = await _context.UserProfiles
@@ -283,7 +326,11 @@ public class ProfileController : Controller
     [HttpPost]
     [Authorize(Roles = "Admin")]
     [ValidateAntiForgeryToken]
+<<<<<<< HEAD
     // Marks a selected user profile as verified after administrator review.
+=======
+    // Admin action: marks a selected user profile as verified.
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
     public async Task<IActionResult> VerifyUser(int id)
     {
         return await SetVerificationStatusAsync(id, true);
@@ -310,7 +357,11 @@ public class ProfileController : Controller
     [HttpPost]
     [Authorize(Roles = "Admin")]
     [ValidateAntiForgeryToken]
+<<<<<<< HEAD
     // Removes account lockout and allows the selected user to log in again.
+=======
+    // Admin action: re-enables a previously banned user account.
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
     public async Task<IActionResult> UnbanUser(int id)
     {
         return await SetTemporaryBanStatusAsync(id, false);
@@ -330,17 +381,25 @@ public class ProfileController : Controller
         // Handles missing data safely before continuing with the requested operation.
         if (user == null)
         {
+<<<<<<< HEAD
             // TempData stores a one-time message that is displayed after redirecting to another page.
             TempData["Message"] = "Identity account was not found for the selected user.";
             // Redirects the browser to another MVC action after the current operation is complete.
+=======
+        TempData["Message"] = "Identity account was not found for the selected user.";
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
             return RedirectToAction(nameof(ManageUsers));
         }
 
         if (string.Equals(profile.RoleName, "Admin", StringComparison.OrdinalIgnoreCase) || await _userManager.IsInRoleAsync(user, "Admin"))
         {
+<<<<<<< HEAD
             // TempData stores a one-time message that is displayed after redirecting to another page.
             TempData["Message"] = "Admin accounts are protected system accounts. Their verification status cannot be changed from User Management.";
             // Redirects the browser to another MVC action after the current operation is complete.
+=======
+        TempData["Message"] = "Admin accounts are protected system accounts. Their verification status cannot be changed from User Management.";
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
             return RedirectToAction(nameof(ManageUsers));
         }
 
@@ -379,9 +438,13 @@ public class ProfileController : Controller
         // Handles missing data safely before continuing with the requested operation.
         if (user == null)
         {
+<<<<<<< HEAD
             // TempData stores a one-time message that is displayed after redirecting to another page.
             TempData["Message"] = "Identity account was not found for the selected user.";
             // Redirects the browser to another MVC action after the current operation is complete.
+=======
+        TempData["Message"] = "Identity account was not found for the selected user.";
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
             return RedirectToAction(nameof(ManageUsers));
         }
 
@@ -389,17 +452,25 @@ public class ProfileController : Controller
         var currentUserId = _userManager.GetUserId(User);
         if (user.Id == currentUserId)
         {
+<<<<<<< HEAD
             // TempData stores a one-time message that is displayed after redirecting to another page.
             TempData["Message"] = "You cannot temporarily ban or unban your own currently logged-in admin account.";
             // Redirects the browser to another MVC action after the current operation is complete.
+=======
+        TempData["Message"] = "You cannot temporarily ban or unban your own currently logged-in admin account.";
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
             return RedirectToAction(nameof(ManageUsers));
         }
 
         if (string.Equals(profile.RoleName, "Admin", StringComparison.OrdinalIgnoreCase) || await _userManager.IsInRoleAsync(user, "Admin"))
         {
+<<<<<<< HEAD
             // TempData stores a one-time message that is displayed after redirecting to another page.
             TempData["Message"] = "Admin accounts are protected and cannot be temporarily banned or unbanned from this page.";
             // Redirects the browser to another MVC action after the current operation is complete.
+=======
+        TempData["Message"] = "Admin accounts are protected and cannot be temporarily banned or unbanned from this page.";
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
             return RedirectToAction(nameof(ManageUsers));
         }
 
@@ -409,8 +480,12 @@ public class ProfileController : Controller
         var result = await _userManager.UpdateAsync(user);
         if (!result.Succeeded)
         {
+<<<<<<< HEAD
             // TempData stores a one-time message that is displayed after redirecting to another page.
             TempData["Message"] = "Could not update the temporary ban status: " +
+=======
+        TempData["Message"] = "Could not update the temporary ban status: " +
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
                                   string.Join(", ", result.Errors.Select(e => e.Description));
             // Redirects the browser to another MVC action after the current operation is complete.
             return RedirectToAction(nameof(ManageUsers));
@@ -428,7 +503,11 @@ public class ProfileController : Controller
     [HttpPost]
     [Authorize(Roles = "Admin")]
     [ValidateAntiForgeryToken]
+<<<<<<< HEAD
     // Handles the DeleteUser request using MVC action logic and returns the appropriate response.
+=======
+    // Admin action: removes a selected user and related records safely.
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
     public async Task<IActionResult> DeleteUser(int id)
     {
         // Retrieves a single matching database record asynchronously; returns null when not found.
@@ -441,9 +520,13 @@ public class ProfileController : Controller
         // Handles missing data safely before continuing with the requested operation.
         if (user == null)
         {
+<<<<<<< HEAD
             // TempData stores a one-time message that is displayed after redirecting to another page.
             TempData["Message"] = "Identity account was not found. Please check this user manually.";
             // Redirects the browser to another MVC action after the current operation is complete.
+=======
+        TempData["Message"] = "Identity account was not found. Please check this user manually.";
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
             return RedirectToAction(nameof(ManageUsers));
         }
 
@@ -451,17 +534,25 @@ public class ProfileController : Controller
         var currentUserId = _userManager.GetUserId(User);
         if (user.Id == currentUserId)
         {
+<<<<<<< HEAD
             // TempData stores a one-time message that is displayed after redirecting to another page.
             TempData["Message"] = "You cannot delete your own admin account while logged in.";
             // Redirects the browser to another MVC action after the current operation is complete.
+=======
+        TempData["Message"] = "You cannot delete your own admin account while logged in.";
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
             return RedirectToAction(nameof(ManageUsers));
         }
 
         if (await _userManager.IsInRoleAsync(user, "Admin"))
         {
+<<<<<<< HEAD
             // TempData stores a one-time message that is displayed after redirecting to another page.
             TempData["Message"] = "Admin accounts are protected and cannot be deleted from this page.";
             // Redirects the browser to another MVC action after the current operation is complete.
+=======
+        TempData["Message"] = "Admin accounts are protected and cannot be deleted from this page.";
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
             return RedirectToAction(nameof(ManageUsers));
         }
 
@@ -572,6 +663,7 @@ public class ProfileController : Controller
                 }
             });
 
+<<<<<<< HEAD
             // TempData stores a one-time message that is displayed after redirecting to another page.
             TempData["Message"] = $"{deletedFullName}'s account and all related data were deleted successfully.";
         }
@@ -579,6 +671,13 @@ public class ProfileController : Controller
         {
             // TempData stores a one-time message that is displayed after redirecting to another page.
             TempData["Message"] = ex.Message;
+=======
+        TempData["Message"] = $"{deletedFullName}'s account and all related data were deleted successfully.";
+        }
+        catch (Exception ex)
+        {
+        TempData["Message"] = ex.Message;
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
         }
 
         // Redirects the browser to another MVC action after the current operation is complete.

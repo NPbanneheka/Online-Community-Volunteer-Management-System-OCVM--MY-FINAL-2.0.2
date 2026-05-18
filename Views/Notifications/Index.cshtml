@@ -1,5 +1,16 @@
+<<<<<<< HEAD
 @* Views/Notifications/Index.cshtml: Razor view that renders the Notifications/Index page in the browser. Comments describe UI/data purpose only. *@
 @* @model declares the C# type this Razor page receives from its controller. *@
+=======
+@* 
+View responsibility: Views/Notifications/Index.cshtml
+Technology map:
+- Razor syntax mixes HTML with C# expressions for dynamic page rendering.
+- Tag Helpers such as asp-action/asp-controller connect forms and links to MVC controller actions.
+- Model/ViewBag data comes from the controller action that returns this view.
+*@
+
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
 @model IEnumerable<OCVMS.Models.Notification>
 @* Razor code block prepares page variables such as title, filters, or values from ViewBag/ViewData. *@
 @{
@@ -12,11 +23,19 @@
             <h2 class="fw-bold mb-1">Notifications</h2>
             <p class="text-muted mb-0">System updates related to your events, registrations, and support requests.</p>
         </div>
+<<<<<<< HEAD
         @* Conditional UI: renders this section only when the condition is true. *@
         @if (Model != null && Model.Any(n => !n.IsRead))
         {
             @* Form sends user input back to a controller action for validation and processing. *@
             <form asp-action="MarkAllAsRead" method="post">
+=======
+        @* Conditional UI: shows/hides content based on role, status, or available data. *@
+@if (Model != null && Model.Any(n => !n.IsRead))
+        {
+            @* Form area: collects user input and sends it to the controller action. *@
+<form asp-action="MarkAllAsRead" method="post">
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
                 <button type="submit" class="btn btn-outline-primary rounded-pill px-4 fw-bold">Mark All as Read</button>
             </form>
         }
@@ -34,8 +53,13 @@
     else
     {
         <div class="list-group shadow-sm rounded-4 overflow-hidden">
+<<<<<<< HEAD
             @* Loops through the model/list data and renders one UI section for each record. *@
             @foreach (var item in Model)
+=======
+            @* Loop: repeats this UI block for each item sent by the controller. *@
+@foreach (var item in Model)
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
             {
                 <div class="list-group-item border-0 border-bottom p-4 @(item.IsRead ? "bg-white" : "bg-primary bg-opacity-10")">
                     <div class="d-flex justify-content-between align-items-start gap-3">
@@ -48,7 +72,8 @@
                         {
                             @* Form sends user input back to a controller action for validation and processing. *@
                             <form asp-action="MarkAsRead" method="post">
-                                <input type="hidden" name="id" value="@item.Id" />
+                                @* Input field: binds form data to the model/view model. *@
+<input type="hidden" name="id" value="@item.Id" />
                                 <button type="submit" class="btn btn-sm btn-primary rounded-pill px-3">Read</button>
                             </form>
                         }

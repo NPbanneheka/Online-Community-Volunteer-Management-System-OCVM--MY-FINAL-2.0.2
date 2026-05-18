@@ -1,7 +1,16 @@
+<<<<<<< HEAD
 // Services/TestDataSeeder.cs
 // This service file that contains reusable setup or seeding logic used by the application.
 // Comments explain purpose, connected technologies, variables, and data flow without changing behavior.
 // ASP.NET Core Identity services for users, roles, passwords, sign-in sessions, and lockout/ban behavior.
+=======
+// Optional development/test data seeder.
+// Technology map:
+// - EF Core inserts sample database records for testing/demo purposes.
+// - Identity services can link test users with roles and profiles.
+// Connected files: Program.cs can enable this service; Models define seeded table data.
+
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
 using Microsoft.AspNetCore.Identity;
 // Entity Framework Core features such as Include(), Where(), ToListAsync(), and database queries.
 using Microsoft.EntityFrameworkCore;
@@ -15,7 +24,7 @@ namespace OCVMS.Services;
 public static class TestDataSeeder
 {
     private const string TestPassword = "123";
-
+    // Service entry point used by Program.cs or controllers to prepare demo/runtime data.
     public static async Task SeedAsync(IServiceProvider services)
     {
         var context = services.GetRequiredService<ApplicationDbContext>();
@@ -109,7 +118,11 @@ public static class TestDataSeeder
     {
         foreach (var role in new[] { "Admin", "Organizer", "Volunteer" })
         {
+<<<<<<< HEAD
             // Checks whether the required Identity role already exists before creating or assigning it.
+=======
+            // Check whether the required role already exists before creating it.
+>>>>>>> 36052103534a4f80c4dd0c1d9df8322a619f0675
             if (!await roleManager.RoleExistsAsync(role))
             {
                 // Creates a missing Identity role so role-based authorization can work correctly.
@@ -144,6 +157,7 @@ public static class TestDataSeeder
                 PhoneNumberConfirmed = true
             };
 
+            // Create the default/demo Identity user account.
             var createResult = await userManager.CreateAsync(user);
             if (!createResult.Succeeded)
             {
