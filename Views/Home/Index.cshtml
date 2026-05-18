@@ -1,0 +1,108 @@
+@* Views/Home/Index.cshtml: Razor view that renders the Home/Index page in the browser. Comments describe UI/data purpose only. *@
+@* @model declares the C# type this Razor page receives from its controller. *@
+@model IEnumerable<OCVMS.Models.VolunteerEvent>
+@* Razor code block prepares page variables such as title, filters, or values from ViewBag/ViewData. *@
+@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div class="container mt-5">
+    <div class="row align-items-center mb-5 hero-section text-white p-5 rounded-4 shadow" style="background: linear-gradient(135deg, #1e6091, #1a759f, #168aad);">
+        <div class="col-lg-7">
+            <span class="badge bg-light text-dark mb-3 px-3 py-2 rounded-pill">Build community. Create impact.</span>
+            <h1 class="display-4 fw-bold mb-3">A modern volunteer platform with trust, profiles, ratings, and events.</h1>
+            <p class="lead mb-4">Connect volunteers, organizers, and communities in one clean and attractive platform.</p>
+            
+            <div class="d-flex gap-3">
+                @* Conditional UI: renders this section only when the condition is true. *@
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    @* Tag Helpers generate correct MVC URLs for controller actions. *@
+                    <a asp-controller="Dashboard" asp-action="Index" class="btn btn-light btn-lg px-4 rounded-pill fw-bold shadow-sm" style="color: #1a759f !important;">Go to Dashboard</a>
+                }
+                else
+                {
+                    @* Tag Helpers generate correct MVC URLs for controller actions. *@
+                    <a asp-controller="Account" asp-action="Register" class="btn btn-light btn-lg px-4 rounded-pill fw-bold shadow-sm" style="color: #1a759f !important;">Join as Volunteer</a>
+                }
+                @* Tag Helpers generate correct MVC URLs for controller actions. *@
+                <a asp-controller="Events" asp-action="Index" class="btn btn-outline-light btn-lg px-4 rounded-pill fw-bold">Explore Events</a>
+            </div>
+        </div>
+        <div class="col-lg-5 mt-4 mt-lg-0 text-center text-lg-end">
+             <div class="bg-white bg-opacity-10 p-4 rounded-4 backdrop-blur d-inline-block">
+                <div class="row g-3">
+                     <div class="col-4">
+                         <h2 class="fw-bold mb-0">@(ViewBag.UserCount ?? 0)</h2>
+                         <small class="text-white-50">Users</small>
+                     </div>
+                     <div class="col-4 border-start border-white-50">
+                         <h2 class="fw-bold mb-0">@(ViewBag.TotalEvents ?? Model.Count())</h2>
+                         <small class="text-white-50">Events</small>
+                     </div>
+                     <div class="col-4 border-start border-white-50">
+                         <h2 class="fw-bold mb-0">@(ViewBag.ActiveEvents ?? Model.Count())</h2>
+                         <small class="text-white-50">Active Events</small>
+                     </div>
+                </div>
+             </div>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-end mb-4 mt-5">
+        <h2 class="fw-bold text-dark mb-0">Featured Events</h2>
+        @* Tag Helpers generate correct MVC URLs for controller actions. *@
+        <a asp-controller="Events" asp-action="Index" class="btn btn-outline-primary rounded-pill btn-sm px-3">See all</a>
+    </div>
+    
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+        @* Conditional UI: renders this section only when the condition is true. *@
+        @if (!Model.Any())
+        {
+            <div class="col-12">
+                <div class="card h-100 border-0 shadow-sm rounded-4 text-center p-5">
+                     <i class="bi bi-calendar2-x text-muted" style="font-size: 3rem; opacity: 0.5;"></i>
+                     <h5 class="text-muted mt-3">No upcoming events yet.</h5>
+                </div>
+            </div>
+        }
+        else
+        {
+            @* Loops through the model/list data and renders one UI section for each record. *@
+            @foreach (var item in Model)
+            {
+                <div class="col">
+                    <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden transition-hover">
+                        @* Conditional UI: renders this section only when the condition is true. *@
+                        @if (!string.IsNullOrWhiteSpace(item.ImageUrl))
+                        {
+                            <img src="@item.ImageUrl" alt="@item.Title" style="height: 150px; width: 100%; object-fit: cover; object-position: center;" />
+                        }
+                        else
+                        {
+                            <div class="bg-primary bg-opacity-10 d-flex align-items-center justify-content-center" style="height: 150px;">
+                                <i class="bi bi-calendar-event text-primary opacity-50" style="font-size: 3rem;"></i>
+                            </div>
+                        }
+                        <div class="card-body p-4">
+                            <h5 class="fw-bold text-dark">@item.Title</h5>
+                            <p class="text-muted small mb-2">
+                                <i class="bi bi-geo-alt-fill text-danger"></i> @item.Location<br/>
+                                <i class="bi bi-calendar3 text-primary"></i> @item.EventDate.ToString("MMM dd, yyyy")
+                            </p>
+                            <p class="card-text text-secondary text-truncate">@item.Description</p>
+                            @* Tag Helpers generate correct MVC URLs for controller actions. *@
+                            <a asp-controller="Events" asp-action="Details" asp-route-id="@item.Id" class="btn btn-primary w-100 rounded-pill mt-2">Details</a>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+    </div>
+</div>
+
+<style>
+    .backdrop-blur { backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+    .transition-hover { transition: transform 0.3s ease; }
+    .transition-hover:hover { transform: translateY(-5px); }
+</style>

@@ -1,0 +1,20 @@
+OCVMS Database / Run Guide
+==========================
+
+Recommended connection string for this laptop:
+"DefaultConnection": "Server=.\\SQLEXPRESS;Database=OCVMSDb;Trusted_Connection=True;MultipleActiveResultSets=true;TrustServerCertificate=True"
+
+If another computer uses the default SQL Server instance, use:
+"DefaultConnection": "Server=.;Database=OCVMSDb;Trusted_Connection=True;MultipleActiveResultSets=true;TrustServerCertificate=True"
+
+If using a restored OCVMSDb.bak database:
+1. Restore the backup to your SQL Server instance.
+2. Make sure appsettings.json points to the correct SQL Server instance.
+3. Run the project using:
+   dotnet clean .\OCVMS.csproj
+   dotnet restore .\OCVMS.csproj
+   dotnet build .\OCVMS.csproj
+   dotnet run --project ".\OCVMS.csproj"
+
+Do not run dotnet ef database update on a restored database unless you know the EF migration history matches the database.
+This version includes a small runtime schema patch to add the new event registration open/closing date columns when missing.

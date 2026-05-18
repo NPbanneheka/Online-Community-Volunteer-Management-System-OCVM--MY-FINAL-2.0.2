@@ -1,0 +1,118 @@
+@* Views/Profile/Edit.cshtml: Razor view that renders the Profile/Edit page in the browser. Comments describe UI/data purpose only. *@
+@* @model declares the C# type this Razor page receives from its controller. *@
+@model OCVMS.ViewModels.ProfileEditViewModel
+@* Razor code block prepares page variables such as title, filters, or values from ViewBag/ViewData. *@
+@{ ViewData["Title"] = "Edit Profile"; }
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5">
+                <div class="text-center mb-4">
+                    <h3 class="fw-bold text-dark">Update Your Profile</h3>
+                    <p class="text-muted">Fill in your details to connect with the community.</p>
+                    @* Conditional UI: renders this section only when the condition is true. *@
+                    @if (Model.RoleName == "Organizer")
+                    {
+                        <div class="alert alert-info rounded-4 text-start small">
+                            <strong>Organizer security note:</strong> Your organization name is used to protect events and community posts from other organizations. Support requests are visible to the request owner and admin team.
+                        </div>
+                    }
+                </div>
+
+                @* Form sends user input back to a controller action for validation and processing. *@
+                <form asp-action="Edit" method="post" enctype="multipart/form-data">
+                    @* asp-for binds this input to a ViewModel or Model property. *@
+                    <input type="hidden" asp-for="ProfileImageUrl" />
+                    @* asp-for binds this input to a ViewModel or Model property. *@
+                    <input type="hidden" asp-for="RoleName" />
+
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                    <div class="mb-4 text-center p-4 bg-light rounded-4 border">
+                        <label class="form-label fw-bold d-block text-primary"><i class="bi bi-camera-fill me-2"></i>Upload New Profile Picture</label>
+                        <input type="file" name="ProfileImageFile" class="form-control mx-auto mt-2" style="max-width: 350px;" accept="image/*" onchange="previewImage(event)" />
+                        <small class="text-muted d-block mt-2">Maximum size: 2MB. (JPG, PNG, WEBP). The image is automatically centered and cropped neatly in profile circles.</small>
+                    </div>
+
+                    <div class="mb-4 text-center" id="imagePreviewContainer" style="display: none;">
+                        <img id="profilePreview" src="#" alt="New Profile" class="rounded-circle shadow-sm mt-2" style="width: 120px; height: 120px; object-fit: cover; border: 4px solid #0d6efd;" />
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label asp-for="FullName" class="form-label fw-bold">Full Name</label>
+                            @* asp-for binds this input to a ViewModel or Model property. *@
+                            <input asp-for="FullName" class="form-control rounded-3" required />
+                            @* Displays server/client validation messages for the connected input property. *@
+                            <span asp-validation-for="FullName" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="PublicEmail" class="form-label fw-bold">Public Email</label>
+                            @* asp-for binds this input to a ViewModel or Model property. *@
+                            <input asp-for="PublicEmail" class="form-control rounded-3" type="email" />
+                            @* Displays server/client validation messages for the connected input property. *@
+                            <span asp-validation-for="PublicEmail" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="ContactNumber" class="form-label fw-bold">Contact Number</label>
+                            @* asp-for binds this input to a ViewModel or Model property. *@
+                            <input asp-for="ContactNumber" class="form-control rounded-3" />
+                            @* Displays server/client validation messages for the connected input property. *@
+                            <span asp-validation-for="ContactNumber" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Availability" class="form-label fw-bold">Availability (e.g., Weekends)</label>
+                            @* asp-for binds this input to a ViewModel or Model property. *@
+                            <input asp-for="Availability" class="form-control rounded-3" />
+                        </div>
+                        <div class="col-md-12">
+                            <label asp-for="Skills" class="form-label fw-bold">Skills (Comma separated)</label>
+                            @* asp-for binds this input to a ViewModel or Model property. *@
+                            <input asp-for="Skills" class="form-control rounded-3" placeholder="e.g., Teaching, First Aid, Coding" />
+                        </div>
+                        <div class="col-md-12">
+                            <label asp-for="OrganizationName" class="form-label fw-bold">
+                                Organization Name @if (Model.RoleName == "Organizer") { <span class="text-danger">*</span> }
+                            </label>
+                            @* asp-for binds this input to a ViewModel or Model property. *@
+                            <input asp-for="OrganizationName" class="form-control rounded-3" placeholder="Required for organizers" />
+                            <small class="text-muted">Organizers in the same organization should use the same spelling.</small>
+                            @* Displays server/client validation messages for the connected input property. *@
+                            <span asp-validation-for="OrganizationName" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-12">
+                            <label asp-for="Bio" class="form-label fw-bold">Short Bio</label>
+                            @* asp-for binds this input to a ViewModel or Model property. *@
+                            <textarea asp-for="Bio" class="form-control rounded-3" rows="3"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="mt-5 d-flex gap-2 justify-content-end">
+                        @* Tag Helpers generate correct MVC URLs for controller actions. *@
+                        <a asp-action="MyProfile" class="btn btn-light rounded-pill px-4 fw-bold text-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-primary rounded-pill px-5 fw-bold shadow-sm">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        function previewImage(event) {
+            var input = event.target;
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    var imgPreview = document.getElementById('profilePreview');
+                    imgPreview.src = e.target.result;
+                    document.getElementById('imagePreviewContainer').style.display = 'block';
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+    </script>
+}

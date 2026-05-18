@@ -1,0 +1,61 @@
+@* Views/Community/EditPost.cshtml: Razor view that renders the Community/EditPost page in the browser. Comments describe UI/data purpose only. *@
+@* @model declares the C# type this Razor page receives from its controller. *@
+@model OCVMS.Models.CommunityPost
+@* Razor code block prepares page variables such as title, filters, or values from ViewBag/ViewData. *@
+@{
+    ViewData["Title"] = "Edit Community Post";
+}
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm rounded-4 p-4 p-lg-5">
+                <h2 class="fw-bold mb-2">Edit Community Post</h2>
+                <p class="text-muted mb-4">Only the owner, same organization organizer, or admin can edit this post.</p>
+
+                @* Conditional UI: renders this section only when the condition is true. *@
+                @if (TempData["Error"] != null)
+                {
+                    <div class="alert alert-danger rounded-4">@TempData["Error"]</div>
+                }
+
+                @* Form sends user input back to a controller action for validation and processing. *@
+                <form asp-action="EditPost" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@Model.Id" />
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Post Type</label>
+                        <select name="postType" class="form-select rounded-3">
+                            @* Conditional UI: renders this section only when the condition is true. *@
+                            @if (Model.PostType == "Help")
+                            {
+                                <option value="Share">Share</option>
+                                <option value="Help" selected>Help</option>
+                            }
+                            else
+                            {
+                                <option value="Share" selected>Share</option>
+                                <option value="Help">Help</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Title</label>
+                        <input type="text" name="title" class="form-control rounded-3" value="@Model.Title" required />
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Content</label>
+                        <textarea name="content" class="form-control rounded-3" rows="6" required>@Model.Content</textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-warning rounded-pill px-5 fw-bold">Save Changes</button>
+                    @* Tag Helpers generate correct MVC URLs for controller actions. *@
+                    <a asp-action="Feed" class="btn btn-light rounded-pill px-4 ms-2 fw-bold">Cancel</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

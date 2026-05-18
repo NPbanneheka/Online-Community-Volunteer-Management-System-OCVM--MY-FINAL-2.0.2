@@ -1,0 +1,47 @@
+OCVMS Final Full Marks Version - Change Summary
+
+Base version used:
+- Main base: the feature-rich OCVMS version from the first uploaded zip.
+- Good fixes merged from the second zip: relaxed password policy, login/access-denied cookie paths, and role-based event management restrictions.
+
+Main fixes and improvements:
+1. Cleaned final project package by excluding .git, bin, obj, and old uploaded profile images.
+2. Improved Program.cs:
+   - Password policy fixed for demo/student use.
+   - Cookie login/access-denied paths added.
+   - Localization retained.
+   - Role/admin seeding retained with safer error logging.
+3. Improved ApplicationDbContext:
+   - Stronger relationships for events, posts, comments, support requests, notifications.
+   - Unique logical indexes for profiles, registrations, and ratings.
+4. Improved account system:
+   - Public registration restricted to Volunteer and Organizer.
+   - Admin account seeded automatically.
+   - AccessDenied action supported.
+5. Improved event module:
+   - Event search supports title, location, and description.
+   - Event details include organizer, time, status, capacity, registered count, and remaining slots.
+   - Create/Edit/Delete protected for Admin/Organizer.
+   - EventTime added to Edit page.
+   - Capacity checking prevents over-registration.
+   - Manual cleanup of event registrations before delete.
+   - Organizer/Admin event management page added.
+6. Improved profile module:
+   - Safer profile image handling.
+   - Organization Name field added to profile editing/display.
+7. Improved community module:
+   - Community posts and comments improved.
+   - Comments validate post existence.
+   - Notifications added for help posts and comments.
+8. Added Support Requests module:
+   - Submit support request.
+   - View requests.
+   - Admin/Organizer can update request status.
+   - User receives notification when status changes.
+9. Added Notifications module:
+   - View notifications.
+   - Mark one/all as read.
+10. README updated with run steps and final feature list.
+
+Important note:
+- This package was prepared by static source-code review because the current environment does not include the .NET SDK, so dotnet build/run could not be executed here. Please run dotnet restore, dotnet ef database update, and dotnet run in Visual Studio or your local terminal.

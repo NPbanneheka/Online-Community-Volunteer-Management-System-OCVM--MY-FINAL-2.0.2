@@ -1,0 +1,102 @@
+@* Views/HelpRequests/Details.cshtml: Razor view that renders the HelpRequests/Details page in the browser. Comments describe UI/data purpose only. *@
+@* @model declares the C# type this Razor page receives from its controller. *@
+@model OCVMS.Models.HelpRequest
+@using System.Runtime.InteropServices
+@* Razor code block prepares page variables such as title, filters, or values from ViewBag/ViewData. *@
+@{
+    ViewData["Title"] = "Support Request Details";
+    var statuses = new[] { "Pending", "In Progress", "Resolved", "Closed" };
+    bool canManageHelpRequest = ViewBag.CanManageHelpRequest ?? false;
+    bool canUpdateHelpRequestStatus = ViewBag.CanUpdateHelpRequestStatus ?? false;
+}
+
+@functions {
+    private DateTime ToSriLankaTime(DateTime value)
+    {
+        if (value == DateTime.MinValue) return value;
+
+        var utcValue = value.Kind == DateTimeKind.Utc
+            ? value
+            : DateTime.SpecifyKind(value, DateTimeKind.Utc);
+
+        var timeZoneId = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+            ? "Sri Lanka Standard Time"
+            : "Asia/Colombo";
+
+        var sriLankaTimeZone = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
+        return TimeZoneInfo.ConvertTimeFromUtc(utcValue, sriLankaTimeZone);
+    }
+}
+
+<div class="container py-4">
+    <div class="card border-0 shadow-sm rounded-4 p-4 p-lg-5">
+        <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-4">
+            <div>
+                <h2 class="fw-bold mb-1">@Model.Title</h2>
+                <p class="text-muted mb-0">
+                    Submitted by @(Model.SubmittedBy?.FullName ?? "User") on @ToSriLankaTime(Model.CreatedAt).ToString("MMM dd, yyyy hh:mm tt")
+                    @* Conditional UI: renders this section only when the condition is true. *@
+                    @if (!string.IsNullOrWhiteSpace(Model.SubmittedBy?.OrganizationName))
+                    {
+                        <span> · @Model.SubmittedBy.OrganizationName</span>
+                    }
+                </p>
+            </div>
+            <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-4 py-2">@Model.Status</span>
+        </div>
+
+        <div class="bg-light rounded-4 p-4 mb-4">
+            <h6 class="fw-bold text-secondary">Description</h6>
+            <p class="mb-0" style="white-space:pre-line;">@Model.Description</p>
+        </div>
+
+        @* Conditional UI: renders this section only when the condition is true. *@
+        @if (canUpdateHelpRequestStatus)
+        {
+            @* Form sends user input back to a controller action for validation and processing. *@
+            <form asp-action="UpdateStatus" method="post" class="row g-2 align-items-end">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="id" value="@Model.Id" />
+                <div class="col-md-5">
+                    <label class="form-label fw-bold">Update Status</label>
+                    <select name="status" class="form-select rounded-3">
+                        @* Loops through the model/list data and renders one UI section for each record. *@
+                        @foreach (var status in statuses)
+                        {
+                            if (Model.Status == status)
+                            {
+                                <option value="@status" selected>@status</option>
+                            }
+                            else
+                            {
+                                <option value="@status">@status</option>
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <button type="submit" class="btn btn-warning rounded-pill px-4 fw-bold">Save Status</button>
+                </div>
+            </form>
+        }
+
+        <div class="mt-4 d-flex flex-wrap gap-2">
+            @* Tag Helpers generate correct MVC URLs for controller actions. *@
+            <a asp-action="Index" class="btn btn-light rounded-pill px-4 fw-bold text-secondary">
+                <i class="bi bi-arrow-left me-1"></i> Back
+            </a>
+            @* Conditional UI: renders this section only when the condition is true. *@
+            @if (canManageHelpRequest)
+            {
+                @* Tag Helpers generate correct MVC URLs for controller actions. *@
+                <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning rounded-pill px-4 fw-bold">Edit Request</a>
+                @* Form sends user input back to a controller action for validation and processing. *@
+                <form asp-action="Delete" method="post" onsubmit="return confirm('Delete this support request?');">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@Model.Id" />
+                    <button type="submit" class="btn btn-outline-danger rounded-pill px-4 fw-bold">Delete Request</button>
+                </form>
+            }
+        </div>
+    </div>
+</div>

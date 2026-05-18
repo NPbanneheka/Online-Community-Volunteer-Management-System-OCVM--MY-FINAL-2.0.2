@@ -1,0 +1,105 @@
+@* Views/HelpRequests/Index.cshtml: Razor view that renders the HelpRequests/Index page in the browser. Comments describe UI/data purpose only. *@
+@* @model declares the C# type this Razor page receives from its controller. *@
+@model IEnumerable<OCVMS.Models.HelpRequest>
+@using System.Runtime.InteropServices
+@* Razor code block prepares page variables such as title, filters, or values from ViewBag/ViewData. *@
+@{
+    ViewData["Title"] = "Support Requests";
+    var manageableHelpRequestIds = ViewBag.ManageableHelpRequestIds as List<int> ?? new List<int>();
+}
+
+@functions {
+    private DateTime ToSriLankaTime(DateTime value)
+    {
+        if (value == DateTime.MinValue) return value;
+
+        var utcValue = value.Kind == DateTimeKind.Utc
+            ? value
+            : DateTime.SpecifyKind(value, DateTimeKind.Utc);
+
+        var timeZoneId = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+            ? "Sri Lanka Standard Time"
+            : "Asia/Colombo";
+
+        var sriLankaTimeZone = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
+        return TimeZoneInfo.ConvertTimeFromUtc(utcValue, sriLankaTimeZone);
+    }
+}
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-1">Support Requests</h2>
+            <p class="text-muted mb-0">Report system issues, bugs, errors, or difficulties to the admin team.</p>
+        </div>
+        @* Tag Helpers generate correct MVC URLs for controller actions. *@
+        <a asp-action="Create" class="btn btn-primary rounded-pill px-4 fw-bold">
+            <i class="bi bi-plus-circle me-1"></i> New Support Request
+        </a>
+    </div>
+
+    @* Conditional UI: renders this section only when the condition is true. *@
+    @if (Model == null || !Model.Any())
+    {
+        <div class="card border-0 shadow-sm rounded-4 text-center p-5">
+            <i class="bi bi-life-preserver text-muted opacity-25" style="font-size:4rem;"></i>
+            <h4 class="text-muted mt-3">No support requests found.</h4>
+            <p class="text-secondary">Submit a support request if you face an issue while using the system.</p>
+        </div>
+    }
+    else
+    {
+        <div class="row g-3">
+            @* Loops through the model/list data and renders one UI section for each record. *@
+            @foreach (var item in Model)
+            {
+                var statusClass = item.Status switch
+                {
+                    "Resolved" => "success",
+                    "Closed" => "secondary",
+                    "In Progress" => "warning",
+                    _ => "primary"
+                };
+                var canManage = manageableHelpRequestIds.Contains(item.Id);
+
+                <div class="col-md-6">
+                    <div class="card border-0 shadow-sm rounded-4 h-100">
+                        <div class="card-body p-4">
+                            <div class="d-flex justify-content-between gap-2 mb-2">
+                                <h5 class="fw-bold mb-0">@item.Title</h5>
+                                <span class="badge bg-@statusClass bg-opacity-10 text-@statusClass rounded-pill px-3 py-2">@item.Status</span>
+                            </div>
+                            <p class="text-secondary small mb-3">@item.Description</p>
+                            <div class="text-muted small mb-3">
+                                <i class="bi bi-person me-1"></i> @(item.SubmittedBy?.FullName ?? "User")
+                                @* Conditional UI: renders this section only when the condition is true. *@
+                                @if (!string.IsNullOrWhiteSpace(item.SubmittedBy?.OrganizationName))
+                                {
+                                    <span class="mx-2">·</span><i class="bi bi-building me-1"></i> @item.SubmittedBy.OrganizationName
+                                }
+                                <span class="mx-2">·</span>
+                                <i class="bi bi-calendar3 me-1"></i> @ToSriLankaTime(item.CreatedAt).ToString("MMM dd, yyyy hh:mm tt")
+                            </div>
+                            <div class="d-flex flex-wrap gap-2">
+                                @* Tag Helpers generate correct MVC URLs for controller actions. *@
+                                <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-outline-primary rounded-pill px-4 fw-bold">Open</a>
+                                @* Conditional UI: renders this section only when the condition is true. *@
+                                @if (canManage)
+                                {
+                                    @* Tag Helpers generate correct MVC URLs for controller actions. *@
+                                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-warning rounded-pill px-4 fw-bold">Edit</a>
+                                    @* Form sends user input back to a controller action for validation and processing. *@
+                                    <form asp-action="Delete" method="post" onsubmit="return confirm('Delete this support request?');">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@item.Id" />
+                                        <button type="submit" class="btn btn-outline-danger rounded-pill px-4 fw-bold">Delete</button>
+                                    </form>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>

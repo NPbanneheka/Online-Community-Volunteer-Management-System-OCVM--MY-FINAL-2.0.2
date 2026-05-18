@@ -1,0 +1,34 @@
+OCVMS Final Ownership / Security Fix Summary
+=============================================
+
+This polished version applies strict final-submission ownership authorization rules.
+
+Security rules applied:
+1. Admin can manage all events, community posts, comments, support requests, and user verification/deletion.
+2. Organizer can create events and manage only the events created by their own profile.
+3. Organizer cannot edit/delete events, posts, comments, or support requests created by another organizer/user.
+4. Volunteer can manage only their own community posts, own comments, and own support requests.
+5. The owner of a community post can remove comments on that own post; Admin can remove any comment.
+6. Volunteer cannot edit/delete events.
+7. UI buttons are hidden when the logged-in user is not allowed to manage that record.
+8. Controller-level checks are also applied, so direct URL access is blocked.
+9. Profile lookup now consistently uses the verified/latest profile row to fix duplicate-profile data issues.
+10. Profile and event image deletion paths are hardened to avoid unsafe hidden-field/path tampering.
+
+Important files updated:
+- Controllers/EventsController.cs
+- Controllers/CommunityController.cs
+- Controllers/HelpRequestsController.cs
+- Controllers/DashboardController.cs
+- Controllers/NotificationsController.cs
+- Controllers/ProfileController.cs
+- README.md
+
+Recommended local test commands:
+  dotnet clean .\OCVMS.csproj
+  dotnet restore .\OCVMS.csproj
+  dotnet build .\OCVMS.csproj
+  dotnet run --project .\OCVMS.csproj
+
+Current connection string is configured for:
+Server=.\SQLEXPRESS;Database=OCVMSDb;Trusted_Connection=True;MultipleActiveResultSets=true;TrustServerCertificate=True

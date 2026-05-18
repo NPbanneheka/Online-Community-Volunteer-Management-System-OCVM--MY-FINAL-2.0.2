@@ -1,0 +1,44 @@
+@* Views/Account/Login.cshtml: Razor view that renders the Account/Login page in the browser. Comments describe UI/data purpose only. *@
+@* @model declares the C# type this Razor page receives from its controller. *@
+@model LoginViewModel
+@* Razor code block prepares page variables such as title, filters, or values from ViewBag/ViewData. *@
+@{ ViewData["Title"] = "Login"; }
+
+<div class="row justify-content-center">
+    <div class="col-lg-5">
+        <div class="card card-modern p-4 p-lg-5">
+            <h2 class="fw-bold mb-4">Welcome back</h2>
+            @* Form sends user input back to a controller action for validation and processing. *@
+            <form method="post">
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
+                
+                <div class="mb-3">
+                    <label asp-for="Email" class="form-label"></label>
+                    @* asp-for binds this input to a ViewModel or Model property. *@
+                    <input asp-for="Email" class="form-control form-control-modern" />
+                    @* Displays server/client validation messages for the connected input property. *@
+                    <span asp-validation-for="Email" class="text-danger small"></span>
+                </div>
+                
+                <div class="mb-3">
+                    <label asp-for="Password" class="form-label"></label>
+                    @* asp-for binds this input to a ViewModel or Model property. *@
+                    <input asp-for="Password" class="form-control form-control-modern" />
+                    @* Displays server/client validation messages for the connected input property. *@
+                    <span asp-validation-for="Password" class="text-danger small"></span>
+                </div>
+                
+                <div class="alert alert-light border small mb-4">
+                    <i class="bi bi-shield-lock me-1 text-primary"></i>
+                    For security, your login session will not be saved after the browser session expires.
+                </div>
+                
+                <button class="btn btn-gradient w-100 rounded-pill py-2">Login</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts { 
+    <partial name="_ValidationScriptsPartial" /> 
+}
