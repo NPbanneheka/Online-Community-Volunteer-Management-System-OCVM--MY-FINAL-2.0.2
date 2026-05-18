@@ -1,3 +1,4 @@
+@* Views/Shared/_Layout.cshtml: Razor view that renders the Shared/_Layout page in the browser. Comments describe UI/data purpose only. *@
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -12,6 +13,7 @@
 <body class="d-flex flex-column min-vh-100">
     <nav class="navbar navbar-expand-xl navbar-dark shadow-sm main-navbar sticky-top">
         <div class="container-fluid px-3 px-lg-4">
+            @* Tag Helpers generate correct MVC URLs for controller actions. *@
             <a class="navbar-brand fw-bold" asp-controller="Home" asp-action="Index">OCVMS</a>
 
             <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu" aria-controls="navMenu" aria-expanded="false" aria-label="Toggle navigation">
@@ -21,56 +23,71 @@
             <div class="collapse navbar-collapse" id="navMenu">
                 <ul class="navbar-nav me-auto mb-2 mb-xl-0">
                     <li class="nav-item">
+                        @* Tag Helpers generate correct MVC URLs for controller actions. *@
                         <a class="nav-link" asp-controller="Home" asp-action="Index">Home</a>
                     </li>
                     <li class="nav-item">
+                        @* Tag Helpers generate correct MVC URLs for controller actions. *@
                         <a class="nav-link" asp-controller="Events" asp-action="Index">Events</a>
                     </li>
                     <li class="nav-item">
+                        @* Tag Helpers generate correct MVC URLs for controller actions. *@
                         <a class="nav-link" asp-controller="Community" asp-action="Feed">Community</a>
                     </li>
                     <li class="nav-item">
+                        @* Tag Helpers generate correct MVC URLs for controller actions. *@
                         <a class="nav-link" asp-controller="HelpRequests" asp-action="Index">Support Requests</a>
                     </li>
                     <li class="nav-item">
+                        @* Tag Helpers generate correct MVC URLs for controller actions. *@
                         <a class="nav-link" asp-controller="Home" asp-action="About">About</a>
                     </li>
                 </ul>
 
                 <ul class="navbar-nav ms-auto align-items-xl-center gap-xl-1">
+                    @* Conditional UI: renders this section only when the condition is true. *@
                     @if (User.Identity?.IsAuthenticated == true)
                     {
                         <li class="nav-item">
+                            @* Tag Helpers generate correct MVC URLs for controller actions. *@
                             <a class="nav-link" asp-controller="Events" asp-action="MyEvents">My Events</a>
                         </li>
 
+                        @* Conditional UI: renders this section only when the condition is true. *@
                         @if (User.IsInRole("Admin") || User.IsInRole("Organizer"))
                         {
                             <li class="nav-item">
+                                @* Tag Helpers generate correct MVC URLs for controller actions. *@
                                 <a class="nav-link" asp-controller="Events" asp-action="MyCreatedEvents">Manage Events</a>
                             </li>
                         }
 
                         <li class="nav-item">
+                            @* Tag Helpers generate correct MVC URLs for controller actions. *@
                             <a class="nav-link" asp-controller="Dashboard" asp-action="Index">Dashboard</a>
                         </li>
 
                         <li class="nav-item">
+                            @* Tag Helpers generate correct MVC URLs for controller actions. *@
                             <a class="nav-link" asp-controller="Notifications" asp-action="Index">Notifications</a>
                         </li>
 
+                        @* Conditional UI: renders this section only when the condition is true. *@
                         @if (User.IsInRole("Admin"))
                         {
                             <li class="nav-item">
+                                @* Tag Helpers generate correct MVC URLs for controller actions. *@
                                 <a class="nav-link" asp-controller="Profile" asp-action="ManageUsers">User Management</a>
                             </li>
                         }
 
                         <li class="nav-item">
+                            @* Tag Helpers generate correct MVC URLs for controller actions. *@
                             <a class="nav-link" asp-controller="Profile" asp-action="MyProfile">Profile</a>
                         </li>
 
                         <li class="nav-item mt-2 mt-xl-0 ms-xl-2">
+                            @* Form sends user input back to a controller action for validation and processing. *@
                             <form asp-controller="Account" asp-action="Logout" method="post" class="d-grid">
                                 <button type="submit" class="btn btn-light btn-sm rounded-pill px-3 px-lg-4">
                                     Logout
@@ -81,6 +98,7 @@
                     else
                     {
                         <li class="nav-item">
+                            @* Tag Helpers generate correct MVC URLs for controller actions. *@
                             <a class="nav-link" asp-controller="Account" asp-action="Login">Login</a>
                         </li>
                         <li class="nav-item mt-2 mt-xl-0 ms-xl-2">
@@ -98,6 +116,7 @@
 
     <main class="flex-grow-1">
         <div class="container-fluid px-3 px-md-4 px-xl-5 py-4">
+            @* Conditional UI: renders this section only when the condition is true. *@
             @if (TempData["Message"] != null)
             {
                 <div class="alert alert-success alert-dismissible fade show rounded-4 shadow-sm border-0" role="alert">

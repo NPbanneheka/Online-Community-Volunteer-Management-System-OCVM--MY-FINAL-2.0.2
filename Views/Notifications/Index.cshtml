@@ -1,4 +1,7 @@
+@* Views/Notifications/Index.cshtml: Razor view that renders the Notifications/Index page in the browser. Comments describe UI/data purpose only. *@
+@* @model declares the C# type this Razor page receives from its controller. *@
 @model IEnumerable<OCVMS.Models.Notification>
+@* Razor code block prepares page variables such as title, filters, or values from ViewBag/ViewData. *@
 @{
     ViewData["Title"] = "Notifications";
 }
@@ -9,14 +12,17 @@
             <h2 class="fw-bold mb-1">Notifications</h2>
             <p class="text-muted mb-0">System updates related to your events, registrations, and support requests.</p>
         </div>
+        @* Conditional UI: renders this section only when the condition is true. *@
         @if (Model != null && Model.Any(n => !n.IsRead))
         {
+            @* Form sends user input back to a controller action for validation and processing. *@
             <form asp-action="MarkAllAsRead" method="post">
                 <button type="submit" class="btn btn-outline-primary rounded-pill px-4 fw-bold">Mark All as Read</button>
             </form>
         }
     </div>
 
+    @* Conditional UI: renders this section only when the condition is true. *@
     @if (Model == null || !Model.Any())
     {
         <div class="card border-0 shadow-sm rounded-4 text-center p-5">
@@ -28,6 +34,7 @@
     else
     {
         <div class="list-group shadow-sm rounded-4 overflow-hidden">
+            @* Loops through the model/list data and renders one UI section for each record. *@
             @foreach (var item in Model)
             {
                 <div class="list-group-item border-0 border-bottom p-4 @(item.IsRead ? "bg-white" : "bg-primary bg-opacity-10")">
@@ -36,8 +43,10 @@
                             <div class="fw-bold text-dark">@item.Message</div>
                             <small class="text-muted">@item.CreatedAt.ToString("MMM dd, yyyy hh:mm tt")</small>
                         </div>
+                        @* Conditional UI: renders this section only when the condition is true. *@
                         @if (!item.IsRead)
                         {
+                            @* Form sends user input back to a controller action for validation and processing. *@
                             <form asp-action="MarkAsRead" method="post">
                                 <input type="hidden" name="id" value="@item.Id" />
                                 <button type="submit" class="btn btn-sm btn-primary rounded-pill px-3">Read</button>

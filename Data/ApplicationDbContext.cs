@@ -1,22 +1,37 @@
+// Data/ApplicationDbContext.cs
+// This Entity Framework Core data access file that maps C# models to SQL Server tables.
+// Comments explain purpose, connected technologies, variables, and data flow without changing behavior.
+// ASP.NET Core Identity services for users, roles, passwords, sign-in sessions, and lockout/ban behavior.
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+// Entity Framework Core features such as Include(), Where(), ToListAsync(), and database queries.
 using Microsoft.EntityFrameworkCore;
 using OCVMS.Models;
 
+// Namespace groups related OCVMS classes so they can be referenced cleanly across the project.
 namespace OCVMS.Data;
 
+// DbContext class: central EF Core gateway between C# models and SQL Server tables.
 public class ApplicationDbContext : IdentityDbContext<IdentityUser>
 {
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
         : base(options) { }
 
+    // DbSet exposes a model as a queryable/updatable table through Entity Framework Core.
     public DbSet<UserProfile> UserProfiles => Set<UserProfile>();
+    // DbSet exposes a model as a queryable/updatable table through Entity Framework Core.
     public DbSet<VolunteerEvent> VolunteerEvents => Set<VolunteerEvent>();
+    // DbSet exposes a model as a queryable/updatable table through Entity Framework Core.
     public DbSet<EventRegistration> EventRegistrations => Set<EventRegistration>();
+    // DbSet exposes a model as a queryable/updatable table through Entity Framework Core.
     public DbSet<CommunityPost> CommunityPosts => Set<CommunityPost>();
+    // DbSet exposes a model as a queryable/updatable table through Entity Framework Core.
     public DbSet<PostComment> PostComments => Set<PostComment>();
+    // DbSet exposes a model as a queryable/updatable table through Entity Framework Core.
     public DbSet<UserRating> UserRatings => Set<UserRating>();
+    // DbSet exposes a model as a queryable/updatable table through Entity Framework Core.
     public DbSet<HelpRequest> HelpRequests => Set<HelpRequest>();
+    // DbSet exposes a model as a queryable/updatable table through Entity Framework Core.
     public DbSet<Notification> Notifications => Set<Notification>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

@@ -1,4 +1,7 @@
+@* Views/Events/JoinedVolunteers.cshtml: Razor view that renders the Events/JoinedVolunteers page in the browser. Comments describe UI/data purpose only. *@
+@* @model declares the C# type this Razor page receives from its controller. *@
 @model OCVMS.Models.VolunteerEvent
+@* Razor code block prepares page variables such as title, filters, or values from ViewBag/ViewData. *@
 @{
     ViewData["Title"] = "Joined Volunteers";
     var profiles = ViewBag.VolunteerProfiles as List<UserProfile> ?? new List<UserProfile>();
@@ -13,11 +16,13 @@
             <h2 class="fw-bold mb-1">Joined Volunteers</h2>
             <p class="text-muted mb-0">@Model.Title · @profiles.Count / @Model.Capacity registered</p>
         </div>
+        @* Tag Helpers generate correct MVC URLs for controller actions. *@
         <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-light rounded-pill px-4 fw-bold">Back to Event</a>
     </div>
 
     <div class="row g-4">
         <div class="col-lg-8">
+            @* Conditional UI: renders this section only when the condition is true. *@
             @if (!profiles.Any())
             {
                 <div class="card border-0 shadow-sm rounded-4 text-center p-5">
@@ -33,11 +38,13 @@
                             <tr><th>Volunteer</th><th>Email</th><th>Contact</th><th>Verified</th><th style="width: 320px;">Organizer Rating</th></tr>
                         </thead>
                         <tbody>
+                        @* Loops through the model/list data and renders one UI section for each record. *@
                         @foreach (var profile in profiles)
                         {
                             <tr>
                                 <td>
                                     <div class="d-flex align-items-center gap-3">
+                                        @* Conditional UI: renders this section only when the condition is true. *@
                                         @if (!string.IsNullOrWhiteSpace(profile.ProfileImageUrl))
                                         {
                                             <img src="@profile.ProfileImageUrl" class="rounded-circle" style="width:45px;height:45px;object-fit:cover;" alt="Profile" />
@@ -55,6 +62,7 @@
                                 <td>@(profile.PublicEmail ?? "Not provided")</td>
                                 <td>@(profile.ContactNumber ?? "Not provided")</td>
                                 <td>
+                                    @* Conditional UI: renders this section only when the condition is true. *@
                                     @if (profile.IsVerified)
                                     {
                                         <span class="badge bg-success bg-opacity-10 text-success rounded-pill">Verified</span>
@@ -65,12 +73,14 @@
                                     }
                                 </td>
                                 <td>
+                                    @* Razor code block prepares page variables such as title, filters, or values from ViewBag/ViewData. *@
                                     @{
                                         organizerRatings.TryGetValue(profile.UserId, out var myVolunteerRating);
                                         volunteerAverageRatings.TryGetValue(profile.UserId, out var volunteerAverageRating);
                                         volunteerRatingCounts.TryGetValue(profile.UserId, out var volunteerRatingCount);
                                     }
                                     <div class="small text-muted mb-2">
+                                        @* Conditional UI: renders this section only when the condition is true. *@
                                         @if (volunteerRatingCount > 0)
                                         {
                                             <span><i class="bi bi-star-fill text-warning me-1"></i>Volunteer average: @volunteerAverageRating.ToString("0.0") (@volunteerRatingCount)</span>
@@ -80,6 +90,7 @@
                                             <span>No ratings for this volunteer yet.</span>
                                         }
                                     </div>
+                                    @* Form sends user input back to a controller action for validation and processing. *@
                                     <form asp-action="RateVolunteer" method="post" class="row g-2">
                                         @Html.AntiForgeryToken()
                                         <input type="hidden" name="id" value="@Model.Id" />
@@ -118,6 +129,7 @@
             <div class="card border-0 shadow-sm rounded-4 p-4">
                 <h5 class="fw-bold mb-2"><i class="bi bi-megaphone text-primary me-1"></i> Send Event Notice</h5>
                 <p class="text-muted small">This message will be sent as a notification to all volunteers registered for this event.</p>
+                @* Form sends user input back to a controller action for validation and processing. *@
                 <form asp-action="SendVolunteerNotification" method="post">
                     @Html.AntiForgeryToken()
                     <input type="hidden" name="id" value="@Model.Id" />

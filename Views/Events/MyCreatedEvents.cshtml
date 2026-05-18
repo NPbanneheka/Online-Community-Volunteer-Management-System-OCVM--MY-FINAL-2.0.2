@@ -1,4 +1,7 @@
+@* Views/Events/MyCreatedEvents.cshtml: Razor view that renders the Events/MyCreatedEvents page in the browser. Comments describe UI/data purpose only. *@
+@* @model declares the C# type this Razor page receives from its controller. *@
 @model IEnumerable<OCVMS.Models.VolunteerEvent>
+@* Razor code block prepares page variables such as title, filters, or values from ViewBag/ViewData. *@
 @{
     ViewData["Title"] = "Manage My Events";
 }
@@ -9,11 +12,13 @@
             <h2 class="fw-bold text-dark mb-1">Manage Events</h2>
             <p class="text-muted mb-0">Review events in your organization, view joined volunteers, and send event notifications.</p>
         </div>
+        @* Tag Helpers generate correct MVC URLs for controller actions. *@
         <a asp-action="Create" class="btn btn-primary rounded-pill px-4 fw-bold">
             <i class="bi bi-plus-lg me-1"></i> Create Event
         </a>
     </div>
 
+    @* Conditional UI: renders this section only when the condition is true. *@
     @if (Model == null || !Model.Any())
     {
         <div class="card border-0 shadow-sm rounded-4 text-center p-5">
@@ -37,11 +42,13 @@
                     </tr>
                 </thead>
                 <tbody>
+                @* Loops through the model/list data and renders one UI section for each record. *@
                 @foreach (var item in Model)
                 {
                     <tr>
                         <td style="min-width: 260px;">
                             <div class="d-flex align-items-center gap-3">
+                                @* Conditional UI: renders this section only when the condition is true. *@
                                 @if (!string.IsNullOrWhiteSpace(item.ImageUrl))
                                 {
                                     <img src="@item.ImageUrl" class="rounded-3" style="width:70px;height:55px;object-fit:cover;" alt="Event" />
@@ -53,6 +60,7 @@
                                 <div>
                                     <div class="fw-bold">@item.Title</div>
                                     <small class="text-muted">@item.Location</small>
+                                    @* Conditional UI: renders this section only when the condition is true. *@
                                     @if (!string.IsNullOrWhiteSpace(item.OrganizerProfile?.OrganizationName))
                                     {
                                         <div><small class="text-primary">Organization: @item.OrganizerProfile.OrganizationName</small></div>
@@ -62,14 +70,19 @@
                         </td>
                         <td>@item.EventDate.ToString("MMM dd, yyyy")<br/><small class="text-muted">@item.EventTime.ToString(@"hh\:mm")</small></td>
                         <td>@item.RegistrationOpenDate.ToString("MMM dd")<br/><small class="text-muted">Close: @(item.RegistrationClosingDate?.ToString("MMM dd") ?? "Not set")</small></td>
+                        @* Tag Helpers generate correct MVC URLs for controller actions. *@
                         <td><a asp-action="JoinedVolunteers" asp-route-id="@item.Id" class="fw-bold text-decoration-none">@(item.Registrations?.Count ?? 0) / @item.Capacity</a></td>
                         <td><span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3 py-2">@item.Status</span></td>
                         <td class="text-end" style="min-width: 260px;">
                             <div class="btn-group btn-group-sm" role="group">
+                                @* Tag Helpers generate correct MVC URLs for controller actions. *@
                                 <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-outline-primary">View</a>
+                                @* Tag Helpers generate correct MVC URLs for controller actions. *@
                                 <a asp-action="JoinedVolunteers" asp-route-id="@item.Id" class="btn btn-outline-info">Volunteers</a>
+                                @* Tag Helpers generate correct MVC URLs for controller actions. *@
                                 <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-warning">Edit</a>
                             </div>
+                            @* Form sends user input back to a controller action for validation and processing. *@
                             <form asp-action="Delete" method="post" class="d-inline ms-1" onsubmit="return confirm('Delete this event? This will also remove related registrations.');">
                                 @Html.AntiForgeryToken()
                                 <input type="hidden" name="id" value="@item.Id" />

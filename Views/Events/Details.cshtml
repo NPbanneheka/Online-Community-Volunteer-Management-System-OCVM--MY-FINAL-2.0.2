@@ -1,4 +1,7 @@
+@* Views/Events/Details.cshtml: Razor view that renders the Events/Details page in the browser. Comments describe UI/data purpose only. *@
+@* @model declares the C# type this Razor page receives from its controller. *@
 @model OCVMS.Models.VolunteerEvent
+@* Razor code block prepares page variables such as title, filters, or values from ViewBag/ViewData. *@
 @{
     ViewData["Title"] = "Event Details";
     bool isRegistered = ViewBag.IsRegistered ?? false;
@@ -23,6 +26,7 @@
 
 <div class="container py-5">
     <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+        @* Conditional UI: renders this section only when the condition is true. *@
         @if (!string.IsNullOrWhiteSpace(Model.ImageUrl))
         {
             <img src="@Model.ImageUrl" class="w-100" style="height: 320px; object-fit: cover; object-position: center;" alt="@Model.Title" />
@@ -37,6 +41,7 @@
             <h2 class="fw-bold text-dark mt-2">@Model.Title</h2>
             <div class="d-flex justify-content-center gap-2 flex-wrap">
                 <span class="badge @statusBadgeClass rounded-pill px-3 py-2">@publicStatus</span>
+                @* Conditional UI: renders this section only when the condition is true. *@
                 @if (publicStatus == "Upcoming")
                 {
                     <span class="badge bg-info bg-opacity-10 text-info rounded-pill px-3 py-2">Registration Opens Soon</span>
@@ -45,6 +50,7 @@
                 {
                     <span class="badge @(isRegistrationOpen ? "bg-success" : "bg-secondary") bg-opacity-10 @(isRegistrationOpen ? "text-success" : "text-secondary") rounded-pill px-3 py-2">@(isRegistrationOpen ? "Registration Open" : "Registration Closed")</span>
                 }
+                @* Conditional UI: renders this section only when the condition is true. *@
                 @if (ratingCount > 0)
                 {
                     <span class="badge bg-warning bg-opacity-10 text-warning rounded-pill px-3 py-2"><i class="bi bi-star-fill"></i> @averageRating.ToString("0.0") (@ratingCount)</span>
@@ -58,10 +64,12 @@
                     <h4 class="fw-bold border-bottom pb-2 mb-4">About the Event</h4>
                     <p class="text-secondary" style="white-space: pre-line; line-height: 1.8;">@Model.Description</p>
 
+                    @* Conditional UI: renders this section only when the condition is true. *@
                     @if (canRate)
                     {
                         <div class="card border-0 bg-light rounded-4 p-4 mt-4">
                             <h5 class="fw-bold mb-3"><i class="bi bi-star text-warning me-1"></i> Rate this Event</h5>
+                            @* Form sends user input back to a controller action for validation and processing. *@
                             <form asp-action="RateEvent" method="post" class="row g-2">
                                 @Html.AntiForgeryToken()
                                 <input type="hidden" name="id" value="@Model.Id" />
@@ -123,10 +131,12 @@
                             <div>
                                 <small class="text-muted d-block">Organizer</small>
                                 <span class="fw-bold text-dark">@(Model.OrganizerProfile?.FullName ?? "Organizer")</span>
+                                @* Conditional UI: renders this section only when the condition is true. *@
                                 @if (Model.OrganizerProfile?.IsVerified == true)
                                 {
                                     <i class="bi bi-patch-check-fill text-success ms-1"></i>
                                 }
+                                @* Conditional UI: renders this section only when the condition is true. *@
                                 @if (!string.IsNullOrWhiteSpace(Model.OrganizerProfile?.OrganizationName))
                                 {
                                     <small class="d-block text-primary">@Model.OrganizerProfile.OrganizationName</small>
@@ -137,8 +147,10 @@
                             <div class="bg-white p-2 rounded shadow-sm me-3"><i class="bi bi-people text-success fs-5"></i></div>
                             <div>
                                 <small class="text-muted d-block">Capacity</small>
+                                @* Conditional UI: renders this section only when the condition is true. *@
                                 @if (canManageEvent)
                                 {
+                                    @* Tag Helpers generate correct MVC URLs for controller actions. *@
                                     <a asp-action="JoinedVolunteers" asp-route-id="@Model.Id" class="fw-bold text-dark text-decoration-none">@registeredCount / @Model.Capacity registered (@remainingSlots left)</a>
                                     <small class="d-block text-muted">Click to view volunteers and send event notices.</small>
                                 }
@@ -149,10 +161,12 @@
                             </div>
                         </div>
                         
+                        @* Conditional UI: renders this section only when the condition is true. *@
                         @if (User.Identity?.IsAuthenticated == true)
                         {
                             if (isRegistered)
                             {
+                                @* Form sends user input back to a controller action for validation and processing. *@
                                 <form asp-action="Unregister" method="post">
                                     @Html.AntiForgeryToken()
                                     <input type="hidden" name="eventId" value="@Model.Id" />
@@ -169,6 +183,7 @@
                             }
                             else
                             {
+                                @* Form sends user input back to a controller action for validation and processing. *@
                                 <form asp-action="Register" method="post">
                                     @Html.AntiForgeryToken()
                                     <input type="hidden" name="eventId" value="@Model.Id" />
@@ -178,6 +193,7 @@
                         }
                         else
                         {
+                            @* Tag Helpers generate correct MVC URLs for controller actions. *@
                             <a asp-controller="Account" asp-action="Login" class="btn btn-primary w-100 rounded-pill fw-bold">Login to Register</a>
                         }
                     </div>
@@ -185,11 +201,16 @@
             </div>
 
             <div class="d-flex flex-wrap gap-2 mt-5">
+                @* Tag Helpers generate correct MVC URLs for controller actions. *@
                 <a asp-action="Index" class="btn btn-light rounded-pill px-4 fw-bold">Back to Events</a>
+                @* Conditional UI: renders this section only when the condition is true. *@
                 @if (canManageEvent)
                 {
+                    @* Tag Helpers generate correct MVC URLs for controller actions. *@
                     <a asp-action="JoinedVolunteers" asp-route-id="@Model.Id" class="btn btn-info text-white rounded-pill px-4 fw-bold">Joined Volunteers</a>
+                    @* Tag Helpers generate correct MVC URLs for controller actions. *@
                     <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning rounded-pill px-4 fw-bold">Edit Event</a>
+                    @* Form sends user input back to a controller action for validation and processing. *@
                     <form asp-action="Delete" method="post" onsubmit="return confirm('Delete this event?');">
                         @Html.AntiForgeryToken()
                         <input type="hidden" name="id" value="@Model.Id" />

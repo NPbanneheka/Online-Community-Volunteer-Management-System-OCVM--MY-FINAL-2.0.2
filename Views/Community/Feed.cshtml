@@ -1,5 +1,8 @@
+@* Views/Community/Feed.cshtml: Razor view that renders the Community/Feed page in the browser. Comments describe UI/data purpose only. *@
+@* @model declares the C# type this Razor page receives from its controller. *@
 @model IEnumerable<OCVMS.Models.CommunityPost>
 @using System.Runtime.InteropServices
+@* Razor code block prepares page variables such as title, filters, or values from ViewBag/ViewData. *@
 @{
     ViewData["Title"] = "Community Hub";
     var currentProfile = ViewBag.CurrentProfile as UserProfile;
@@ -32,11 +35,13 @@
 }
 
 <div class="container py-4">
+    @* Conditional UI: renders this section only when the condition is true. *@
     @if (TempData["Error"] != null) { <div class="alert alert-danger border-0 shadow-sm rounded-pill"><i class="bi bi-x-circle-fill me-2"></i>@TempData["Error"]</div> }
 
     <div class="row g-4">
         <div class="col-lg-3">
             <div class="card border-0 shadow-sm rounded-4 text-center p-4 sticky-top" style="top: 90px;">
+                @* Conditional UI: renders this section only when the condition is true. *@
                 @if (!string.IsNullOrWhiteSpace(currentProfile?.ProfileImageUrl))
                 {
                     <img src="@currentProfile.ProfileImageUrl" class="rounded-circle mx-auto mb-3 shadow-sm" style="width: 90px; height: 90px; object-fit: cover; object-position: center; border: 4px solid #fff;" alt="Profile" />
@@ -49,6 +54,7 @@
                 }
                 <h5 class="fw-bold text-dark mb-1">@(currentProfile?.FullName ?? User.Identity?.Name?.Split('@')[0])</h5>
                 <div class="text-muted small mb-1">@(currentProfile?.PublicEmail ?? User.Identity?.Name)</div>
+                @* Conditional UI: renders this section only when the condition is true. *@
                 @if (currentProfile?.IsVerified == true)
                 {
                     <span class="badge bg-success bg-opacity-10 text-success rounded-pill mb-2"><i class="bi bi-patch-check-fill me-1"></i> Verified</span>
@@ -73,6 +79,7 @@
 
         <div class="col-lg-6">
             <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+                @* Form sends user input back to a controller action for validation and processing. *@
                 <form asp-action="CreatePost" method="post">
                     @Html.AntiForgeryToken()
                     <div class="d-flex gap-2 mb-3 flex-wrap">
@@ -94,19 +101,25 @@
             </div>
 
             <div class="card border-0 shadow-sm rounded-4 p-3 mb-4">
+                @* Form sends user input back to a controller action for validation and processing. *@
                 <form asp-action="Feed" method="get" class="row g-2 align-items-end">
                     <div class="col-md-5">
                         <label class="form-label small fw-bold text-muted">Filter Posts</label>
                         <select name="filter" class="form-select rounded-pill">
+                            @* Conditional UI: renders this section only when the condition is true. *@
                             @if (filter == "All") { <option value="All" selected>All Posts</option> } else { <option value="All">All Posts</option> }
+                            @* Conditional UI: renders this section only when the condition is true. *@
                             @if (filter == "Share") { <option value="Share" selected>Normal Posts</option> } else { <option value="Share">Normal Posts</option> }
+                            @* Conditional UI: renders this section only when the condition is true. *@
                             @if (filter == "Help") { <option value="Help" selected>Community Help Only</option> } else { <option value="Help">Community Help Only</option> }
                         </select>
                     </div>
                     <div class="col-md-5">
                         <label class="form-label small fw-bold text-muted">Sort by Time</label>
                         <select name="sortOrder" class="form-select rounded-pill">
+                            @* Conditional UI: renders this section only when the condition is true. *@
                             @if (sortOrder == "Newest") { <option value="Newest" selected>Newest First</option> } else { <option value="Newest">Newest First</option> }
+                            @* Conditional UI: renders this section only when the condition is true. *@
                             @if (sortOrder == "Oldest") { <option value="Oldest" selected>Oldest First</option> } else { <option value="Oldest">Oldest First</option> }
                         </select>
                     </div>
@@ -116,6 +129,7 @@
                 </form>
             </div>
 
+            @* Conditional UI: renders this section only when the condition is true. *@
             @if (Model == null || !Model.Any())
             {
                 <div class="text-center text-muted p-5 bg-white rounded-4 shadow-sm">
@@ -132,6 +146,7 @@
                     <div class="card border-0 shadow-sm rounded-4 p-4 mb-3 transition-hover">
                         <div class="d-flex justify-content-between mb-3 gap-3">
                             <div class="d-flex align-items-start">
+                                @* Conditional UI: renders this section only when the condition is true. *@
                                 @if (!string.IsNullOrEmpty(post.User?.ProfileImageUrl))
                                 {
                                     <img src="@post.User.ProfileImageUrl" class="rounded-circle me-3 shadow-sm" style="width: 55px; height: 55px; object-fit: cover; object-position: center; border: 2px solid #fff;" alt="Profile" />
@@ -146,6 +161,7 @@
                                     <h6 class="mb-0 fw-bold text-dark">@(post.User?.FullName ?? "Volunteer")</h6>
                                     <small class="text-muted d-block">@(post.User?.PublicEmail ?? "No public email")</small>
                                     <small class="text-muted d-block">@ToSriLankaTime(post.CreatedAt).ToString("MMM dd, yyyy 'at' hh:mm tt")</small>
+                                    @* Conditional UI: renders this section only when the condition is true. *@
                                     @if (!string.IsNullOrWhiteSpace(post.User?.OrganizationName))
                                     {
                                         <small class="text-primary d-block"><i class="bi bi-building"></i> @post.User.OrganizationName</small>
@@ -153,6 +169,7 @@
                                 </div>
                             </div>
                             <div class="text-end">
+                                @* Conditional UI: renders this section only when the condition is true. *@
                                 @if (post.PostType == "Help")
                                 {
                                     <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill px-3 py-2 align-self-start fw-bold"><i class="bi bi-exclamation-circle me-1"></i> Community Help Needed</span>
@@ -161,10 +178,13 @@
                                 {
                                     <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3 py-2 align-self-start fw-bold"><i class="bi bi-info-circle me-1"></i> Update</span>
                                 }
+                                @* Conditional UI: renders this section only when the condition is true. *@
                                 @if (canManagePost)
                                 {
                                     <div class="mt-2 d-flex gap-1 justify-content-end">
+                                        @* Tag Helpers generate correct MVC URLs for controller actions. *@
                                         <a asp-action="EditPost" asp-route-id="@post.Id" class="btn btn-sm btn-outline-warning rounded-pill">Edit</a>
+                                        @* Form sends user input back to a controller action for validation and processing. *@
                                         <form asp-action="DeletePost" method="post" onsubmit="return confirm('Delete this post?');">
                                             @Html.AntiForgeryToken()
                                             <input type="hidden" name="id" value="@post.Id" />
@@ -179,6 +199,7 @@
 
                         <hr class="text-muted opacity-25 mt-0 mb-3" />
 
+                        @* Form sends user input back to a controller action for validation and processing. *@
                         <form asp-action="AddComment" method="post" class="mb-3 d-flex gap-2">
                             @Html.AntiForgeryToken()
                             <input type="hidden" name="postId" value="@post.Id" />
@@ -186,14 +207,17 @@
                             <button type="submit" class="btn btn-primary rounded-pill px-3"><i class="bi bi-send-fill"></i></button>
                         </form>
 
+                        @* Conditional UI: renders this section only when the condition is true. *@
                         @if (post.PostComments != null && post.PostComments.Any())
                         {
                             <div class="bg-light p-3 rounded-4 mt-3">
                                 <h6 class="fw-bold mb-3 text-secondary small"><i class="bi bi-chat-dots me-1"></i> Comments (@post.PostComments.Count)</h6>
+                                @* Loops through the model/list data and renders one UI section for each record. *@
                                 @foreach (var comment in post.PostComments.OrderBy(c => c.CreatedAt))
                                 {
                                     var canManageComment = manageableCommentIds.Contains(comment.Id);
                                     <div class="d-flex mb-2">
+                                        @* Conditional UI: renders this section only when the condition is true. *@
                                         @if (!string.IsNullOrEmpty(comment.User?.ProfileImageUrl))
                                         {
                                             <img src="@comment.User.ProfileImageUrl" class="rounded-circle me-2 mt-1" style="width: 25px; height: 25px; object-fit: cover;" alt="Profile" />
@@ -207,8 +231,10 @@
                                                 <span class="fw-bold small text-dark">@(comment.User?.FullName ?? "User")</span>
                                                 <div class="d-flex gap-2 align-items-center">
                                                     <span class="text-muted" style="font-size: 0.7rem;">@ToSriLankaTime(comment.CreatedAt).ToString("MMM dd, hh:mm tt")</span>
+                                                    @* Conditional UI: renders this section only when the condition is true. *@
                                                     @if (canManageComment)
                                                     {
+                                                        @* Form sends user input back to a controller action for validation and processing. *@
                                                         <form asp-action="DeleteComment" method="post" onsubmit="return confirm('Delete this comment?');">
                                                             @Html.AntiForgeryToken()
                                                             <input type="hidden" name="id" value="@comment.Id" />

@@ -1,4 +1,7 @@
+@* Views/Home/Index.cshtml: Razor view that renders the Home/Index page in the browser. Comments describe UI/data purpose only. *@
+@* @model declares the C# type this Razor page receives from its controller. *@
 @model IEnumerable<OCVMS.Models.VolunteerEvent>
+@* Razor code block prepares page variables such as title, filters, or values from ViewBag/ViewData. *@
 @{
     ViewData["Title"] = "Home Page";
 }
@@ -11,14 +14,18 @@
             <p class="lead mb-4">Connect volunteers, organizers, and communities in one clean and attractive platform.</p>
             
             <div class="d-flex gap-3">
+                @* Conditional UI: renders this section only when the condition is true. *@
                 @if (User.Identity?.IsAuthenticated == true)
                 {
+                    @* Tag Helpers generate correct MVC URLs for controller actions. *@
                     <a asp-controller="Dashboard" asp-action="Index" class="btn btn-light btn-lg px-4 rounded-pill fw-bold shadow-sm" style="color: #1a759f !important;">Go to Dashboard</a>
                 }
                 else
                 {
+                    @* Tag Helpers generate correct MVC URLs for controller actions. *@
                     <a asp-controller="Account" asp-action="Register" class="btn btn-light btn-lg px-4 rounded-pill fw-bold shadow-sm" style="color: #1a759f !important;">Join as Volunteer</a>
                 }
+                @* Tag Helpers generate correct MVC URLs for controller actions. *@
                 <a asp-controller="Events" asp-action="Index" class="btn btn-outline-light btn-lg px-4 rounded-pill fw-bold">Explore Events</a>
             </div>
         </div>
@@ -44,10 +51,12 @@
 
     <div class="d-flex justify-content-between align-items-end mb-4 mt-5">
         <h2 class="fw-bold text-dark mb-0">Featured Events</h2>
+        @* Tag Helpers generate correct MVC URLs for controller actions. *@
         <a asp-controller="Events" asp-action="Index" class="btn btn-outline-primary rounded-pill btn-sm px-3">See all</a>
     </div>
     
     <div class="row row-cols-1 row-cols-md-3 g-4">
+        @* Conditional UI: renders this section only when the condition is true. *@
         @if (!Model.Any())
         {
             <div class="col-12">
@@ -59,10 +68,12 @@
         }
         else
         {
+            @* Loops through the model/list data and renders one UI section for each record. *@
             @foreach (var item in Model)
             {
                 <div class="col">
                     <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden transition-hover">
+                        @* Conditional UI: renders this section only when the condition is true. *@
                         @if (!string.IsNullOrWhiteSpace(item.ImageUrl))
                         {
                             <img src="@item.ImageUrl" alt="@item.Title" style="height: 150px; width: 100%; object-fit: cover; object-position: center;" />
@@ -80,6 +91,7 @@
                                 <i class="bi bi-calendar3 text-primary"></i> @item.EventDate.ToString("MMM dd, yyyy")
                             </p>
                             <p class="card-text text-secondary text-truncate">@item.Description</p>
+                            @* Tag Helpers generate correct MVC URLs for controller actions. *@
                             <a asp-controller="Events" asp-action="Details" asp-route-id="@item.Id" class="btn btn-primary w-100 rounded-pill mt-2">Details</a>
                         </div>
                     </div>

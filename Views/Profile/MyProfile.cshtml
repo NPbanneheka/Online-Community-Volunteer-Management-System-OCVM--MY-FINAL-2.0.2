@@ -1,7 +1,11 @@
+@* Views/Profile/MyProfile.cshtml: Razor view that renders the Profile/MyProfile page in the browser. Comments describe UI/data purpose only. *@
+@* @model declares the C# type this Razor page receives from its controller. *@
 @model UserProfile?
+@* Razor code block prepares page variables such as title, filters, or values from ViewBag/ViewData. *@
 @{ ViewData["Title"] = "My Profile"; }
 
 <div class="container py-4">
+    @* Conditional UI: renders this section only when the condition is true. *@
     @if (Model == null)
     {
         <div class="card card-modern p-4 text-center shadow-sm border-0 rounded-4 mt-4">
@@ -9,6 +13,7 @@
             <h3 class="fw-bold">Profile not found</h3>
             <p class="text-secondary">Please create your profile to continue.</p>
             <div>
+                @* Tag Helpers generate correct MVC URLs for controller actions. *@
                 <a asp-action="Edit" class="btn btn-primary rounded-pill px-4 mt-2">Create Profile</a>
             </div>
         </div>
@@ -20,6 +25,7 @@
                 <div class="card card-modern p-4 text-center h-100 shadow-sm border-0 rounded-4">
                     
                     <div class="mx-auto mb-3 shadow-sm" style="width: 120px; height: 120px; border-radius: 50%; overflow: hidden; background-color: #f0f4f8; display: flex; align-items: center; justify-content: center; border: 4px solid #fff;">
+                        @* Conditional UI: renders this section only when the condition is true. *@
                         @if (!string.IsNullOrEmpty(Model.ProfileImageUrl))
                         {
                             <img src="@Model.ProfileImageUrl" alt="Profile" style="width: 100%; height: 100%; object-fit: cover;" />
@@ -33,6 +39,7 @@
                     <h4 class="fw-bold mb-1 text-dark">@Model.FullName</h4>
                     <div class="text-muted mb-2 small fw-bold">@Model.RoleName</div>
                     
+                    @* Conditional UI: renders this section only when the condition is true. *@
                     @if (Model.IsVerified) 
                     { 
                         <div class="mb-3"><span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 py-2"><i class="bi bi-patch-check-fill me-1"></i> Verified User</span></div> 
@@ -44,7 +51,9 @@
                     
                     <hr class="text-muted opacity-25"/>
                     <div class="d-grid gap-2 mt-2">
+                        @* Tag Helpers generate correct MVC URLs for controller actions. *@
                         <a asp-action="Edit" class="btn btn-outline-primary rounded-pill fw-bold">Edit Profile</a>
+                        @* Tag Helpers generate correct MVC URLs for controller actions. *@
                         <a asp-controller="Account" asp-action="ChangePassword" class="btn btn-outline-secondary rounded-pill fw-bold">
                             <i class="bi bi-key me-1"></i> Change Password
                         </a>

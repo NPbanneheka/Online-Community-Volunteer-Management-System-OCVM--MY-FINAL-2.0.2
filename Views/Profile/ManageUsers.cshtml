@@ -1,5 +1,8 @@
+@* Views/Profile/ManageUsers.cshtml: Razor view that renders the Profile/ManageUsers page in the browser. Comments describe UI/data purpose only. *@
 @using System
+@* @model declares the C# type this Razor page receives from its controller. *@
 @model IEnumerable<OCVMS.Models.UserProfile>
+@* Razor code block prepares page variables such as title, filters, or values from ViewBag/ViewData. *@
 @{
     ViewData["Title"] = "User Management";
     var lockoutMap = ViewBag.LockoutMap as Dictionary<string, DateTimeOffset?> ?? new Dictionary<string, DateTimeOffset?>();
@@ -31,6 +34,7 @@
                 </tr>
             </thead>
             <tbody>
+            @* Loops through the model/list data and renders one UI section for each record. *@
             @foreach (var item in Model)
             {
                 var isAdmin = string.Equals(item.RoleName, "Admin", StringComparison.OrdinalIgnoreCase);
@@ -40,6 +44,7 @@
                 <tr>
                     <td>
                         <div class="d-flex align-items-center gap-3">
+                            @* Conditional UI: renders this section only when the condition is true. *@
                             @if (!string.IsNullOrWhiteSpace(item.ProfileImageUrl))
                             {
                                 <img src="@item.ProfileImageUrl" class="rounded-circle" style="width:45px;height:45px;object-fit:cover;" alt="Profile" />
@@ -63,6 +68,7 @@
                     </td>
                     <td>@(string.IsNullOrWhiteSpace(item.OrganizationName) ? "-" : item.OrganizationName)</td>
                     <td>
+                        @* Conditional UI: renders this section only when the condition is true. *@
                         @if (isAdmin)
                         {
                             <span class="badge bg-dark bg-opacity-10 text-dark rounded-pill w-auto">
@@ -90,6 +96,7 @@
                     </td>
                     <td class="text-end">
                         <div class="d-inline-flex flex-wrap gap-2 justify-content-end">
+                            @* Conditional UI: renders this section only when the condition is true. *@
                             @if (isProtectedAccount)
                             {
                                 <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3" disabled>Protected</button>
@@ -98,8 +105,10 @@
                             }
                             else
                             {
+                                @* Conditional UI: renders this section only when the condition is true. *@
                                 @if (item.IsVerified)
                                 {
+                                    @* Form sends user input back to a controller action for validation and processing. *@
                                     <form asp-action="UnverifyUser" method="post" class="d-inline">
                                         @Html.AntiForgeryToken()
                                         <input type="hidden" name="id" value="@item.Id" />
@@ -111,6 +120,7 @@
                                 }
                                 else
                                 {
+                                    @* Form sends user input back to a controller action for validation and processing. *@
                                     <form asp-action="VerifyUser" method="post" class="d-inline">
                                         @Html.AntiForgeryToken()
                                         <input type="hidden" name="id" value="@item.Id" />
@@ -121,8 +131,10 @@
                                     </form>
                                 }
 
+                                @* Conditional UI: renders this section only when the condition is true. *@
                                 @if (isTempBanned)
                                 {
+                                    @* Form sends user input back to a controller action for validation and processing. *@
                                     <form asp-action="UnbanUser" method="post" class="d-inline">
                                         @Html.AntiForgeryToken()
                                         <input type="hidden" name="id" value="@item.Id" />
@@ -134,6 +146,7 @@
                                 }
                                 else
                                 {
+                                    @* Form sends user input back to a controller action for validation and processing. *@
                                     <form asp-action="TempBanUser" method="post" class="d-inline">
                                         @Html.AntiForgeryToken()
                                         <input type="hidden" name="id" value="@item.Id" />
@@ -144,6 +157,7 @@
                                     </form>
                                 }
 
+                                @* Form sends user input back to a controller action for validation and processing. *@
                                 <form asp-action="DeleteUser" method="post" class="d-inline">
                                     @Html.AntiForgeryToken()
                                     <input type="hidden" name="id" value="@item.Id" />
